@@ -1,8 +1,4 @@
-import 'dotenv/config';
-import { InstallGlobalCommands } from './utils.js';
-
-// Simple test command
-const TEST_COMMAND = {
+export const TEST_COMMAND = {
   name: 'test',
   description: 'Basic command',
   type: 1,
@@ -11,7 +7,7 @@ const TEST_COMMAND = {
 };
 
 // Command containing options
-const CHECK_SCENERY_COMMAND = {
+export const CHECK_SCENERY_COMMAND = {
   name: 'check',
   description: 'Check if the scenery is available',
   type: 1,
@@ -27,7 +23,7 @@ const CHECK_SCENERY_COMMAND = {
   ],
 };
 
-const GET_SCENERY_COMMAND = {
+export const GET_SCENERY_COMMAND = {
   name: 'get',
   description: 'Download the latest approved gateway version of the airport',
   type: 1,
@@ -42,7 +38,3 @@ const GET_SCENERY_COMMAND = {
     }
   ]
 }
-
-const ALL_COMMANDS = [TEST_COMMAND, CHECK_SCENERY_COMMAND, GET_SCENERY_COMMAND];
-
-InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);
