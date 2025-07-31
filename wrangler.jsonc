@@ -4,5 +4,5 @@
       "nodejs_compat"
     ],
     "compatibility_date": "2025-07-31",
-    "main": "app.js"
+    "main": "./src/app.js"
   }
