@@ -8,10 +8,12 @@ import {
   InteractionResponseType,
   InteractionType,
   MessageComponentTypes,
+  ButtonStyleTypes,
   verifyKey,
 } from 'discord-interactions';
 import { TEST_COMMAND, CHECK_SCENERY_COMMAND } from './commands.js';
 import { getSceneryVersion, checkReleased, sendSceneryFile } from './logic.js'
+import { DiscordRequest } from './utils.js';
 
 class JsonResponse extends Response {
   constructor(body, init) {
@@ -57,123 +59,96 @@ router.post('/', async (request, env, ctx) => {
   }
 
   if (interaction.type === InteractionType.APPLICATION_COMMAND) {
-    // Most user commands will come as `APPLICATION_COMMAND`.
+    const { name } = interaction.data;
     switch (interaction.data.name.toLowerCase()) {
       case TEST_COMMAND.name.toLowerCase(): {
-        const cuteUrl = await getCuteUrl();
         return new JsonResponse({
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
-            flags: InteractionResponseFlags.IS_COMPONENTS_V2,
-            components: [
-              {
-                type: MessageComponentTypes.TEXT_DISPLAY,
-                content: 'Hello World'
-              }
-            ]
+            content: '✅ Hello from /test!',
           },
         });
       }
       case CHECK_SCENERY_COMMAND.name.toLowerCase(): {
         let icao = interaction.data.options[0].value.toUpperCase();
-        let ver = await getSceneryVersion(icao);
-        if (!ver) {
-          return new JsonResponse({
-            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-            data: {
-              flags: InteractionResponseFlags.IS_COMPONENTS_V2,
-              components: [
-                {
-                  type: MessageComponentTypes.TEXT_DISPLAY,
-                  content: `No scenery is found with the ICAO ${icao}`,
-                },
-              ]
-            }
-          })
-        }
-
         const deferredResponse = new JsonResponse({
           type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
         });
 
-        ctx.waitUntil(async () => {
-          const result = await checkReleased(ver);
-          const endpoint = `webhooks/${process.env.DISCORD_APPLICATION_ID}/${request.body.token}`;
-
-          if (!result) {
-            await DiscordRequest(endpoint, {
+        ctx.waitUntil((async () => {
+          try {
+            const endpoint = `webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
+            let ver = await getSceneryVersion(icao);
+            if (!ver) {
+              await DiscordRequest(env, endpoint, {
+                method: 'POST',
+                body: {
+                  content: `❌ No scenery is found with the ICAO ${icao}`,
+                },
+              });
+              return;
+            }
+            
+            const result = await checkReleased(ver);
+            if (!result) {
+              await DiscordRequest(env, endpoint, {
+                method: 'POST',
+                body: {
+                  content: `❌ No scenery found or error checking for ${icao}`,
+                },
+              });
+              return;
+            }
+  
+            // if (!result.included) {
+            //   await DiscordRequest(env, endpoint, {
+            //     method: 'POST',
+            //     body: {
+            //       components: [
+            //         {
+            //           type: MessageComponentTypes.TEXT_DISPLAY,
+            //           content: `Scenery ${icao} is found with the newest version: ${ver}`,
+            //         },
+            //         {
+            //           type: MessageComponentTypes.ACTION_ROW,
+            //           components: [
+            //             {
+            //               type: MessageComponentTypes.BUTTON,
+            //               custom_id: `download_button_${ver}`,
+            //               label: 'Download',
+            //               style: ButtonStyleTypes.PRIMARY,
+            //             },
+            //           ],
+            //         },
+            //       ],
+            //     },
+            //   });
+            // }
+  
+            await DiscordRequest(env, endpoint, {
               method: 'POST',
               body: {
+                content: `Scenery ${icao} is found with the newest version: ${ver}` +
+                        (result.included ? ` and is included in X-Plane ${result.latest}.` : ''),
                 components: [
                   {
-                    type: MessageComponentTypes.TEXT_DISPLAY,
-                    content: `No scenery found or error checking for ${icao}`,
+                    type: MessageComponentTypes.ACTION_ROW,
+                    components: [
+                      {
+                        type: MessageComponentTypes.BUTTON,
+                        custom_id: `download_button_${ver}`,
+                        label: 'Download',
+                        style: ButtonStyleTypes.PRIMARY,
+                      },
+                    ],
                   },
                 ],
               },
             });
-            return;
+          } catch (error) {
+            console.error(`error ${error}`)
           }
-
-          // if (!result.included) {
-          //   await DiscordRequest(endpoint, {
-          //     method: 'POST',
-          //     body: {
-          //       components: [
-          //         {
-          //           type: MessageComponentTypes.TEXT_DISPLAY,
-          //           content: `Scenery ${icao} is found with the newest version: ${ver}`,
-          //         },
-          //         {
-          //           type: MessageComponentTypes.ACTION_ROW,
-          //           components: [
-          //             {
-          //               type: MessageComponentTypes.BUTTON,
-          //               custom_id: `download_button_${ver}`,
-          //               label: 'Download',
-          //               style: ButtonStyleTypes.PRIMARY,
-          //             },
-          //           ],
-          //         },
-          //       ],
-          //     },
-          //   });
-          // }
-
-          const components = [
-            {
-              type: MessageComponentTypes.TEXT_DISPLAY,
-              content: `Scenery ${icao} is found with the newest version: ${ver}`,
-            },
-          ];
-
-          if (result.included) {
-            components.push({
-              type: MessageComponentTypes.TEXT_DISPLAY,
-              content: `The scenery is included in X-Plane version ${result.latest}`,
-            });
-          }
-
-          components.push({
-            type: MessageComponentTypes.ACTION_ROW,
-            components: [
-              {
-                type: MessageComponentTypes.BUTTON,
-                custom_id: `download_button_${ver}`,
-                label: 'Download',
-                style: ButtonStyleTypes.PRIMARY,
-              },
-            ],
-          });
-
-          await DiscordRequest(endpoint, {
-            method: 'POST',
-            body: {
-              flags: InteractionResponseFlags.IS_COMPONENTS_V2,
-              components,
-            },
-          });
-        })
+        })());
         return deferredResponse;
       }
       default:
@@ -181,7 +156,7 @@ router.post('/', async (request, env, ctx) => {
     }
   }
 
-  if (type === InteractionType.MESSAGE_COMPONENT) {
+  if (interaction.type === InteractionType.MESSAGE_COMPONENT) {
     const componentId = interaction.data.custom_id;
 
     if (componentId.startsWith('download_button_')) {
@@ -189,9 +164,10 @@ router.post('/', async (request, env, ctx) => {
       // Delete message with token in request body
       const endpoint = `webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}/messages/${interaction.message.id}`;
       try {
-        await sendSceneryFile(req, sceneryId);
-        // Delete previous message
-        //await DiscordRequest(endpoint, { method: 'DELETE' });
+        ctx.waitUntil(sendSceneryFile(sceneryId, env, interaction));
+        return new JsonResponse({
+          type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+        });
       } catch (err) {
         console.error('Error sending message:', err);
       }
@@ -224,7 +200,12 @@ async function verifyDiscordRequest(request, env) {
 }
 
 export default {
-  async fetch(request, env, ctx) {
-    return router.fetch(request, env, ctx);
+   async fetch(request, env, ctx) {
+    try {
+      return await router.fetch(request, env, ctx);
+    } catch (err) {
+      console.error("Worker error:", err);
+      return new Response("Internal error", { status: 500 });
+    }
   }
 };
