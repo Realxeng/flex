@@ -78,18 +78,18 @@ router.post('/', async (request, env, ctx) => {
         ctx.waitUntil((async () => {
           try {
             const endpoint = `webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
-            let ver = await getSceneryVersion(icao);
-            if (!ver) {
+            let data = await getSceneryVersion(icao);
+            if (!data.sid) {
               await DiscordRequest(env, endpoint, {
                 method: 'POST',
                 body: {
-                  content: `❌ No scenery is found with the ICAO ${icao}`,
+                  content: `❌ No scenery is found with the ID ${icao}`,
                 },
               });
               return;
             }
-            
-            const result = await checkReleased(ver);
+
+            const result = await checkReleased(data.sid);
             if (!result) {
               await DiscordRequest(env, endpoint, {
                 method: 'POST',
@@ -99,46 +99,27 @@ router.post('/', async (request, env, ctx) => {
               });
               return;
             }
-  
-            // if (!result.included) {
-            //   await DiscordRequest(env, endpoint, {
-            //     method: 'POST',
-            //     body: {
-            //       components: [
-            //         {
-            //           type: MessageComponentTypes.TEXT_DISPLAY,
-            //           content: `Scenery ${icao} is found with the newest version: ${ver}`,
-            //         },
-            //         {
-            //           type: MessageComponentTypes.ACTION_ROW,
-            //           components: [
-            //             {
-            //               type: MessageComponentTypes.BUTTON,
-            //               custom_id: `download_button_${ver}`,
-            //               label: 'Download',
-            //               style: ButtonStyleTypes.PRIMARY,
-            //             },
-            //           ],
-            //         },
-            //       ],
-            //     },
-            //   });
-            // }
-  
+
             await DiscordRequest(env, endpoint, {
               method: 'POST',
               body: {
-                content: `Scenery ${icao} is found with the newest version: ${ver}` +
-                        (result.included ? ` and is included in X-Plane ${result.latest}.` : ''),
+                content: `Scenery ${icao} found with the newest version: ${data.sid} (${new Date(data.date).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: '2-digit',})})` +
+                  (result.included ? ` and it's included in X-Plane ${result.latest}` : ` but NOT included in X-Plane ${result.latest}`),
                 components: [
                   {
                     type: MessageComponentTypes.ACTION_ROW,
                     components: [
                       {
                         type: MessageComponentTypes.BUTTON,
-                        custom_id: `download_button_${ver}`,
+                        custom_id: `download_button_${data.sid}`,
                         label: 'Download',
                         style: ButtonStyleTypes.PRIMARY,
+                      },
+                      {
+                        type: MessageComponentTypes.BUTTON,
+                        label: 'Gateway Scenery Map',
+                        style: ButtonStyleTypes.LINK,
+                        url: `https://x-plane.cleverest.eu/#/overlay:scenery%3D${icao}%2F${data.sid}`,
                       },
                     ],
                   },
@@ -147,6 +128,13 @@ router.post('/', async (request, env, ctx) => {
             });
           } catch (error) {
             console.error(`error ${error}`)
+            await DiscordRequest(env, endpoint, {
+                method: 'POST',
+                body: {
+                  content: `Failed getting scenery of ${icao}`,
+                },
+              });
+              return;
           }
         })());
         return deferredResponse;
@@ -200,7 +188,7 @@ async function verifyDiscordRequest(request, env) {
 }
 
 export default {
-   async fetch(request, env, ctx) {
+  async fetch(request, env, ctx) {
     try {
       return await router.fetch(request, env, ctx);
     } catch (err) {

@@ -9,7 +9,7 @@ export const TEST_COMMAND = {
 // Command containing options
 export const CHECK_SCENERY_COMMAND = {
   name: 'check',
-  description: 'Check if the scenery is available',
+  description: 'Check whether the scenery is available',
   type: 1,
   integration_types: [0, 1],
   contexts: [0, 1, 2],
@@ -17,7 +17,7 @@ export const CHECK_SCENERY_COMMAND = {
     {
       type: 3,
       name: 'icao',
-      description: 'Enter the ICAO code for the airport',
+      description: 'Enter the identifier (ICAO) for the airport',
       required: true,
     },
   ],
@@ -33,7 +33,7 @@ export const GET_SCENERY_COMMAND = {
     {
       type: 3,
       name: 'icao',
-      description: 'Enter the ICAO code for the airport',
+      description: 'Enter the identifier (ICAO) for the airport',
       required: true,
     }
   ]
