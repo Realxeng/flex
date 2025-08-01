@@ -4,13 +4,15 @@
 
 import { AutoRouter } from 'itty-router';
 import {
+  InteractionResponseFlags,
   InteractionResponseType,
   InteractionType,
+  MessageComponentTypes,
   verifyKey,
 } from 'discord-interactions';
-import { AWW_COMMAND, INVITE_COMMAND } from './commands.js';
+import { TEST_COMMAND, CHECK_SCENERY_COMMAND } from './commands.js';
+import { getSceneryVersion, checkReleased, sendSceneryFile } from './logic.js'
 import { getCuteUrl } from './reddit.js';
-import { InteractionResponseFlags } from 'discord-interactions';
 
 class JsonResponse extends Response {
   constructor(body, init) {
@@ -38,8 +40,8 @@ router.get('/', (request, env) => {
  * include a JSON payload described here:
  * https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object
  */
-router.post('/', async (request, env) => {
-  const { isValid, interaction } = await server.verifyDiscordRequest(
+router.post('/', async (request, env, ctx) => {
+  const { isValid, interaction } = await verifyDiscordRequest(
     request,
     env,
   );
@@ -58,31 +60,150 @@ router.post('/', async (request, env) => {
   if (interaction.type === InteractionType.APPLICATION_COMMAND) {
     // Most user commands will come as `APPLICATION_COMMAND`.
     switch (interaction.data.name.toLowerCase()) {
-      case AWW_COMMAND.name.toLowerCase(): {
+      case TEST_COMMAND.name.toLowerCase(): {
         const cuteUrl = await getCuteUrl();
         return new JsonResponse({
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
-            content: cuteUrl,
+            flags: InteractionResponseFlags.IS_COMPONENTS_V2,
+            components: [
+              {
+                type: MessageComponentTypes.TEXT_DISPLAY,
+                content: 'Hello World'
+              }
+            ]
           },
         });
       }
-      case INVITE_COMMAND.name.toLowerCase(): {
-        const applicationId = env.DISCORD_APPLICATION_ID;
-        const INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${applicationId}&scope=applications.commands`;
-        return new JsonResponse({
-          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-          data: {
-            content: INVITE_URL,
-            flags: InteractionResponseFlags.EPHEMERAL,
-          },
+      case CHECK_SCENERY_COMMAND.name.toLowerCase(): {
+        let icao = interaction.data.options[0].value.toUpperCase();
+        let ver = await getSceneryVersion(icao);
+        if (!ver) {
+          return new JsonResponse({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: {
+              flags: InteractionResponseFlags.IS_COMPONENTS_V2,
+              components: [
+                {
+                  type: MessageComponentTypes.TEXT_DISPLAY,
+                  content: `No scenery is found with the ICAO ${icao}`,
+                },
+              ]
+            }
+          })
+        }
+
+        const deferredResponse = new JsonResponse({
+          type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
         });
+
+        ctx.waitUntil(async () => {
+          const result = await checkReleased(ver);
+          const endpoint = `webhooks/${process.env.DISCORD_APPLICATION_ID}/${request.body.token}`;
+
+          if (!result) {
+            await DiscordRequest(endpoint, {
+              method: 'POST',
+              body: {
+                components: [
+                  {
+                    type: MessageComponentTypes.TEXT_DISPLAY,
+                    content: `No scenery found or error checking for ${icao}`,
+                  },
+                ],
+              },
+            });
+            return;
+          }
+
+          // if (!result.included) {
+          //   await DiscordRequest(endpoint, {
+          //     method: 'POST',
+          //     body: {
+          //       components: [
+          //         {
+          //           type: MessageComponentTypes.TEXT_DISPLAY,
+          //           content: `Scenery ${icao} is found with the newest version: ${ver}`,
+          //         },
+          //         {
+          //           type: MessageComponentTypes.ACTION_ROW,
+          //           components: [
+          //             {
+          //               type: MessageComponentTypes.BUTTON,
+          //               custom_id: `download_button_${ver}`,
+          //               label: 'Download',
+          //               style: ButtonStyleTypes.PRIMARY,
+          //             },
+          //           ],
+          //         },
+          //       ],
+          //     },
+          //   });
+          // }
+
+          const components = [
+            {
+              type: MessageComponentTypes.TEXT_DISPLAY,
+              content: `Scenery ${icao} is found with the newest version: ${ver}`,
+            },
+          ];
+
+          if (result.included) {
+            components.push({
+              type: MessageComponentTypes.TEXT_DISPLAY,
+              content: `The scenery is included in X-Plane version ${result.latest}`,
+            });
+          }
+
+          components.push({
+            type: MessageComponentTypes.ACTION_ROW,
+            components: [
+              {
+                type: MessageComponentTypes.BUTTON,
+                custom_id: `download_button_${ver}`,
+                label: 'Download',
+                style: ButtonStyleTypes.PRIMARY,
+              },
+            ],
+          });
+
+          await DiscordRequest(endpoint, {
+            method: 'POST',
+            body: {
+              flags: InteractionResponseFlags.IS_COMPONENTS_V2,
+              components,
+            },
+          });
+        })
+        return deferredResponse;
       }
       default:
         return new JsonResponse({ error: 'Unknown Type' }, { status: 400 });
     }
   }
 
+  if (type === InteractionType.MESSAGE_COMPONENT) {
+    const componentId = interaction.data.custom_id;
+
+    if (componentId.startsWith('download_button_')) {
+      const sceneryId = componentId.replace('download_button_', '');
+      // Delete message with token in request body
+      const endpoint = `webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}/messages/${interaction.message.id}`;
+      try {
+        await sendSceneryFile(req, sceneryId);
+        // Delete previous message
+        //await DiscordRequest(endpoint, { method: 'DELETE' });
+      } catch (err) {
+        console.error('Error sending message:', err);
+      }
+    }
+    return new JsonResponse({
+      type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+      data: {
+        content: '❓ Unknown component interaction.',
+      },
+    });
+  }
   console.error('Unknown Type');
   return new JsonResponse({ error: 'Unknown Type' }, { status: 400 });
 });
@@ -103,9 +224,8 @@ async function verifyDiscordRequest(request, env) {
   return { interaction: JSON.parse(body), isValid: true };
 }
 
-const server = {
-  verifyDiscordRequest,
-  fetch: router.fetch,
+export default {
+  fetch(request, env, ctx) {
+    return router.handle(request, env, ctx);
+  }
 };
-
-export default server;
