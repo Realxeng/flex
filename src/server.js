@@ -12,7 +12,6 @@ import {
 } from 'discord-interactions';
 import { TEST_COMMAND, CHECK_SCENERY_COMMAND } from './commands.js';
 import { getSceneryVersion, checkReleased, sendSceneryFile } from './logic.js'
-import { getCuteUrl } from './reddit.js';
 
 class JsonResponse extends Response {
   constructor(body, init) {

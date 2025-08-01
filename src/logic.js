@@ -1,5 +1,3 @@
-import fetch from 'node-fetch';
-
 export async function getSceneryVersion(icao) {
     try{
         const res = await fetch('http://gateway.x-plane.com/apiv1/airport/KBOS')
