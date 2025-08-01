@@ -2,6 +2,13 @@ name = "flex"
 main = "./src/server.js"
 compatibility_date="2023-05-18"
 
+account_id = "2c3a662f1c50e7d9b72682cbfae3363c"
+workers_dev = true
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
 # [secrets]
 # DISCORD_TOKEN
 # DISCORD_PUBLIC_KEY

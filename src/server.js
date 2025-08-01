@@ -224,7 +224,7 @@ async function verifyDiscordRequest(request, env) {
 }
 
 export default {
-  fetch(request, env, ctx) {
-    return router.handle(request, env, ctx);
+  async fetch(request, env, ctx) {
+    return router.fetch(request, env, ctx);
   }
 };
