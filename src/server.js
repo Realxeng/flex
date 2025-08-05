@@ -170,7 +170,7 @@ router.post('/', async (request, env, ctx) => {
       try{
         ctx.waitUntil(sendOnlineATC(env, interaction, type));
         return new JsonResponse({
-          type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+          type: InteractionResponseType.DEFERRED_UPDATE_MESSAGE,
         });
       }
       catch (err){
