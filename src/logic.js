@@ -118,7 +118,7 @@ export async function getOnlineATC(){
     return covSort
 }
 
-export async function sendOnlineATC(env, interaction) {
+export async function sendOnlineATC(env, interaction, type = '') {
     const res = await fetch('https://api.vatsim.net/v2/atc/online', {method: 'GET'})
     const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
     const covSort = await getOnlineATC()
@@ -141,7 +141,8 @@ export async function sendOnlineATC(env, interaction) {
 
     const highestCoverage = Object.keys(covSort)[0]
     let field = []
-    for(let atc of covSort[highestCoverage]){
+    type = type ? type : highestCoverage
+    for(let atc of covSort[type]){
         field.push({name: `📡 ${atc.callsign}`, value: `👤 ${atc.id}\n🕒 ${atc.time}`})
     }
 
@@ -157,7 +158,7 @@ export async function sendOnlineATC(env, interaction) {
         components: [
             {
                 type: 1,
-                components: generateATCTypeButtons(covSort, highestCoverage),
+                components: generateATCTypeButtons(covSort, type),
             }
         ],
     }
@@ -176,12 +177,7 @@ export async function sendOnlineATC(env, interaction) {
     }
 }
 
-export function listATCByType(type){
-    const covSort = getOnlineATC()
-    return
-}
-
-export function generateATCTypeButtons(covSort, pressed){
+function generateATCTypeButtons(covSort, pressed){
     let msg = []
     for (let coverage of Object.keys(covSort)){
         if (coverage === pressed){
