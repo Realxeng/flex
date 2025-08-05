@@ -166,7 +166,16 @@ router.post('/', async (request, env, ctx) => {
       }
     }
     else if (componentId.startsWith('atc_type_')){
-      
+      const type = componentId.replace('atc_type_', '');
+      try{
+        ctx.waitUntil(sendOnlineATC(env, interaction, type));
+        return new JsonResponse({
+          type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+        });
+      }
+      catch (err){
+        console.error('Error sending message:', err);
+      }
     }
     return new JsonResponse({
       type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
