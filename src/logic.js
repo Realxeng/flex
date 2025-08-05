@@ -119,8 +119,9 @@ export async function getOnlineATC(){
 }
 
 export async function sendOnlineATC(env, interaction, type = '') {
+    const first = type ? false : true
     const res = await fetch('https://api.vatsim.net/v2/atc/online', {method: 'GET'})
-    const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
+    const webhookEndpoint = first ? `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}` : `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}/messages/@original`;
     const covSort = await getOnlineATC()
     if(!covSort){
         const response = await fetch(webhookEndpoint, {
@@ -150,7 +151,7 @@ export async function sendOnlineATC(env, interaction, type = '') {
         content: '**📡Current online ATC in VATSIM network:**',
         embeds: [
             {
-                title: coverageOrder[highestCoverage],
+                title: coverageOrder[type],
                 color: 0x1D9BF0,
                 fields: field,
             }
@@ -163,13 +164,24 @@ export async function sendOnlineATC(env, interaction, type = '') {
         ],
     }
     try{
-        const response = await fetch(webhookEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(msg),
-        })
+        if(first){
+            const response = await fetch(webhookEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(msg),
+            })
+        }
+        else{
+            const response = await fetch(webhookEndpoint, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(msg),
+            })
+        }
         console.log(response.ok)
     }
     catch (err){
