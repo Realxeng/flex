@@ -1,7 +1,7 @@
 import { MessageComponentTypes } from "discord-interactions";
 import { DiscordRequest } from "./utils";
 
-const coverageOrder = {CTR: 'Sector / Area Control', APP: 'Approach Control / Terminal Area Control', DEP: 'Departure Control / Terminal Area Control', TWR: 'Tower Control', GND: 'Ground Control', DEL: 'Clearance Delivery'}
+const coverageOrder = {CTR: 'Sector / Area Control', FSS: 'Flight Service Station', APP: 'Approach Control / Terminal Area Control', DEP: 'Departure Control / Terminal Area Control', TWR: 'Tower Control', GND: 'Ground Control', DEL: 'Clearance Delivery'}
 
 function base64ToBlob(base64, contentType = 'application/octet-stream') {
     const binaryString = atob(base64);
@@ -120,11 +120,11 @@ export async function getOnlineATC(){
 
 export async function sendOnlineATC(env, interaction, type = '') {
     const first = type ? false : true
-    const res = await fetch('https://api.vatsim.net/v2/atc/online', {method: 'GET'})
+    let response
     const webhookEndpoint = first ? `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}` : `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}/messages/@original`;
     const covSort = await getOnlineATC()
     if(!covSort){
-        const response = await fetch(webhookEndpoint, {
+        response = await fetch(webhookEndpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -165,7 +165,7 @@ export async function sendOnlineATC(env, interaction, type = '') {
     }
     try{
         if(first){
-            const response = await fetch(webhookEndpoint, {
+            response = await fetch(webhookEndpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -174,7 +174,7 @@ export async function sendOnlineATC(env, interaction, type = '') {
             })
         }
         else{
-            const response = await fetch(webhookEndpoint, {
+            response = await fetch(webhookEndpoint, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -182,7 +182,12 @@ export async function sendOnlineATC(env, interaction, type = '') {
                 body: JSON.stringify(msg),
             })
         }
-        console.log(response.ok)
+        console.log('Response OK:', response.ok);
+        console.log('Status:', response.status);
+        console.log('Status Text:', response.statusText);
+        const text = await response.text();
+        console.log('Body:', text);
+        console.log(msg)
     }
     catch (err){
         console.log(err)
