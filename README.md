@@ -1,6 +1,12 @@
 # FLEX Discord Bot
-A discord bot for flight sim running in cloudflare worker 
+A Discord Bot used to get information for flight simulation purposes running in Cloudflare Worker
 
 # API used
 - X-Plane Scenery Gateway (https://gateway.x-plane.com/apiv1/)
 - VATSIM (https://api.vatsim.net/v2/)
+
+# Implemented Commands
+- /check {airport ID in X-Plane}
+    Check the gateway scenery for the specified airport and whether or not its included in the latest xplane release
+- /listatc
+    Check the currently online VATSIM ATC
