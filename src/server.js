@@ -4,15 +4,14 @@
 
 import { AutoRouter } from 'itty-router';
 import {
-  InteractionResponseFlags,
   InteractionResponseType,
   InteractionType,
   MessageComponentTypes,
   ButtonStyleTypes,
   verifyKey,
 } from 'discord-interactions';
-import { TEST_COMMAND, CHECK_SCENERY_COMMAND } from './commands.js';
-import { getSceneryVersion, checkReleased, sendSceneryFile } from './logic.js'
+import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC } from './commands.js';
+import { getSceneryVersion, checkReleased, sendSceneryFile, sendOnlineATC } from './logic.js'
 import { DiscordRequest } from './utils.js';
 
 class JsonResponse extends Response {
@@ -139,6 +138,12 @@ router.post('/', async (request, env, ctx) => {
         })());
         return deferredResponse;
       }
+      case CHECK_ONLINE_ATC.name.toLowerCase():
+        const deferredResponse = new JsonResponse({
+          type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+        });
+        ctx.waitUntil(sendOnlineATC(env, interaction))
+        return deferredResponse
       default:
         return new JsonResponse({ error: 'Unknown Type' }, { status: 400 });
     }
@@ -159,6 +164,9 @@ router.post('/', async (request, env, ctx) => {
       } catch (err) {
         console.error('Error sending message:', err);
       }
+    }
+    else if (componentId.startsWith('atc_type_')){
+      
     }
     return new JsonResponse({
       type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,

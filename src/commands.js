@@ -23,9 +23,17 @@ export const CHECK_SCENERY_COMMAND = {
   ],
 };
 
-export const GET_SCENERY_COMMAND = {
-  name: 'get',
-  description: 'Download the latest approved gateway version of the airport',
+export const CHECK_ONLINE_ATC = {
+  name: 'listatc',
+  description: 'Check the online atc in VATSIM',
+  type: 1,
+  integration_types: [0, 1],
+  contexts: [0, 1, 2],
+}
+
+export const GET_ROUTE = {
+  name: 'route',
+  description: 'Get the latest route from the user Navigraph account',
   type: 1,
   integration_types: [0, 1],
   contexts: [0, 1, 2],

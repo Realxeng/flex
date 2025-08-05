@@ -1,3 +1,18 @@
+import { MessageComponentTypes } from "discord-interactions";
+import { DiscordRequest } from "./utils";
+
+const coverageOrder = {CTR: 'Sector / Area Control', APP: 'Approach Control / Terminal Area Control', DEP: 'Departure Control / Terminal Area Control', TWR: 'Tower Control', GND: 'Ground Control', DEL: 'Clearance Delivery'}
+
+function base64ToBlob(base64, contentType = 'application/octet-stream') {
+    const binaryString = atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return new Blob([bytes], { type: contentType });
+}
+
 export async function getSceneryVersion(icao) {
     try {
         const res = await fetch(`http://gateway.x-plane.com/apiv1/airport/${icao}`)
@@ -20,8 +35,7 @@ export async function getSceneryVersion(icao) {
 export async function checkReleased(SID) {
     try {
         let res = await fetch('http://gateway.x-plane.com/apiv1/releases')
-        const json = await res.json()
-        const releases = json
+        const releases = await res.json()
         releases.sort((a, b) => new Date(b.Date) - new Date(a.Date))
         const latest = releases[0].Version
         res = await fetch(`http://gateway.x-plane.com/apiv1/release/${latest}`)
@@ -72,12 +86,124 @@ export async function sendSceneryFile(SID, env, interaction) {
     }
 }
 
-function base64ToBlob(base64, contentType = 'application/octet-stream') {
-    const binaryString = atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+export async function getOnlineATC(){
+    //Get the online ATC list
+    let json = {}
+    try {
+        const res = await fetch('https://api.vatsim.net/v2/atc/online', {method: 'GET'})
+        json = await res.json()
+    } catch (error) {
+        console.log(error)
+        return null
     }
-    return new Blob([bytes], { type: contentType });
+
+    //Calculate the time online of each controller and group the controllers based on their coverage
+    const atcList = json.map(({id, callsign, start}) => ({id, callsign, start}))
+    let covGroup = {}
+    for (let atc of atcList){
+        let timeOnlinems = new Date() - new Date(atc.start)
+        const timeHour = Math.floor(timeOnlinems / 3600000)
+        const timeMin = Math.round((timeOnlinems % 3600000) / 60000)
+        atc.time = `${timeHour}h ${timeMin}m`
+        atc.coverage = atc.callsign.slice(-3)
+        if(!covGroup[atc.coverage]){ covGroup[atc.coverage] = [] }
+        covGroup[atc.coverage].push(atc)
+    }
+    //Sort the grouping to follow the highest to lowest coverage
+    let covSort = {}
+    for (let cov of Object.keys(coverageOrder)){
+        if (!covGroup[cov]) continue;
+        covSort[cov] = covGroup[cov]
+    }
+    return covSort
+}
+
+export async function sendOnlineATC(env, interaction) {
+    const res = await fetch('https://api.vatsim.net/v2/atc/online', {method: 'GET'})
+    const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
+    const covSort = await getOnlineATC()
+    if(!covSort){
+        const response = await fetch(webhookEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: {
+                embeds: [
+                    {
+                        title: `There are currently no ATC online on VATSIM`
+                    }
+                ]
+            },
+        })
+        return
+    }
+
+    const highestCoverage = Object.keys(covSort)[0]
+    let field = []
+    for(let atc of covSort[highestCoverage]){
+        field.push({name: `📡 ${atc.callsign}`, value: `👤 ${atc.id}\n🕒 ${atc.time}`})
+    }
+
+    const msg = {
+        content: '**📡Current online ATC in VATSIM network:**',
+        embeds: [
+            {
+                title: coverageOrder[highestCoverage],
+                color: 0x1D9BF0,
+                fields: field,
+            }
+        ],
+        components: [
+            {
+                type: 1,
+                components: generateATCTypeButtons(covSort, highestCoverage),
+            }
+        ],
+    }
+    try{
+        const response = await fetch(webhookEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(msg),
+        })
+        console.log(response.ok)
+    }
+    catch (err){
+        console.log(err)
+    }
+}
+
+export function listATCByType(type){
+    const covSort = getOnlineATC()
+    return
+}
+
+export function generateATCTypeButtons(covSort, pressed){
+    let msg = []
+    for (let coverage of Object.keys(covSort)){
+        if (coverage === pressed){
+            msg.push(
+                {
+                    type: 2,
+                    label: coverage,
+                    style: 1,
+                    custom_id: `atc_type_${coverage}`
+                }
+            )
+        }
+        else{
+            msg.push(
+                {
+                    type: 2,
+                    label: coverage,
+                    style: 2,
+                    custom_id: `atc_type_${coverage}`
+                }
+            )
+        }
+    }
+    return msg
 }
