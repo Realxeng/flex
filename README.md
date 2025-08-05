@@ -6,6 +6,9 @@ A Discord Bot used to get information for flight simulation purposes running in 
 - VATSIM (https://api.vatsim.net/v2/)
 
 ## Implemented Commands
+* `/test`  
+    Ping the bot
+
 * `/check <airport ID in X-Plane>`  
     Check the gateway scenery for the specified airport and whether or not its included in the latest xplane release
 
