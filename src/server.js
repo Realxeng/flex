@@ -11,7 +11,7 @@ import {
   verifyKey,
 } from 'discord-interactions';
 import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM } from './commands.js';
-import { getSceneryVersion, checkReleased, sendSceneryFile, sendOnlineATC } from './logic.js'
+import { getSceneryVersion, checkReleased, sendSceneryFile, sendOnlineATC, addReminder } from './logic.js'
 import { DiscordRequest } from './utils.js';
 
 class JsonResponse extends Response {
@@ -58,7 +58,6 @@ router.post('/', async (request, env, ctx) => {
   }
 
   if (interaction.type === InteractionType.APPLICATION_COMMAND) {
-    const { name } = interaction.data;
     switch (interaction.data.name.toLowerCase()) {
       case TEST_COMMAND.name.toLowerCase(): {
         return new JsonResponse({
@@ -148,11 +147,8 @@ router.post('/', async (request, env, ctx) => {
       case MONITOR_VATSIM.name.toLowerCase():{
         const deferredResponse = new JsonResponse({
           type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
-          data: {
-            content: 'Checking VATSIM Flightplan...'
-          }
         });
-        ctx.waitUntil(addReminder(interaction.data.options[0].value, interaction))
+        ctx.waitUntil(addReminder(interaction.data.options[0].value, interaction, env))
         return deferredResponse
       }
       default:
