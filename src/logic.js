@@ -1,4 +1,4 @@
-import { MessageComponentTypes } from "discord-interactions";
+import { MessageComponentTypes, InteractionResponseType } from "discord-interactions";
 import { DiscordRequest } from "./utils";
 
 const coverageOrder = {CTR: 'Sector / Area Control', FSS: 'Flight Service Station', APP: 'Approach Terminal Area Control', DEP: 'Departure Terminal Area Control', TWR: 'Tower Control', GND: 'Ground Control', DEL: 'Clearance Delivery'}
@@ -230,9 +230,23 @@ function generateATCTypeButtons(covSort, pressed){
     return msg
 }
 
-export async function addReminder(CID, interaction){
-    const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}/messages/@original`;
-    const userId = interaction.member.user.id
+export async function addReminder(CID, interaction, env){
+    let webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
+    let response = await fetch(webhookEndpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            content: 'Checking VATSIM Flightplan...✈️'
+        })
+    })
+    console.log(response.ok)
+    // console.log(await response.text());
+    // console.log(response.status);
+    webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}/messages/@original`;
+    const user = interaction.member?.user || interaction.user;
+    const userId = user.id;
     const flightPlan = await getVatsimFlightPlan(CID)
     if (!flightPlan) {
         response = await fetch(webhookEndpoint, {
@@ -240,11 +254,43 @@ export async function addReminder(CID, interaction){
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: {
+            body: JSON.stringify({
                 content: `No flight plan found for CID ${CID} or it's incomplete.`
-            },
+            }),
         })
-
+        console.log(response.ok)
+        // console.log(await response.text());
+        // console.log(response.status);
+        return
+    }
+    else if(!flightPlan.EET){
+        response = await fetch(webhookEndpoint, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                content: `The flight plan for ${CID} doesn't include EET remarks.`
+            }),
+        })
+        console.log(response.ok)
+        // console.log(await response.text());
+        // console.log(response.status);
+        return
+    }
+    else if(new Date(flightPlan.finishTime) < new Date()){
+        response = await fetch(webhookEndpoint, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                content: `The latest flight plan for ${CID} has concluded.`
+            }),
+        })
+        console.log(response.ok)
+        // console.log(await response.text());
+        // console.log(response.status);
         return
     }
     flightPlan.EET.push(flightPlan.dep)
@@ -310,22 +356,23 @@ async function getVatsimFlightPlan(CID){
         rmks: item.rmks,
         deptime: item.deptime,
         hrsfuel: item.hrsfuel,
+        filed: item.filed,
     }
 
     if (!result.dep || !result.arr || !result.deptime || !result.hrsfuel) {
         return null;
     }
 
-    const now = new Date();
-    const year = now.getUTCFullYear();
-    const month = now.getUTCMonth();
-    const day = now.getUTCDate();
-    const hours = Number(deptime.slice(0, 2));
-    const minutes = Number(deptime.slice(2));
+    const filedDate = new Date(item.filed);
+    const year = filedDate.getUTCFullYear();
+    const month = filedDate.getUTCMonth();
+    const day = filedDate.getUTCDate();
+    const hours = Number(result.deptime.slice(0, 2));
+    const minutes = Number(result.deptime.slice(2));
 
     const deptimeDate = new Date(Date.UTC(year, month, day, hours, minutes));
 
-    result.finishTime = new Date(deptimeDate.getTime() + (hrsfuel * 3600000)).toISOString();
+    result.finishTime = new Date(deptimeDate.getTime() + (result.hrsfuel * 3600000)).toISOString();
 
     const rmkRaw = result.rmks
     const match = rmkRaw.match(/EET\/(.*?)(?=\s[A-Z]{3,}\/|$)/)
@@ -336,7 +383,7 @@ async function getVatsimFlightPlan(CID){
         result.EET = EET
     }
     else{
-        return null
+        return result
     }
     delete result.rmks
     delete result.deptime
