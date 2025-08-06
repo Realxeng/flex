@@ -5,6 +5,10 @@ compatibility_date="2025-08-05"
 account_id = "2c3a662f1c50e7d9b72682cbfae3363c"
 workers_dev = true
 
+[[kv_namespaces]]
+binding = "reminderList"
+id = "7c5d87b1221b45ddb4bb93f84961d67b"
+
 [observability]
 enabled = true
 head_sampling_rate = 1
