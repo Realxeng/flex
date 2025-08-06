@@ -248,17 +248,30 @@ export async function addReminder(CID, interaction){
     }
     flightPlan.EET.push(flightPlan.dep)
     flightPlan.EET.push(flightPlan.arr)
-    await reminderList.put(userId, JSON.stringify({
-        userId: userId,
-        check: flightPlan.EET,
-    }))
+    try{
+        await reminderList.put(userId, JSON.stringify({
+            userId: userId,
+            check: flightPlan.EET,
+        }))
+    }catch (err) {
+        console.error(`Error saving reminder for user: ${userId}`, err);
+    }
+
     const reminderFinish = await reminderList.get('finish')
     if (!reminderFinish){
-        await reminderList.put('finish', {userId: userId, finishTime: flightPlan.finishTime.toISOString()})
+        try{
+            await reminderList.put('finish', {userId: userId, finishTime: flightPlan.finishTime.toISOString()})
+        }catch (err) {
+            console.error(`Error saving finish reminder for user: ${userId}`, err);
+        }
     }
     else{
-        reminderFinish.push({userId: userId, finishTime: flightPlan.finishTime.toISOString()})
-        await reminderList.put('finish', reminderFinish)
+        try {
+            reminderFinish.push({userId: userId, finishTime: flightPlan.finishTime.toISOString()})
+            await reminderList.put('finish', reminderFinish)
+        } catch (err) {
+            console.error(`Error updating finish reminder for user: ${userId}`, err);
+        }
     }
 }
 
