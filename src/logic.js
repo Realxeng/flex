@@ -86,6 +86,21 @@ export async function sendSceneryFile(SID, env, interaction) {
     }
 }
 
+export async function getOnlineATCRaw(){
+    let json = {}
+    try {
+        const res = await fetch('https://api.vatsim.net/v2/atc/online', {method: 'GET'})
+        json = await res.json()
+    } catch (error) {
+        console.log(error)
+        return null
+    }
+
+    //Calculate the time online of each controller and group the controllers based on their coverage
+    const atcList = json.map(({id, callsign, start}) => ({id, callsign, start}))
+    return atcList
+}
+
 export async function getOnlineATC(){
     //Get the online ATC list
     let json = {}

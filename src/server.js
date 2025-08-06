@@ -11,7 +11,7 @@ import {
   verifyKey,
 } from 'discord-interactions';
 import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM } from './commands.js';
-import { getSceneryVersion, checkReleased, sendSceneryFile, sendOnlineATC, addReminder } from './logic.js'
+import { getSceneryVersion, checkReleased, sendSceneryFile, sendOnlineATC, addReminder, getOnlineATC } from './logic.js'
 import { DiscordRequest } from './utils.js';
 
 class JsonResponse extends Response {
@@ -217,6 +217,42 @@ export default {
     } catch (err) {
       console.error("Worker error:", err);
       return new Response("Internal error", { status: 500 });
+    }
+  },
+  async scheduled(controller, env, ctx){
+    let finishListRaw = env.reminderList.get('finish')
+    let finishList = []
+
+    if (finishListRaw) {
+      try {
+          finishList = JSON.parse(finishListRaw)
+          finishList = Array.isArray(finishList) ? finishList : [finishList]
+      } catch (err) {
+          console.error('Could not parse reminderFinish:', err)
+          finishList = []
+      }
+    }
+    else{
+      return
+    }
+
+    for (let i = 0; i < finishList.length; i++){
+      if (new Date(finishList[i].finishTime) < new Date()){
+        delete finishList[i]
+        i--
+      }
+    }
+
+    if (finishList.length < 1){
+      return
+    }
+
+    const cids = finishList.map(entry => entry.cid)
+    const covSort = getOnlineATC()
+    const atcList = Object.values(covSort).flat()
+
+    for (let cid of cids){
+
     }
   }
 };

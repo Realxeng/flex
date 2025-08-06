@@ -9,6 +9,9 @@ workers_dev = true
 binding = "reminderList"
 id = "7c5d87b1221b45ddb4bb93f84961d67b"
 
+[triggers]
+crons = [ "*/5 * * * *"]
+
 [observability]
 enabled = true
 head_sampling_rate = 1
