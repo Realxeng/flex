@@ -1,7 +1,7 @@
 import { MessageComponentTypes } from "discord-interactions";
 import { DiscordRequest } from "./utils";
 
-const coverageOrder = {CTR: 'Sector / Area Control', FSS: 'Flight Service Station', APP: 'Approach Control / Terminal Area Control', DEP: 'Departure Control / Terminal Area Control', TWR: 'Tower Control', GND: 'Ground Control', DEL: 'Clearance Delivery'}
+const coverageOrder = {CTR: 'Sector / Area Control', FSS: 'Flight Service Station', APP: 'Approach Terminal Area Control', DEP: 'Departure Terminal Area Control', TWR: 'Tower Control', GND: 'Ground Control', DEL: 'Clearance Delivery'}
 
 function base64ToBlob(base64, contentType = 'application/octet-stream') {
     const binaryString = atob(base64);
@@ -178,11 +178,11 @@ export async function sendOnlineATC(env, interaction, type = '') {
             })
         }
         console.log('Response OK:', response.ok);
-        console.log('Status:', response.status);
-        console.log('Status Text:', response.statusText);
-        const text = await response.text();
-        console.log('Body:', text);
-        console.log(msg)
+        // console.log('Status:', response.status);
+        // console.log('Status Text:', response.statusText);
+        // const text = await response.text();
+        // console.log('Body:', text);
+        // console.log(msg)
     }
     catch (err){
         console.log(err)
