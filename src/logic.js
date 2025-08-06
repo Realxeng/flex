@@ -156,7 +156,7 @@ export async function sendOnlineATC(env, interaction, type = '') {
                 fields: field,
             }
         ],
-        components: generateATCTypeButtons(),
+        components: generateATCTypeButtons(covSort, type),
     }
     try{
         if(first){
@@ -190,13 +190,13 @@ export async function sendOnlineATC(env, interaction, type = '') {
 }
 
 function generateATCTypeButtons(covSort, pressed){
-    let count = 0, i = 0
+    let count = 1, i = 0
     let msg = [{
         type: 1,
         components: [],
     }]
     for (let coverage of Object.keys(covSort)){
-        if (count % 5 === 4){
+        if (count % 5 === 0){
             msg.push(
                 {
                     type: 1,
