@@ -229,3 +229,42 @@ function generateATCTypeButtons(covSort, pressed){
     }
     return msg
 }
+
+export async function getVatsimFlightPlan(CID){
+    let res = {}
+    try{
+        res = await fetch(`https://api.vatsim.net/v2/members/${CID}/flightplans`, {method: 'GET'})
+    }
+    catch(err){
+        console.err(err)
+        return null
+    }
+    const response = await res.json()
+    
+    if (!response || response.length === 0) {
+        return null;
+    }
+
+    const item = response[0]
+
+    let result = {
+        vatsim_id: item.vatsim_id,
+        dep: item.dep,
+        arr: item.arr,
+        rmks: item.rmks,
+        deptime: item.deptime,
+        hrsfuel: item.hrsenroute,
+    }
+
+    const rmkRaw = result.rmks
+    const match = rmkRaw.match(/EET\/(.*?)(?=\s[A-Z]{3,}\/|$)/)
+    let EET = {}
+    if(match){
+        EET = match[1].trim().split(/\s+/)
+        result.EET = EET
+    }
+    else{
+        return null
+    }
+    return result
+}
