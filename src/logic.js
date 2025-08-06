@@ -230,7 +230,26 @@ function generateATCTypeButtons(covSort, pressed){
     return msg
 }
 
-export async function getVatsimFlightPlan(CID){
+export async function sendReminder(CID, interaction){
+    const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}/messages/@original`;
+    const flightPlan = await getVatsimFlightPlan(CID)
+    if (!flightPlan) {
+        response = await fetch(webhookEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: {
+                content: `No flight plan found for CID ${CID} or it's incomplete.`
+            },
+        })
+        return
+    }
+
+
+}
+
+async function getVatsimFlightPlan(CID){
     let res = {}
     try{
         res = await fetch(`https://api.vatsim.net/v2/members/${CID}/flightplans`, {method: 'GET'})
@@ -253,11 +272,27 @@ export async function getVatsimFlightPlan(CID){
         arr: item.arr,
         rmks: item.rmks,
         deptime: item.deptime,
-        hrsfuel: item.hrsenroute,
+        hrsfuel: item.hrsfuel,
     }
+
+    if (!result.dep || !result.arr || !result.deptime || !result.hrsfuel) {
+        return null;
+    }
+
+    const now = new Date();
+    const year = now.getUTCFullYear();
+    const month = now.getUTCMonth();
+    const day = now.getUTCDate();
+    const hours = Number(deptime.slice(0, 2));
+    const minutes = Number(deptime.slice(2));
+
+    const deptimeDate = new Date(Date.UTC(year, month, day, hours, minutes));
+
+    result.finishTime = new Date(deptimeDate.getTime() + (hrsfuel * 3600000)).toISOString();
 
     const rmkRaw = result.rmks
     const match = rmkRaw.match(/EET\/(.*?)(?=\s[A-Z]{3,}\/|$)/)
+
     let EET = {}
     if(match){
         EET = match[1].trim().split(/\s+/)
@@ -266,5 +301,6 @@ export async function getVatsimFlightPlan(CID){
     else{
         return null
     }
+    console.log(result.EET)
     return result
 }
