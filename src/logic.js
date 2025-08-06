@@ -296,29 +296,28 @@ export async function addReminder(CID, interaction, env){
     flightPlan.EET.push(flightPlan.dep)
     flightPlan.EET.push(flightPlan.arr)
     try{
-        await env.reminderList.put(userId, JSON.stringify({
-            cid: flightPlan.cid,
+        await env.reminderList.put(cid, JSON.stringify({
+            userId: userId,
             check: flightPlan.EET,
         }))
     }catch (err) {
         console.error(`Error saving reminder for user: ${userId}`, err);
     }
 
-    const reminderFinish = await env.reminderList.get('finish')
-    if (!reminderFinish){
-        try{
-            await env.reminderList.put('finish', {userId: userId, finishTime: flightPlan.finishTime})
-        }catch (err) {
-            console.error(`Error saving finish reminder for user: ${userId}`, err);
-        }
+    let reminderFinishRaw = await env.reminderList.get('finish')
+    let reminderFinish = reminderFinishRaw ? JSON.parse(reminderFinishRaw) : []
+    
+    const userEntry = reminderFinish.find(entry => entry.cid === flightPlan.cid)
+    if(userEntry){
+        userEntry.finishTime = flightPlan.finishTime
     }
     else{
-        try {
-            reminderFinish.push({userId: userId, finishTime: flightPlan.finishTime})
-            await env.reminderList.put('finish', reminderFinish)
-        } catch (err) {
-            console.error(`Error updating finish reminder for user: ${userId}`, err);
-        }
+        reminderFinish.push({cid: flightPlan.cid, finishTime: flightPlan.finishTime})
+    }
+    try{
+        await env.reminderList.put('finish', JSON.stringify(reminderFinish))
+    }catch (err) {
+        console.error(`Error saving finish reminder for user: ${userId}`, err);
     }
     const date = new Date(flightPlan.finishTime)
     const unixTimestamp = Math.floor(date.getTime() / 1000)
