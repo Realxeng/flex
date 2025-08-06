@@ -296,7 +296,7 @@ export async function addReminder(CID, interaction, env){
     flightPlan.EET.push(flightPlan.dep)
     flightPlan.EET.push(flightPlan.arr)
     try{
-        await env.reminderList.put(cid, JSON.stringify({
+        await env.reminderList.put(CID, JSON.stringify({
             userId: userId,
             check: flightPlan.EET,
         }))
@@ -305,7 +305,17 @@ export async function addReminder(CID, interaction, env){
     }
 
     let reminderFinishRaw = await env.reminderList.get('finish')
-    let reminderFinish = reminderFinishRaw ? JSON.parse(reminderFinishRaw) : []
+    let reminderFinish = []
+
+    if (reminderFinishRaw) {
+        try {
+            reminderFinish = JSON.parse(reminderFinishRaw)
+            reminderFinish = Array.isArray(reminderFinish) ? reminderFinish : [reminderFinish]
+        } catch (err) {
+            console.error('Could not parse reminderFinish:', err)
+            reminderFinish = []
+        }
+    }
     
     const userEntry = reminderFinish.find(entry => entry.cid === flightPlan.cid)
     if(userEntry){
