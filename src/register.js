@@ -1,4 +1,4 @@
-import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, GET_ROUTE } from './commands.js';
+import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, GET_ROUTE, MONITOR_VATSIM } from './commands.js';
 import dotenv from 'dotenv';
 import process from 'node:process';
 
@@ -34,7 +34,7 @@ const response = await fetch(url, {
     Authorization: `Bot ${token}`,
   },
   method: 'PUT',
-  body: JSON.stringify([TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC]),
+  body: JSON.stringify([TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM]),
 });
 
 if (response.ok) {

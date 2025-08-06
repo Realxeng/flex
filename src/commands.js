@@ -46,3 +46,19 @@ export const GET_ROUTE = {
     }
   ]
 }
+
+export const MONITOR_VATSIM = {
+  name: 'remind',
+  description: 'Send a reminder when a controller within the planned route is online',
+  type: 1,
+  integration_types: [0, 1],
+  contexts: [0, 1, 2],
+  options:[
+    {
+      type: 3,
+      name: 'CID',
+      description: 'Enter your VATSIM CID',
+      required: true,
+    }
+  ]
+}
