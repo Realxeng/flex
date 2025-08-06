@@ -147,7 +147,7 @@ router.post('/', async (request, env, ctx) => {
       }
       case MONITOR_VATSIM.name.toLowerCase():{
         const deferredResponse = new JsonResponse({
-          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
             content: 'Checking VATSIM Flightplan...'
           }

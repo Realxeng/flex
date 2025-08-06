@@ -236,7 +236,7 @@ export async function addReminder(CID, interaction){
     const flightPlan = await getVatsimFlightPlan(CID)
     if (!flightPlan) {
         response = await fetch(webhookEndpoint, {
-            method: 'POST',
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -244,6 +244,7 @@ export async function addReminder(CID, interaction){
                 content: `No flight plan found for CID ${CID} or it's incomplete.`
             },
         })
+
         return
     }
     flightPlan.EET.push(flightPlan.dep)
@@ -274,7 +275,7 @@ export async function addReminder(CID, interaction){
         }
     }
     response = await fetch(webhookEndpoint, {
-        method: 'POST',
+        method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
         },
