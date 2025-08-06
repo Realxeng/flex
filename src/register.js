@@ -1,4 +1,4 @@
-import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, GET_ROUTE, MONITOR_VATSIM } from './commands.js';
+import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM, GET_ROUTE } from './commands.js';
 import dotenv from 'dotenv';
 import process from 'node:process';
 

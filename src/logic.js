@@ -273,7 +273,7 @@ export async function addReminder(CID, interaction){
             console.error(`Error updating finish reminder for user: ${userId}`, err);
         }
     }
-    const response = await fetch(webhookEndpoint, {
+    response = await fetch(webhookEndpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

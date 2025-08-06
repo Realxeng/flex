@@ -56,7 +56,7 @@ export const MONITOR_VATSIM = {
   options:[
     {
       type: 3,
-      name: 'CID',
+      name: 'cid',
       description: 'Enter your VATSIM CID',
       required: true,
     }
