@@ -152,7 +152,7 @@ router.post('/', async (request, env, ctx) => {
             content: 'Checking VATSIM Flightplan...'
           }
         });
-        ctx.waitUntil(sendReminder(interaction.data.options[0].value, interaction))
+        ctx.waitUntil(addReminder(interaction.data.options[0].value, interaction))
         return deferredResponse
       }
       default:

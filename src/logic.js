@@ -230,8 +230,9 @@ function generateATCTypeButtons(covSort, pressed){
     return msg
 }
 
-export async function sendReminder(CID, interaction){
+export async function addReminder(CID, interaction){
     const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}/messages/@original`;
+    const userId = interaction.member.user.id
     const flightPlan = await getVatsimFlightPlan(CID)
     if (!flightPlan) {
         response = await fetch(webhookEndpoint, {
@@ -245,8 +246,20 @@ export async function sendReminder(CID, interaction){
         })
         return
     }
-
-
+    flightPlan.EET.push(flightPlan.dep)
+    flightPlan.EET.push(flightPlan.arr)
+    await reminderList.put(userId, JSON.stringify({
+        userId: userId,
+        check: flightPlan.EET,
+    }))
+    const reminderFinish = await reminderList.get('finish')
+    if (!reminderFinish){
+        await reminderList.put('finish', {userId: userId, finishTime: flightPlan.finishTime.toISOString()})
+    }
+    else{
+        reminderFinish.push({userId: userId, finishTime: flightPlan.finishTime.toISOString()})
+        await reminderList.put('finish', reminderFinish)
+    }
 }
 
 async function getVatsimFlightPlan(CID){
@@ -267,7 +280,7 @@ async function getVatsimFlightPlan(CID){
     const item = response[0]
 
     let result = {
-        vatsim_id: item.vatsim_id,
+        cid: item.vatsim_id,
         dep: item.dep,
         arr: item.arr,
         rmks: item.rmks,
@@ -301,6 +314,9 @@ async function getVatsimFlightPlan(CID){
     else{
         return null
     }
+    delete result.rmks
+    delete result.deptime
+    delete result.hrsfuel
     console.log(result.EET)
     return result
 }
