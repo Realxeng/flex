@@ -10,7 +10,7 @@ import {
   ButtonStyleTypes,
   verifyKey,
 } from 'discord-interactions';
-import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC } from './commands.js';
+import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM } from './commands.js';
 import { getSceneryVersion, checkReleased, sendSceneryFile, sendOnlineATC } from './logic.js'
 import { DiscordRequest } from './utils.js';
 
@@ -138,12 +138,23 @@ router.post('/', async (request, env, ctx) => {
         })());
         return deferredResponse;
       }
-      case CHECK_ONLINE_ATC.name.toLowerCase():
+      case CHECK_ONLINE_ATC.name.toLowerCase():{
         const deferredResponse = new JsonResponse({
           type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
         });
         ctx.waitUntil(sendOnlineATC(env, interaction))
         return deferredResponse
+      }
+      case MONITOR_VATSIM.name.toLowerCase():{
+        const deferredResponse = new JsonResponse({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            content: 'Checking VATSIM Flightplan...'
+          }
+        });
+        ctx.waitUntil(sendReminder(interaction.data.options[0].value, interaction))
+        return deferredResponse
+      }
       default:
         return new JsonResponse({ error: 'Unknown Type' }, { status: 400 });
     }
