@@ -156,12 +156,7 @@ export async function sendOnlineATC(env, interaction, type = '') {
                 fields: field,
             }
         ],
-        components: [
-            {
-                type: 1,
-                components: generateATCTypeButtons(covSort, type),
-            }
-        ],
+        components: generateATCTypeButtons(),
     }
     try{
         if(first){
@@ -195,10 +190,23 @@ export async function sendOnlineATC(env, interaction, type = '') {
 }
 
 function generateATCTypeButtons(covSort, pressed){
-    let msg = []
+    let count = 0, i = 0
+    let msg = [{
+        type: 1,
+        components: [],
+    }]
     for (let coverage of Object.keys(covSort)){
-        if (coverage === pressed){
+        if (count % 5 === 4){
             msg.push(
+                {
+                    type: 1,
+                    components: [],
+                }
+            )
+            i++
+        }
+        if (coverage === pressed){
+            msg[i].components.push(
                 {
                     type: 2,
                     label: coverage,
@@ -208,7 +216,7 @@ function generateATCTypeButtons(covSort, pressed){
             )
         }
         else{
-            msg.push(
+            msg[i].components.push(
                 {
                     type: 2,
                     label: coverage,
@@ -217,6 +225,7 @@ function generateATCTypeButtons(covSort, pressed){
                 }
             )
         }
+        count++
     }
     return msg
 }
