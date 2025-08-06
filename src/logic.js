@@ -238,7 +238,7 @@ export async function addReminder(CID, interaction, env){
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            content: 'Checking VATSIM Flightplan...✈️'
+            content: 'Checking VATSIM flight plan...✈️'
         })
     })
     console.log(response.ok)
@@ -270,7 +270,7 @@ export async function addReminder(CID, interaction, env){
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                content: `The flight plan for ${CID} doesn't include EET remarks.`
+                content: `<@${userId}> Your flight plan doesn't include EET remarks.`
             }),
         })
         console.log(response.ok)
@@ -285,7 +285,7 @@ export async function addReminder(CID, interaction, env){
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                content: `The latest flight plan for ${CID} has concluded.`
+                content: `<@${userId}> Your latest flight plan has concluded.`
             }),
         })
         console.log(response.ok)
@@ -296,37 +296,39 @@ export async function addReminder(CID, interaction, env){
     flightPlan.EET.push(flightPlan.dep)
     flightPlan.EET.push(flightPlan.arr)
     try{
-        await reminderList.put(userId, JSON.stringify({
-            userId: userId,
+        await env.reminderList.put(userId, JSON.stringify({
+            cid: flightPlan.cid,
             check: flightPlan.EET,
         }))
     }catch (err) {
         console.error(`Error saving reminder for user: ${userId}`, err);
     }
 
-    const reminderFinish = await reminderList.get('finish')
+    const reminderFinish = await env.reminderList.get('finish')
     if (!reminderFinish){
         try{
-            await reminderList.put('finish', {userId: userId, finishTime: flightPlan.finishTime.toISOString()})
+            await env.reminderList.put('finish', {userId: userId, finishTime: flightPlan.finishTime})
         }catch (err) {
             console.error(`Error saving finish reminder for user: ${userId}`, err);
         }
     }
     else{
         try {
-            reminderFinish.push({userId: userId, finishTime: flightPlan.finishTime.toISOString()})
-            await reminderList.put('finish', reminderFinish)
+            reminderFinish.push({userId: userId, finishTime: flightPlan.finishTime})
+            await env.reminderList.put('finish', reminderFinish)
         } catch (err) {
             console.error(`Error updating finish reminder for user: ${userId}`, err);
         }
     }
+    const date = new Date(flightPlan.finishTime)
+    const unixTimestamp = Math.floor(date.getTime() / 1000)
     response = await fetch(webhookEndpoint, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            content: `Reminder set for user ${userId} until ${flightPlan.finishTime.toISOString()}`,
+            content: `Reminder set for <@${userId}> until <t:${unixTimestamp}:F>`,
         }),
     })
     console.log(response.ok)
@@ -380,7 +382,7 @@ async function getVatsimFlightPlan(CID){
     let EET = {}
     if(match){
         EET = match[1].trim().split(/\s+/)
-        result.EET = EET
+        result.EET = EET.map(fir => fir.slice(0,4))
     }
     else{
         return result
