@@ -273,6 +273,16 @@ export async function addReminder(CID, interaction){
             console.error(`Error updating finish reminder for user: ${userId}`, err);
         }
     }
+    const response = await fetch(webhookEndpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            content: `Reminder set for user ${userId} until ${flightPlan.finishTime.toISOString()}`,
+        }),
+    })
+    console.log(response.ok)
 }
 
 async function getVatsimFlightPlan(CID){
