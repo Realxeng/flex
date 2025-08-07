@@ -440,10 +440,10 @@ export async function sendReminderAdd(onlineList, userId, channelId, env){
     }
     
     const msg = {
-        content: `<@${userId}>`,
+        content: `<@${userId}><:8fo1d9:1234443545339887627>`,
         embeds: [
             {
-                title: `LMAOOO<:8fo1d9:1234443545339887627>`,
+                title: `LMAOOO🫵`,
                 color: 0x1D9BF0,
                 fields: field,
             }
