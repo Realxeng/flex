@@ -298,9 +298,11 @@ export default {
       // console.log(atcList.map(onlineFir => onlineFir.callsign.slice(0,4)))
       if(onlineList.length < 1){
         //Continue to next CID when there is no match
+        console.log('Nothing')
         continue
       }
       else if(watch.sent && watch.sent.length > 0){
+        //console.log(`watch.sent.length > 0`)
         let unsentList = onlineList.filter(fir => !watch.sent.includes(fir.callsign))
         let offlineList = []
         watch.sent = watch.sent.filter(sentCallsign => {
@@ -313,11 +315,12 @@ export default {
             watch.sent.push(unsent.callsign)
           }
           //console.log(onlineList)
-          console.log(`sending reminder`)
+          console.log(`sending reminder add`)
           sendReminderAdd(onlineList, watch.userId, watch.channelId, env)
           await env.reminderList.put(cid, watch)
         }
         else if(offlineList){
+          console.log(`sending reminder min`)
           sendReminderMin(offlineList, watch.userId, watch.channelId, env)
         }
         else{
@@ -331,7 +334,7 @@ export default {
         for (let atc of onlineList){
           watch.sent.push(atc.callsign)
         }
-        console.log(`sending reminder`)
+        console.log(`sending reminder first`)
         await sendReminderAdd(onlineList, watch.userId, watch.channelId, env)
         //console.log(watch)
         console.log(`updating watch`)

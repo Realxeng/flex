@@ -443,7 +443,7 @@ export async function sendReminderAdd(onlineList, userId, channelId, env){
         content: `<@${userId}>`,
         embeds: [
             {
-                title: `LMAOOO🫵`,
+                title: `LMAOOO<:8fo1d9:1234443545339887627>`,
                 color: 0x1D9BF0,
                 fields: field,
             }
@@ -482,11 +482,11 @@ export async function sendReminderMin(offlineList, userId, channelId, env){
         }
     }
     else{
-        field = atc.callsign
+        field = offlineList[0]
     }
     
     const msg = {
-        content: `Hoki ngntd ${field} offline`,
+        content: `Hoki ngntd ${field} offline 🖕`,
     }
 
     const content = {
