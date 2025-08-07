@@ -314,6 +314,7 @@ export async function addReminder(CID, interaction, env){
         await env.reminderList.put(CID, JSON.stringify({
             userId: userId,
             check: flightPlan.EET,
+            channelId: `${interaction.channel_id}`
         }))
     }catch (err) {
         console.error(`Error saving reminder for user: ${userId}`, err);
@@ -416,4 +417,32 @@ async function getVatsimFlightPlan(CID){
     delete result.hrsfuel
     console.log(result.EET)
     return result
+}
+
+export async function sendReminder(onlineList, userId, channelId){
+    const webhookEndpoint = `https://discord.com/api/v10/channels/${channelId}/messages`
+
+    for(let atc of onlineList){
+        field.push({name: `📡 ${atc.callsign}`, value: `👤 ${atc.id}\n🕒 ${atc.time}`})
+    }
+    
+    const msg = {
+        content: '**📡Current online VATSIM ATC in your route:**',
+        embeds: [
+            {
+                title: `Good luck <@${userId}>`,
+                color: 0x1D9BF0,
+                fields: field,
+            }
+        ],
+    }
+
+    response = await fetch(webhookEndpoint, {
+        method: 'POST',
+        headers: {
+            "Authorization": `Bot ${process.env.DISCORD_TOKEN}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(msg),
+    })
 }
