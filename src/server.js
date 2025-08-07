@@ -255,10 +255,10 @@ export default {
     checkFinishTime: for (let i = 0; i < finishList.length; i++){
       //remove the entry if the finish time has passed
       if (new Date(finishList[i].finishTime) < new Date()){
+        console.log(`deleting reminder for ${finishList[i].cid}`)
         await env.reminderList.delete(finishList[i].cid)
         finishList.splice(i, 1)
         updated = true
-        console.log(`deleted reminder for ${finishList[i].cid}`)
         i--
         if(finishList.length === 0){
           break checkFinishTime
