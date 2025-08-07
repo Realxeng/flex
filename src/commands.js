@@ -1,6 +1,6 @@
 export const TEST_COMMAND = {
   name: 'test',
-  description: 'Basic command',
+  description: 'test command',
   type: 1,
   integration_types: [0, 1],
   contexts: [0, 1, 2],
@@ -25,7 +25,7 @@ export const CHECK_SCENERY_COMMAND = {
 
 export const CHECK_ONLINE_ATC = {
   name: 'listatc',
-  description: 'Check the online atc in VATSIM',
+  description: 'Check all online atc in VATSIM',
   type: 1,
   integration_types: [0, 1],
   contexts: [0, 1, 2],

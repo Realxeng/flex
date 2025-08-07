@@ -284,7 +284,7 @@ export default {
     //Get all the watch list
     for (let cid of cids){
       const watchRaw = await env.reminderList.get(`${cid}`)
-      console.log(watchRaw)
+      //console.log(watchRaw)
       watch = watchRaw ? JSON.parse(watchRaw) : null;
       if (!watch || !Array.isArray(watch.check)) {
         console.log("Invalid or missing watch list for CID:", cid);
@@ -292,7 +292,7 @@ export default {
       }
       //Copy all the online atc that match the watch list to a new array
       let onlineList = atcList.filter(onlineFir => watch.check.includes(onlineFir.callsign.slice(0,4)))
-      console.log(onlineList.length)
+      //console.log(onlineList.length)
       // console.log(watch.check)
       // console.log(atcList)
       // console.log(atcList.map(onlineFir => onlineFir.callsign.slice(0,4)))
@@ -312,7 +312,7 @@ export default {
           for(let unsent of unsentList){
             watch.sent.push(unsent.callsign)
           }
-          console.log(onlineList)
+          //console.log(onlineList)
           console.log(`sending reminder`)
           sendReminderAdd(onlineList, watch.userId, watch.channelId, env)
           await env.reminderList.put(cid, watch)
@@ -333,7 +333,7 @@ export default {
         }
         console.log(`sending reminder`)
         await sendReminderAdd(onlineList, watch.userId, watch.channelId, env)
-        console.log(watch)
+        //console.log(watch)
         console.log(`updating watch`)
         await env.reminderList.put(cid, JSON.stringify(watch))
       }
