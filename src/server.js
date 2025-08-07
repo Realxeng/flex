@@ -319,9 +319,10 @@ export default {
           sendReminderAdd(onlineList, watch.userId, watch.channelId, env)
           await env.reminderList.put(cid, watch)
         }
-        else if(offlineList){
+        else if(offlineList.length > 0){
           console.log(`sending reminder min`)
           sendReminderMin(offlineList, watch.userId, watch.channelId, env)
+          await env.reminderList.put(cid, watch)
         }
         else{
           console.log(`nothing changed`)
