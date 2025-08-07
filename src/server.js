@@ -221,7 +221,7 @@ export default {
   },
   async scheduled(controller, env, ctx){
     //Get all online atc
-    const covSort = getOnlineATC()
+    const covSort = await getOnlineATC()
     //Finish job if there are no online ATC
     if(!covSort){
       return
@@ -249,13 +249,27 @@ export default {
       return
     }
 
+    let updated = false
+
     //Check the finish time
-    for (let i = 0; i < finishList.length; i++){
+    checkFinishTime: for (let i = 0; i < finishList.length; i++){
       //remove the entry if the finish time has passed
       if (new Date(finishList[i].finishTime) < new Date()){
-        delete finishList[i]
+        await env.reminderList.delete(finishList[i].cid)
+        finishList.splice(i, 1)
+        updated = true
+        console.log(`deleted reminder for ${finishList[i].cid}`)
         i--
+        if(finishList.length === 0){
+          break checkFinishTime
+        }
       }
+    }
+
+    //Update the entry in cloudflare KV if there is an update
+    if (updated) {
+      await env.reminderList.put('finish', JSON.stringify(finishList));
+      console.log(`Updated finish time`)
     }
 
     //Finish job if the last entry has been removed
@@ -269,9 +283,19 @@ export default {
 
     //Get all the watch list
     for (let cid of cids){
-      watch = await env.reminderList.get(`${cid}`)
+      const watchRaw = await env.reminderList.get(`${cid}`)
+      console.log(watchRaw)
+      watch = watchRaw ? JSON.parse(watchRaw) : null;
+      if (!watch || !Array.isArray(watch.check)) {
+        console.log("Invalid or missing watch list for CID:", cid);
+        continue;
+      }
       //Copy all the online atc that match the watch list to a new array
       let onlineList = atcList.filter(onlineFir => watch.check.includes(onlineFir.callsign.slice(0,4)))
+      console.log(onlineList.length)
+      // console.log(watch.check)
+      // console.log(atcList)
+      // console.log(atcList.map(onlineFir => onlineFir.callsign.slice(0,4)))
       if(onlineList.length < 1){
         //Continue to next CID when there is no match
         continue
@@ -282,20 +306,27 @@ export default {
           for(let unsent of unsentList){
             watch.sent.push(unsent.callsign)
           }
-          sendReminder(onlineList, watch.userId)
-          env.reminderList.put(cid, watch)
+          console.log(onlineList)
+          console.log(`sending reminder`)
+          sendReminder(onlineList, watch.userId, watch.channelId, env)
+          await env.reminderList.put(cid, watch)
         }
         else{
+          console.log(`nothing changed`)
           return
         }
       }
       else{
         //Send discord reminder if an online atc in the watch list is found and is not yet sent
+        watch.sent = []
         for (let atc of onlineList){
           watch.sent.push(atc.callsign)
         }
-        sendReminder(onlineList, watch.userId, watch.channelId)
-        env.reminderList.put(cid, watch)
+        console.log(`sending reminder`)
+        await sendReminder(onlineList, watch.userId, watch.channelId, env)
+        console.log(watch)
+        console.log(`updating watch`)
+        await env.reminderList.put(cid, JSON.stringify(watch))
       }
     }
   }
