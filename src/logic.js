@@ -430,7 +430,7 @@ async function getVatsimFlightPlan(CID){
     return result
 }
 
-export async function sendReminder(onlineList, userId, channelId, env){
+export async function sendReminderAdd(onlineList, userId, channelId, env){
     const webhookEndpoint = `https://discord.com/api/v10/channels/${channelId}/messages`
 
     let field = []
@@ -448,6 +448,45 @@ export async function sendReminder(onlineList, userId, channelId, env){
                 fields: field,
             }
         ],
+    }
+
+    const content = {
+        method: 'POST',
+        headers: {
+            "Authorization": `Bot ${env.DISCORD_TOKEN}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(msg),
+    }
+
+    const response = await fetch(webhookEndpoint, content)
+    // console.log(response.ok)
+    // console.log(await response.text());
+    // console.log(response.status);
+}
+
+export async function sendReminderMin(offlineList, userId, channelId, env){
+    const webhookEndpoint = `https://discord.com/api/v10/channels/${channelId}/messages`
+
+    let field = ''
+
+    if(offlineList.length>1){
+        for (let i = 0; i < offlineList.length; i++){
+            switch(i){
+                case offlineList.length-1:
+                    field += `ama ${offlineList[i]}`
+                    break
+                default:
+                    field += `${offlineList[i]} `
+            }
+        }
+    }
+    else{
+        field = atc.callsign
+    }
+    
+    const msg = {
+        content: `Hoki ngntd ${field} offline`,
     }
 
     const content = {

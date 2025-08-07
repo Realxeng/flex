@@ -11,7 +11,7 @@ import {
   verifyKey,
 } from 'discord-interactions';
 import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM } from './commands.js';
-import { getSceneryVersion, checkReleased, sendSceneryFile, sendOnlineATC, addReminder, getOnlineATC, sendReminder } from './logic.js'
+import { getSceneryVersion, checkReleased, sendSceneryFile, sendOnlineATC, addReminder, getOnlineATC, sendReminderAdd, sendReminderMin } from './logic.js'
 import { DiscordRequest } from './utils.js';
 
 class JsonResponse extends Response {
@@ -302,14 +302,23 @@ export default {
       }
       else if(watch.sent && watch.sent.length > 0){
         let unsentList = onlineList.filter(fir => !watch.sent.includes(fir.callsign))
+        let offlineList = []
+        watch.sent = watch.sent.filter(sentCallsign => {
+          const isOnline = onlineList.some(online => online.callsign.startsWith(sentCallsign))
+          if (!isOnline) offlineList.push(sentCallsign)
+          return isOnline
+        })
         if (unsentList.length > 0){
           for(let unsent of unsentList){
             watch.sent.push(unsent.callsign)
           }
           console.log(onlineList)
           console.log(`sending reminder`)
-          sendReminder(onlineList, watch.userId, watch.channelId, env)
+          sendReminderAdd(onlineList, watch.userId, watch.channelId, env)
           await env.reminderList.put(cid, watch)
+        }
+        else if(offlineList){
+          sendReminderMin(offlineList, watch.userId, watch.channelId, env)
         }
         else{
           console.log(`nothing changed`)
@@ -317,13 +326,13 @@ export default {
         }
       }
       else{
-        //Send discord reminder if an online atc in the watch list is found and is not yet sent
+        //Send discord reminder if an online atc and add the sent value for the first time
         watch.sent = []
         for (let atc of onlineList){
           watch.sent.push(atc.callsign)
         }
         console.log(`sending reminder`)
-        await sendReminder(onlineList, watch.userId, watch.channelId, env)
+        await sendReminderAdd(onlineList, watch.userId, watch.channelId, env)
         console.log(watch)
         console.log(`updating watch`)
         await env.reminderList.put(cid, JSON.stringify(watch))
