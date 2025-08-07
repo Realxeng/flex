@@ -308,6 +308,17 @@ export async function addReminder(CID, interaction, env){
         // console.log(response.status);
         return
     }
+
+    response = await fetch(webhookEndpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            content: '⏳Adding your reminder...'
+        })
+    })
+
     flightPlan.EET.push(flightPlan.dep)
     flightPlan.EET.push(flightPlan.arr)
     try{
@@ -419,30 +430,37 @@ async function getVatsimFlightPlan(CID){
     return result
 }
 
-export async function sendReminder(onlineList, userId, channelId){
+export async function sendReminder(onlineList, userId, channelId, env){
     const webhookEndpoint = `https://discord.com/api/v10/channels/${channelId}/messages`
+
+    let field = []
 
     for(let atc of onlineList){
         field.push({name: `📡 ${atc.callsign}`, value: `👤 ${atc.id}\n🕒 ${atc.time}`})
     }
     
     const msg = {
-        content: '**📡Current online VATSIM ATC in your route:**',
+        content: `<@${userId}>`,
         embeds: [
             {
-                title: `Good luck <@${userId}>`,
+                title: `LMAOOO🫵`,
                 color: 0x1D9BF0,
                 fields: field,
             }
         ],
     }
 
-    response = await fetch(webhookEndpoint, {
+    const content = {
         method: 'POST',
         headers: {
-            "Authorization": `Bot ${process.env.DISCORD_TOKEN}`,
+            "Authorization": `Bot ${env.DISCORD_TOKEN}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(msg),
-    })
+    }
+
+    const response = await fetch(webhookEndpoint, content)
+    // console.log(response.ok)
+    // console.log(await response.text());
+    // console.log(response.status);
 }
