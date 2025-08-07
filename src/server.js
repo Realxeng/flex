@@ -11,7 +11,7 @@ import {
   verifyKey,
 } from 'discord-interactions';
 import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM } from './commands.js';
-import { getSceneryVersion, checkReleased, sendSceneryFile, sendOnlineATC, addReminder, getOnlineATC } from './logic.js'
+import { getSceneryVersion, checkReleased, sendSceneryFile, sendOnlineATC, addReminder, getOnlineATC, sendReminder } from './logic.js'
 import { DiscordRequest } from './utils.js';
 
 class JsonResponse extends Response {
@@ -220,10 +220,22 @@ export default {
     }
   },
   async scheduled(controller, env, ctx){
-    let finishListRaw = env.reminderList.get('finish')
+    //Get all online atc
+    const covSort = getOnlineATC()
+    //Finish job if there are no online ATC
+    if(!covSort){
+      return
+    }
+    //Ungroup the ATC
+    const atcList = Object.values(covSort).flat()
+
+    //Get the cids and finish time
+    let finishListRaw = await env.reminderList.get('finish')
     let finishList = []
 
+    //check if the list has value
     if (finishListRaw) {
+      //assign the values to array
       try {
           finishList = JSON.parse(finishListRaw)
           finishList = Array.isArray(finishList) ? finishList : [finishList]
@@ -233,26 +245,58 @@ export default {
       }
     }
     else{
+      //finish job if the list is empty
       return
     }
 
+    //Check the finish time
     for (let i = 0; i < finishList.length; i++){
+      //remove the entry if the finish time has passed
       if (new Date(finishList[i].finishTime) < new Date()){
         delete finishList[i]
         i--
       }
     }
 
+    //Finish job if the last entry has been removed
     if (finishList.length < 1){
       return
     }
 
+    //Get the list of cid to watch
     const cids = finishList.map(entry => entry.cid)
-    const covSort = getOnlineATC()
-    const atcList = Object.values(covSort).flat()
+    let watch = {}
 
+    //Get all the watch list
     for (let cid of cids){
-
+      watch = await env.reminderList.get(`${cid}`)
+      //Copy all the online atc that match the watch list to a new array
+      let onlineList = atcList.filter(onlineFir => watch.check.includes(onlineFir.callsign.slice(0,4)))
+      if(onlineList.length < 1){
+        //Continue to next CID when there is no match
+        continue
+      }
+      else if(watch.sent && watch.sent.length > 0){
+        let unsentList = onlineList.filter(fir => !watch.sent.includes(fir.callsign))
+        if (unsentList.length > 0){
+          for(let unsent of unsentList){
+            watch.sent.push(unsent.callsign)
+          }
+          sendReminder(onlineList, watch.userId)
+          env.reminderList.put(cid, watch)
+        }
+        else{
+          return
+        }
+      }
+      else{
+        //Send discord reminder if an online atc in the watch list is found and is not yet sent
+        for (let atc of onlineList){
+          watch.sent.push(atc.callsign)
+        }
+        sendReminder(onlineList, watch.userId, watch.channelId)
+        env.reminderList.put(cid, watch)
+      }
     }
   }
 };
