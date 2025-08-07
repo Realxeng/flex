@@ -296,12 +296,12 @@ export default {
       // console.log(watch.check)
       // console.log(atcList)
       // console.log(atcList.map(onlineFir => onlineFir.callsign.slice(0,4)))
-      if(onlineList.length < 1){
-        //Continue to next CID when there is no match
-        console.log('Nothing')
-        continue
-      }
-      else if(watch.sent && watch.sent.length > 0){
+      // if(onlineList.length < 1){
+      //   //Continue to next CID when there is no match
+      //   console.log('Nothing')
+      //   continue
+      // }
+      if(watch.sent && watch.sent.length > 0){
         //console.log(`watch.sent.length > 0`)
         let unsentList = onlineList.filter(fir => !watch.sent.includes(fir.callsign))
         let offlineList = []
