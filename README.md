@@ -9,11 +9,11 @@ A Discord Bot used to get information for flight simulation purposes running in 
 * `/test`  
     Ping the bot
 
-* `/check <airport ID in X-Plane>`  
+* `/scenery <airport ID in X-Plane>`  
     Check the gateway scenery for the specified airport and whether or not its included in the latest xplane release
 
 * `/listatc`  
     Check the currently online VATSIM ATC
 
-* `/remind <VATSIM CID>`  
+* `/notify <VATSIM CID>`  
     Check ATC every 5 minutes and remind you if there is an online ATC in your route
