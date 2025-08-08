@@ -48,8 +48,8 @@ export const GET_ROUTE = {
 }
 
 export const MONITOR_VATSIM = {
-  name: 'remind',
-  description: 'Send a reminder when a controller within the planned route is online',
+  name: 'notify',
+  description: 'Send a notification when a controller within the planned route is online',
   type: 1,
   integration_types: [0, 1],
   contexts: [0, 1, 2],
