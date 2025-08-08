@@ -211,6 +211,7 @@ async function verifyDiscordRequest(request, env) {
 }
 
 export default {
+  //Get discord request
   async fetch(request, env, ctx) {
     try {
       return await router.fetch(request, env, ctx);
@@ -284,25 +285,27 @@ export default {
     //Get all the watch list
     for (let cid of cids){
       const watchRaw = await env.reminderList.get(`${cid}`)
-      //console.log(watchRaw)
       watch = watchRaw ? JSON.parse(watchRaw) : null;
       if (!watch || !Array.isArray(watch.check)) {
         console.log("Invalid or missing watch list for CID:", cid);
         continue;
       }
+
       //Copy all the online atc that match the watch list to a new array
       let onlineList = atcList.filter(onlineFir => watch.check.includes(onlineFir.callsign.slice(0,4)))
+
       // console.log(onlineList.length)
       // console.log(watch.check)
       // console.log(atcList)
       // console.log(atcList.map(onlineFir => onlineFir.callsign.slice(0,4)))
+
+      //Continue to next CID when there is no match
       if((!watch.sent || watch.sent.length === 0) && (!onlineList || onlineList.length === 0)) {
-        //Continue to next CID when there is no match
         console.log('Nothing to do')
         continue
       }
+      //Logic when there were notifications sent before
       if(watch.sent && watch.sent.length > 0){
-        //console.log(`watch.sent.length > 0`)
         let unsentList = onlineList.filter(fir => !watch.sent.includes(fir.callsign))
         let offlineList = []
         watch.sent = watch.sent.filter(sentCallsign => {
@@ -310,25 +313,28 @@ export default {
           if (!isOnline) offlineList.push(sentCallsign)
           return isOnline
         })
+        //Send notification when a new controller is online
         if (unsentList.length > 0){
           for(let unsent of unsentList){
             watch.sent.push(unsent.callsign)
           }
-          //console.log(onlineList)
           console.log(`sending reminder add`)
           sendReminderAdd(onlineList, watch.userId, watch.channelId, env)
           await env.reminderList.put(cid, JSON.stringify(watch))
         }
+        //Send notification when a controller go offline
         else if(offlineList.length > 0){
           console.log(`sending reminder min`)
           sendReminderMin(offlineList, watch.userId, watch.channelId, env)
           await env.reminderList.put(cid, JSON.stringify(watch))
         }
+        //No change of ATC online
         else{
           console.log(`nothing changed`)
           return
         }
       }
+      //Logic for first notification
       else{
         //Send discord reminder if an online atc and add the sent value for the first time
         watch.sent = []
@@ -337,7 +343,6 @@ export default {
         }
         console.log(`sending reminder first`)
         await sendReminderAdd(onlineList, watch.userId, watch.channelId, env)
-        //console.log(watch)
         console.log(`updating watch`)
         await env.reminderList.put(cid, JSON.stringify(watch))
       }
