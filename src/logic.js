@@ -124,6 +124,7 @@ export async function getOnlineATC(){
         if(!covGroup[atc.coverage]){ covGroup[atc.coverage] = [] }
         covGroup[atc.coverage].push(atc)
     }
+    
     //Sort the grouping to follow the highest to lowest coverage
     let covSort = {}
     for (let cov of Object.keys(coverageOrder)){
