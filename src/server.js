@@ -319,7 +319,7 @@ export default {
             watch.sent.push(unsent.callsign)
           }
           console.log(`sending reminder add`)
-          sendReminderAdd(onlineList, watch.userId, watch.channelId, env)
+          sendReminderAdd(onlineList, watch.userId, watch.channelId, env, unsentList)
           await env.reminderList.put(cid, JSON.stringify(watch))
         }
         //Send notification when a controller go offline

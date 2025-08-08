@@ -431,7 +431,7 @@ async function getVatsimFlightPlan(CID){
     return result
 }
 
-export async function sendReminderAdd(onlineList, userId, channelId, env){
+export async function sendReminderAdd(onlineList, userId, channelId, env, unsentList = null){
     const webhookEndpoint = `https://discord.com/api/v10/channels/${channelId}/messages`
 
     let field = []
@@ -449,6 +449,11 @@ export async function sendReminderAdd(onlineList, userId, channelId, env){
                 fields: field,
             }
         ],
+    }
+
+    if(unsentList != null){
+        const newATC = unsentList.map(unsent => unsent.callsign)
+        msg.content = `<@${userId}><:8fo1d9:1234443545339887627> ${newATC.join(` `)} online`
     }
 
     const content = {
