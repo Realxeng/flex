@@ -329,6 +329,10 @@ export default {
           return
         }
       }
+      else if(onlineList.length < 1){
+        console.log('nothing')
+        continue
+      }
       else{
         //Send discord reminder if an online atc and add the sent value for the first time
         watch.sent = []
