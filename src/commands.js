@@ -8,7 +8,7 @@ export const TEST_COMMAND = {
 
 // Command containing options
 export const CHECK_SCENERY_COMMAND = {
-  name: 'check',
+  name: 'scenery',
   description: 'Check whether the scenery is available',
   type: 1,
   integration_types: [0, 1],
