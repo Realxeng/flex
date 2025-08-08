@@ -292,15 +292,15 @@ export default {
       }
       //Copy all the online atc that match the watch list to a new array
       let onlineList = atcList.filter(onlineFir => watch.check.includes(onlineFir.callsign.slice(0,4)))
-      //console.log(onlineList.length)
+      // console.log(onlineList.length)
       // console.log(watch.check)
       // console.log(atcList)
       // console.log(atcList.map(onlineFir => onlineFir.callsign.slice(0,4)))
-      // if(onlineList.length < 1){
-      //   //Continue to next CID when there is no match
-      //   console.log('Nothing')
-      //   continue
-      // }
+      if((!watch.sent || watch.sent.length === 0) && (!onlineList || onlineList.length === 0)) {
+        //Continue to next CID when there is no match
+        console.log('Nothing to do')
+        continue
+      }
       if(watch.sent && watch.sent.length > 0){
         //console.log(`watch.sent.length > 0`)
         let unsentList = onlineList.filter(fir => !watch.sent.includes(fir.callsign))
@@ -328,10 +328,6 @@ export default {
           console.log(`nothing changed`)
           return
         }
-      }
-      else if(onlineList.length < 1){
-        console.log('nothing')
-        continue
       }
       else{
         //Send discord reminder if an online atc and add the sent value for the first time
