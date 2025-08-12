@@ -76,3 +76,44 @@ export async function sendReminderMin(offlineList, userId, channelId, env){
     // console.log(await response.text());
     // console.log(response.status);
 }
+
+export function generateATCTypeButtons(covSort, pressed){
+    let count = 1, i = 0
+    let msg = [{
+        type: 1,
+        components: [],
+    }]
+    for (let coverage of Object.keys(covSort)){
+        if (count % 5 === 0){
+            msg.push(
+                {
+                    type: 1,
+                    components: [],
+                }
+            )
+            i++
+        }
+        if (coverage === pressed){
+            msg[i].components.push(
+                {
+                    type: 2,
+                    label: coverage,
+                    style: 1,
+                    custom_id: `atc_type_${coverage}`
+                }
+            )
+        }
+        else{
+            msg[i].components.push(
+                {
+                    type: 2,
+                    label: coverage,
+                    style: 2,
+                    custom_id: `atc_type_${coverage}`
+                }
+            )
+        }
+        count++
+    }
+    return msg
+}

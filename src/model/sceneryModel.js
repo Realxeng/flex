@@ -1,5 +1,4 @@
-import { DiscordRequest } from "../controller/discordController";
-import { checkReleased, getSceneryVersion } from "./logic";
+import { DiscordRequest } from "../tool/discordFunctions";
 
 export async function sceneryHandler(env, interaction, icao) {
     const endpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
@@ -17,7 +16,7 @@ export async function sceneryHandler(env, interaction, icao) {
         }
 
         const result = await checkReleased(data.sid);
-        
+
         if (!result) {
             await DiscordRequest(env, endpoint, {
                 method: 'POST',
@@ -63,5 +62,36 @@ export async function sceneryHandler(env, interaction, icao) {
             }),
         });
         return;
+    }
+}
+
+export async function getSceneryVersion(icao) {
+    try {
+        const json = await getAirport(icao)
+        if (!json) {
+            return null;
+        }
+        const scenery = json.airport.scenery
+        scenery.sort((a, b) => b.sceneryId - a.sceneryId)
+        const ret = {sid: scenery[0].sceneryId, 
+            date: scenery[0].dateUploaded}
+        return ret
+    }
+    catch (err) {
+        console.error(`Error fetching scenery version for ${icao}:`, err)
+        return null
+    }
+}
+
+export async function checkReleased(SID) {
+    try {
+        const [json, latest] = await getReleases()
+        const included = json.SceneryPacks.includes(SID)
+        let result = { included, latest }
+        return result
+    }
+    catch (err) {
+        console.error('Error checking released version:', err)
+        return null
     }
 }
