@@ -1,5 +1,5 @@
 name = "flex"
-main = "./src/server.js"
+main = "./src/controller/router.js"
 compatibility_date="2025-08-05"
 
 account_id = "2c3a662f1c50e7d9b72682cbfae3363c"

@@ -11,7 +11,7 @@
     "test": "c8 mocha test",
     "fix": "eslint --fix '**/*.js'",
     "lint": "eslint '**/*.js'",
-    "register": "node src/register.js",
+    "register": "node src/tool/register.js",
     "publish": "wrangler deploy"
   },
   "keywords": [],
