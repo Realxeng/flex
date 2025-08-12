@@ -17,7 +17,7 @@ A Discord Bot used to get information for flight simulation purposes that runs i
 * `/test`  
     Ping the bot
 
-* `/scenery <airport ID in X-Plane>`  
+* `/scenery <Airport ID in X-Plane>`  
     Check the gateway scenery for the specified airport and whether or not its included in the latest xplane release
 
 * `/list-atc`  
