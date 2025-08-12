@@ -549,7 +549,7 @@ export async function removeNotification(cid, interaction, env){
     //Check if the list is empty or the cid is not found
     else if(reminderFinish.length === 1){
         reminderFinish = []
-        await env.reminderList.put('finish', reminderFinish)
+        await env.reminderList.put('finish', JSON.stringify(reminderFinish))
     }
     //Remove only the target cid from the reminder finish list
     else{
@@ -559,7 +559,7 @@ export async function removeNotification(cid, interaction, env){
     console.log('Updated reminder time list')
 
     //Remove the cid from the watch list
-    await env.reminderFinish.delete(cid)
+    await env.reminderList.delete(cid)
     console.log('Removed notification')
 
     //Send confirmation message to discord
