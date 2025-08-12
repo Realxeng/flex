@@ -538,12 +538,9 @@ export async function removeNotification(cid, interaction, env){
             },
             body:
                 JSON.stringify({
-                    content: `CID ${cid} is not in the watch list`
+                    content: `CID ${cid} is not in watch list`
                 })
         })
-        console.log(response.ok)
-        console.log(await response.text());
-        console.log(response.status);
         return
     }
     //Check if the list is empty or the cid is not found
@@ -573,7 +570,4 @@ export async function removeNotification(cid, interaction, env){
                 content: `Deleted ${cid} from watch list`
             })
     })
-    console.log(response.ok)
-    console.log(await response.text());
-    console.log(response.status);
 }
