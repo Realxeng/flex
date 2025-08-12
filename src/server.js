@@ -79,12 +79,12 @@ router.post('/', async (request, env, ctx) => {
           const endpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
           try {
             let data = await getSceneryVersion(icao);
-            if (!data.sid) {
+            if (!data || !data.sid) {
               await DiscordRequest(env, endpoint, {
                 method: 'POST',
-                body: {
+                body: JSON.stringify({
                   content: `❌ No scenery is found with the ID ${icao}`,
-                },
+                }),
               });
               return;
             }
@@ -93,16 +93,16 @@ router.post('/', async (request, env, ctx) => {
             if (!result) {
               await DiscordRequest(env, endpoint, {
                 method: 'POST',
-                body: {
+                body: JSON.stringify({
                   content: `❌ No scenery found or error checking for ${icao}`,
-                },
+                }),
               });
               return;
             }
 
             await DiscordRequest(env, endpoint, {
               method: 'POST',
-              body: {
+              body: JSON.stringify({
                 content: `Scenery ${icao} found with the newest version: ${data.sid} (${new Date(data.date).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: '2-digit',})})` +
                   (result.included ? ` and it's included in X-Plane ${result.latest}` : ` but NOT included in X-Plane ${result.latest}`),
                 components: [
@@ -124,15 +124,15 @@ router.post('/', async (request, env, ctx) => {
                     ],
                   },
                 ],
-              },
+              }),
             });
           } catch (error) {
             console.error(`error ${error}`)
             await DiscordRequest(env, endpoint, {
                 method: 'POST',
-                body: {
+                body: JSON.stringify({
                   content: `Failed getting scenery of ${icao}`,
-                },
+                }),
               });
               return;
           }

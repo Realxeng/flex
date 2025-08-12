@@ -17,7 +17,7 @@ export function base64ToBlob(base64, contentType = 'application/octet-stream') {
 export async function getSceneryVersion(icao) {
     try {
         const json = await getAirport(icao)
-        if (!json.airport.scenery) {
+        if (!json) {
             return null;
         }
         const scenery = json.airport.scenery
