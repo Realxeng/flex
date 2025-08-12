@@ -1,3 +1,6 @@
+import { DiscordRequest } from "../tool/discordFunctions";
+import { getVatsimFlightPlan } from "./API/vatsimAPI";
+
 //Add the cid into the watch list in cloudflare kv pair
 export async function addNotification(CID, interaction, env){
     let webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
@@ -52,7 +55,7 @@ export async function addNotification(CID, interaction, env){
     }
 
     response = await DiscordRequest(env, webhookEndpoint, {
-        method: 'POST',
+        method: 'PATCH',
         body: JSON.stringify({
             content: '⏳Adding your reminder...'
         })
