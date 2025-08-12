@@ -1,4 +1,3 @@
-import { MessageComponentTypes, InteractionResponseType } from "discord-interactions";
 import { DiscordRequest } from "../controller/discordController";
 import { getAirport, getReleases, getScenery } from "./API/xpgatewayAPI";
 import { getOnlineATC, getVatsimFlightPlan } from "./API/vatsimAPI";
@@ -81,18 +80,15 @@ export async function sendOnlineATC(env, interaction, type = '') {
     const webhookEndpoint = first ? `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}` : `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}/messages/@original`;
     const covSort = await getOnlineATC()
     if(!covSort){
-        response = await fetch(webhookEndpoint, {
+        response = await DiscordRequest(env, webhookEndpoint, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: {
+            body: JSON.stringify({
                 embeds: [
                     {
                         title: `There are currently no ATC online on VATSIM`
                     }
                 ]
-            },
+            }),
         })
         return
     }
@@ -117,20 +113,14 @@ export async function sendOnlineATC(env, interaction, type = '') {
     }
     try{
         if(first){
-            response = await fetch(webhookEndpoint, {
+            response = await DiscordRequest(env, webhookEndpoint, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
                 body: JSON.stringify(msg),
             })
         }
         else{
-            response = await fetch(webhookEndpoint, {
+            response = await DiscordRequest(env, webhookEndpoint, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
                 body: JSON.stringify(msg),
             })
         }
@@ -189,11 +179,8 @@ function generateATCTypeButtons(covSort, pressed){
 
 export async function addReminder(CID, interaction, env){
     let webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
-    let response = await fetch(webhookEndpoint, {
+    let response = await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
             content: 'Checking VATSIM flight plan...✈️'
         })
@@ -206,11 +193,8 @@ export async function addReminder(CID, interaction, env){
     const userId = user.id;
     const flightPlan = await getVatsimFlightPlan(CID)
     if (!flightPlan) {
-        response = await fetch(webhookEndpoint, {
+        response = await DiscordRequest(env, webhookEndpoint, {
             method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify({
                 content: `No flight plan found for CID ${CID} or it's incomplete.`
             }),
@@ -221,11 +205,8 @@ export async function addReminder(CID, interaction, env){
         return
     }
     else if(!flightPlan.EET){
-        response = await fetch(webhookEndpoint, {
+        response = await DiscordRequest(env, webhookEndpoint, {
             method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify({
                 content: `<@${userId}> Your flight plan doesn't include EET remarks.`
             }),
@@ -236,11 +217,8 @@ export async function addReminder(CID, interaction, env){
         return
     }
     else if(new Date(flightPlan.finishTime) < new Date()){
-        response = await fetch(webhookEndpoint, {
+        response = await DiscordRequest(env, webhookEndpoint, {
             method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify({
                 content: `<@${userId}> Your latest flight plan has concluded.`
             }),
@@ -251,11 +229,8 @@ export async function addReminder(CID, interaction, env){
         return
     }
 
-    response = await fetch(webhookEndpoint, {
+    response = await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
             content: '⏳Adding your reminder...'
         })
@@ -300,11 +275,8 @@ export async function addReminder(CID, interaction, env){
     }
     const date = new Date(flightPlan.finishTime)
     const unixTimestamp = Math.floor(date.getTime() / 1000)
-    response = await fetch(webhookEndpoint, {
+    response = await DiscordRequest(env, webhookEndpoint, {
         method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
             content: `Reminder set for <@${userId}> until <t:${unixTimestamp}:F>`,
         }),
@@ -333,11 +305,8 @@ export async function removeNotification(cid, interaction, env){
 
     //Make reminder finish empty if its the last record
     if(reminderFinish.length < 1 || !reminderFinish.find(entry => entry.cid === cid)){
-        const response = await fetch(webhookEndpoint, {
+        await DiscordRequest(env, webhookEndpoint, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body:
                 JSON.stringify({
                     content: `CID ${cid} is not in watch list`
@@ -362,11 +331,8 @@ export async function removeNotification(cid, interaction, env){
     console.log('Removed notification')
 
     //Send confirmation message to discord
-    const response = await fetch(webhookEndpoint, {
+    await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
         body:
             JSON.stringify({
                 content: `Deleted ${cid} from watch list`
