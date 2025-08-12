@@ -11,7 +11,7 @@ import {
   verifyKey,
 } from 'discord-interactions';
 import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM, REMOVE_NOTIF } from './commands.js';
-import { getSceneryVersion, checkReleased, sendSceneryFile, sendOnlineATC, addReminder, getOnlineATC, sendReminderAdd, sendReminderMin } from './logic.js'
+import { getSceneryVersion, checkReleased, sendSceneryFile, sendOnlineATC, addReminder, getOnlineATC, sendReminderAdd, sendReminderMin, removeNotification } from './logic.js'
 import { DiscordRequest } from './utils.js';
 
 class JsonResponse extends Response {
@@ -155,7 +155,7 @@ router.post('/', async (request, env, ctx) => {
         const deferredResponse = new JsonResponse({
           type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
         });
-        ctx.waitUntil()
+        ctx.waitUntil(removeNotification(interaction.data.options[0].value, interaction, env))
         return deferredResponse
       }
       default:

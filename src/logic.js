@@ -509,3 +509,71 @@ export async function sendReminderMin(offlineList, userId, channelId, env){
     // console.log(await response.text());
     // console.log(response.status);
 }
+
+//function to remove the notification from KV pair
+export async function removeNotification(cid, interaction, env){
+    const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
+
+    //Get the current finish time list
+    const reminderFinishRaw = await env.reminderList.get('finish')
+    let reminderFinish = []
+
+    //Put the finish time list into an array
+    if (reminderFinishRaw) {
+        try {
+            reminderFinish = JSON.parse(reminderFinishRaw)
+            reminderFinish = Array.isArray(reminderFinish) ? reminderFinish : [reminderFinish]
+        } catch (err) {
+            console.error('Could not parse reminderFinish:', err)
+            reminderFinish = []
+        }
+    }
+
+    //Make reminder finish empty if its the last record
+    if(reminderFinish.length < 1 || !reminderFinish.find(entry => entry.cid === cid)){
+        const response = await fetch(webhookEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body:
+                JSON.stringify({
+                    content: `CID ${cid} is not in the watch list`
+                })
+        })
+        console.log(response.ok)
+        console.log(await response.text());
+        console.log(response.status);
+        return
+    }
+    //Check if the list is empty or the cid is not found
+    else if(reminderFinish.length === 1){
+        reminderFinish = []
+        await env.reminderList.put('finish', reminderFinish)
+    }
+    //Remove only the target cid from the reminder finish list
+    else{
+        let updatedReminderFinish = reminderFinish.filter(entry => entry.cid !== cid)
+        await env.reminderList.put('finish', JSON.stringify(updatedReminderFinish))
+    }
+    console.log('Updated reminder time list')
+
+    //Remove the cid from the watch list
+    await env.reminderFinish.delete(cid)
+    console.log('Removed notification')
+
+    //Send confirmation message to discord
+    const response = await fetch(webhookEndpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body:
+            JSON.stringify({
+                content: `Deleted ${cid} from watch list`
+            })
+    })
+    console.log(response.ok)
+    console.log(await response.text());
+    console.log(response.status);
+}
