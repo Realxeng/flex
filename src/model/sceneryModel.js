@@ -1,5 +1,6 @@
+import { ButtonStyleTypes, MessageComponentTypes } from "discord-interactions";
 import { DiscordRequest } from "../tool/discordFunctions";
-import { getAirport } from "./API/xpgatewayAPI";
+import { getAirport, getReleases } from "./API/xpgatewayAPI";
 
 export async function sceneryHandler(env, interaction, icao) {
     const endpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
@@ -28,7 +29,6 @@ export async function sceneryHandler(env, interaction, icao) {
             return;
         }
 
-        console.log('sending scenery')
         await DiscordRequest(env, endpoint, {
             method: 'POST',
             body: JSON.stringify({
@@ -77,7 +77,6 @@ export async function getSceneryVersion(icao) {
         scenery.sort((a, b) => b.sceneryId - a.sceneryId)
         const ret = {sid: scenery[0].sceneryId, 
             date: scenery[0].dateUploaded}
-        console.log('sending scenery version')
         return ret
     }
     catch (err) {

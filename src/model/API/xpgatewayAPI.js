@@ -4,7 +4,6 @@ export async function getAirport(icao){
     const res = await fetch(`${apiUrl}/airport/${icao}`)
     if(res.status === 404) return null
     const json = await res.json()
-    console.log('sending airport')
     return json
 }
 
