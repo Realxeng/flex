@@ -1,6 +1,6 @@
 export const TEST_COMMAND = {
   name: 'test',
-  description: 'test command',
+  description: 'Test Command',
   type: 1,
   integration_types: [0, 1],
   contexts: [0, 1, 2],
@@ -65,7 +65,7 @@ export const MONITOR_VATSIM = {
 
 export const REMOVE_NOTIF = {
   name: 'remove',
-  description: 'Stop notification manually',
+  description: 'Stop notification for the CID',
   type: 1,
   integration_types: [0, 1],
   contexts: [0, 1, 2],
