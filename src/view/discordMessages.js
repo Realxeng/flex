@@ -1,0 +1,78 @@
+export async function sendReminderAdd(onlineList, userId, channelId, env, unsentList = null){
+    const webhookEndpoint = `https://discord.com/api/v10/channels/${channelId}/messages`
+
+    let field = []
+
+    for(let atc of onlineList){
+        field.push({name: `📡 ${atc.callsign}`, value: `👤 ${atc.id}\n🕒 ${atc.time}`})
+    }
+    
+    const msg = {
+        content: `<@${userId}><:8fo1d9:1234443545339887627>`,
+        embeds: [
+            {
+                title: `LMAOOO🫵`,
+                color: 0x1D9BF0,
+                fields: field,
+            }
+        ],
+    }
+
+    if(unsentList != null){
+        const newATC = unsentList.map(unsent => unsent.callsign)
+        msg.content = `<@${userId}><:8fo1d9:1234443545339887627> ${newATC.join(` `)} online`
+    }
+
+    const content = {
+        method: 'POST',
+        headers: {
+            "Authorization": `Bot ${env.DISCORD_TOKEN}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(msg),
+    }
+
+    const response = await fetch(webhookEndpoint, content)
+    // console.log(response.ok)
+    // console.log(await response.text());
+    // console.log(response.status);
+}
+
+export async function sendReminderMin(offlineList, userId, channelId, env){
+    const webhookEndpoint = `https://discord.com/api/v10/channels/${channelId}/messages`
+
+    let field = ''
+
+    if(offlineList.length>1){
+        for (let i = 0; i < offlineList.length; i++){
+            switch(i){
+                case offlineList.length-1:
+                    field += `ama ${offlineList[i]}`
+                    break
+                default:
+                    field += `${offlineList[i]} `
+            }
+        }
+    }
+    else{
+        field = offlineList[0]
+    }
+    
+    const msg = {
+        content: `Hoki ngntd ${field} offline 🖕`,
+    }
+
+    const content = {
+        method: 'POST',
+        headers: {
+            "Authorization": `Bot ${env.DISCORD_TOKEN}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(msg),
+    }
+
+    const response = await fetch(webhookEndpoint, content)
+    // console.log(response.ok)
+    // console.log(await response.text());
+    // console.log(response.status);
+}
