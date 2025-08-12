@@ -24,7 +24,7 @@ export const CHECK_SCENERY_COMMAND = {
 };
 
 export const CHECK_ONLINE_ATC = {
-  name: 'listatc',
+  name: 'list-atc',
   description: 'Check all online atc in VATSIM',
   type: 1,
   integration_types: [0, 1],
@@ -64,7 +64,7 @@ export const MONITOR_VATSIM = {
 }
 
 export const REMOVE_NOTIF = {
-  name: 'removenotif',
+  name: 'remove',
   description: 'Stop notification manually',
   type: 1,
   integration_types: [0, 1],
