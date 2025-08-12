@@ -66,9 +66,7 @@ router.post('/', async (request, env, ctx) => {
         const deferredResponse = new JsonResponse({
           type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
         });
-        ctx.waitUntil((async () => {
-          sceneryHandler(env, interaction, icao)
-        })());
+        ctx.waitUntil(sceneryHandler(env, interaction, icao));
         return deferredResponse;
       }
       //list-atc command
