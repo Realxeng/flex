@@ -1,15 +1,18 @@
 export async function DiscordRequest(env, endpoint, options) {
-  const url = `https://discord.com/api/v10/${endpoint}`;
-  const headers = {
+  let headers = {
+    ...(options.headers || {}),
     Authorization: `Bot ${env.BOT_TOKEN}`,
-    'Content-Type': 'application/json; charset=UTF-8',
-    'User-Agent': 'DiscordBot (https://flex.realxengpandelaki-2c3.workers.dev, 1.0.0)',
+    'User-Agent': 'DiscordBot (https://flex.realxengpandelaki-2c3.workers.dev, 2.0.0b1)',
   };
+
+  if(!headers['Content-Type'] && !(options.body instanceof FormData)){
+    headers['Content-Type'] = 'application/json'
+  }
+
   try {
-    const res = await fetch(url, {
-      headers,
+    const res = await fetch(endpoint, {
       ...options,
-      body: options.body ? JSON.stringify(options.body) : undefined,
+      headers,
     });
     if (!res.ok) {
       const error = await res.json();

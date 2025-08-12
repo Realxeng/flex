@@ -10,9 +10,11 @@ import {
   ButtonStyleTypes,
   verifyKey,
 } from 'discord-interactions';
-import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM, REMOVE_NOTIF } from './commands.js';
-import { getSceneryVersion, checkReleased, sendSceneryFile, sendOnlineATC, addReminder, getOnlineATC, sendReminderAdd, sendReminderMin, removeNotification } from './logic.js'
-import { DiscordRequest } from './utils.js';
+import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM, REMOVE_NOTIF } from './tool/commands.js';
+import { getSceneryVersion, checkReleased, sendSceneryFile, sendOnlineATC, addReminder, removeNotification } from './model/logic.js'
+import { DiscordRequest } from './controller/discordController.js';
+import { sendReminderAdd, sendReminderMin } from './view/discordMessages.js';
+import { getOnlineATC } from './model/API/vatsimAPI.js';
 
 class JsonResponse extends Response {
   constructor(body, init) {
@@ -74,8 +76,8 @@ router.post('/', async (request, env, ctx) => {
         });
 
         ctx.waitUntil((async () => {
+          const endpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
           try {
-            const endpoint = `webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
             let data = await getSceneryVersion(icao);
             if (!data.sid) {
               await DiscordRequest(env, endpoint, {

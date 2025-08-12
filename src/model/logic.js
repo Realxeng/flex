@@ -1,9 +1,10 @@
 import { MessageComponentTypes, InteractionResponseType } from "discord-interactions";
-import { DiscordRequest } from "./utils";
+import { DiscordRequest } from "../controller/discordController";
+import { getAirport, getReleases, getScenery } from "./API/xpgatewayAPI";
+import { getOnlineATC, getVatsimFlightPlan } from "./API/vatsimAPI";
+import { coverageOrder } from "./API/vatsimAPI";
 
-const coverageOrder = {CTR: 'Sector / Area Control', FSS: 'Flight Service Station', APP: 'Approach Terminal Area Control', DEP: 'Departure Terminal Area Control', TWR: 'Tower Control', GND: 'Ground Control', DEL: 'Clearance Delivery'}
-
-function base64ToBlob(base64, contentType = 'application/octet-stream') {
+export function base64ToBlob(base64, contentType = 'application/octet-stream') {
     const binaryString = atob(base64);
     const len = binaryString.length;
     const bytes = new Uint8Array(len);
@@ -15,8 +16,7 @@ function base64ToBlob(base64, contentType = 'application/octet-stream') {
 
 export async function getSceneryVersion(icao) {
     try {
-        const res = await fetch(`http://gateway.x-plane.com/apiv1/airport/${icao}`)
-        const json = await res.json()
+        const json = await getAirport(icao)
         if (!json.airport.scenery) {
             return null;
         }
@@ -34,13 +34,8 @@ export async function getSceneryVersion(icao) {
 
 export async function checkReleased(SID) {
     try {
-        let res = await fetch('http://gateway.x-plane.com/apiv1/releases')
-        const releases = await res.json()
-        releases.sort((a, b) => new Date(b.Date) - new Date(a.Date))
-        const latest = releases[0].Version
-        res = await fetch(`http://gateway.x-plane.com/apiv1/release/${latest}`)
-        const json2 = await res.json()
-        const included = json2.SceneryPacks.includes(SID)
+        const [json, latest] = await getReleases()
+        const included = json.SceneryPacks.includes(SID)
         let result = { included, latest }
         return result
     }
@@ -51,11 +46,8 @@ export async function checkReleased(SID) {
 }
 
 export async function sendSceneryFile(SID, env, interaction) {
-    const res = await fetch(`http://gateway.x-plane.com/apiv1/scenery/${SID}`);
-    const json = await res.json()
-    const base64string = json.scenery.masterZipBlob
-    const zipFile = base64ToBlob(base64string, 'application/zip');
-
+    const json = await getScenery(SID)
+    const zipFile = base64ToBlob(json.scenery.masterZipBlob, 'application/zip');
     const form = new FormData();
 
     form.append('payload_json', JSON.stringify({
@@ -70,68 +62,17 @@ export async function sendSceneryFile(SID, env, interaction) {
 
     form.append('files[0]',
         zipFile,
-        `${json.scenery.additionalMetadata.icao_code}_Scenery_Pack.zip`);
+        `${json.scenery.additionalMetadata.icao_code}_Scenery_Pack.zip`
+    );
+
+    console.log(form)
 
     const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
-    const response = await fetch(webhookEndpoint, {
+    const options = {
         method: 'POST',
         body: form
-    });
-
-    if (!response.ok) {
-        console.error(await response.text());
     }
-    if (response.ok) {
-        await DiscordRequest(env, endpoint, { method: 'DELETE' });
-    }
-}
-
-export async function getOnlineATCRaw(){
-    let json = {}
-    try {
-        const res = await fetch('https://api.vatsim.net/v2/atc/online', {method: 'GET'})
-        json = await res.json()
-    } catch (error) {
-        console.log(error)
-        return null
-    }
-
-    //Calculate the time online of each controller and group the controllers based on their coverage
-    const atcList = json.map(({id, callsign, start}) => ({id, callsign, start}))
-    return atcList
-}
-
-export async function getOnlineATC(){
-    //Get the online ATC list
-    let json = {}
-    try {
-        const res = await fetch('https://api.vatsim.net/v2/atc/online', {method: 'GET'})
-        json = await res.json()
-    } catch (error) {
-        console.log(error)
-        return null
-    }
-
-    //Calculate the time online of each controller and group the controllers based on their coverage
-    const atcList = json.map(({id, callsign, start}) => ({id, callsign, start}))
-    let covGroup = {}
-    for (let atc of atcList){
-        let timeOnlinems = new Date() - new Date(atc.start)
-        const timeHour = Math.floor(timeOnlinems / 3600000)
-        const timeMin = Math.round((timeOnlinems % 3600000) / 60000)
-        atc.time = `${timeHour}h ${timeMin}m`
-        atc.coverage = atc.callsign.slice(-3)
-        if(!covGroup[atc.coverage]){ covGroup[atc.coverage] = [] }
-        covGroup[atc.coverage].push(atc)
-    }
-    
-    //Sort the grouping to follow the highest to lowest coverage
-    let covSort = {}
-    for (let cov of Object.keys(coverageOrder)){
-        if (!covGroup[cov]) continue;
-        covSort[cov] = covGroup[cov]
-    }
-    return covSort
+    await DiscordRequest(env, webhookEndpoint, options)
 }
 
 export async function sendOnlineATC(env, interaction, type = '') {
@@ -369,145 +310,6 @@ export async function addReminder(CID, interaction, env){
         }),
     })
     console.log(response.ok)
-}
-
-async function getVatsimFlightPlan(CID){
-    let res = {}
-    try{
-        res = await fetch(`https://api.vatsim.net/v2/members/${CID}/flightplans`, {method: 'GET'})
-    }
-    catch(err){
-        console.err(err)
-        return null
-    }
-    const response = await res.json()
-    
-    if (!response || response.length === 0) {
-        return null;
-    }
-
-    const item = response[0]
-
-    let result = {
-        cid: item.vatsim_id,
-        dep: item.dep,
-        arr: item.arr,
-        rmks: item.rmks,
-        deptime: item.deptime,
-        hrsfuel: item.hrsfuel,
-        filed: item.filed,
-    }
-
-    if (!result.dep || !result.arr || !result.deptime || !result.hrsfuel) {
-        return null;
-    }
-
-    const filedDate = new Date(item.filed);
-    const year = filedDate.getUTCFullYear();
-    const month = filedDate.getUTCMonth();
-    const day = filedDate.getUTCDate();
-    const hours = Number(result.deptime.slice(0, 2));
-    const minutes = Number(result.deptime.slice(2));
-
-    const deptimeDate = new Date(Date.UTC(year, month, day, hours, minutes));
-
-    result.finishTime = new Date(deptimeDate.getTime() + (result.hrsfuel * 3600000)).toISOString();
-
-    const rmkRaw = result.rmks
-    const match = rmkRaw.match(/EET\/(.*?)(?=\s[A-Z]{3,}\/|$)/)
-
-    let EET = {}
-    if(match){
-        EET = match[1].trim().split(/\s+/)
-        result.EET = EET.map(fir => fir.slice(0,4))
-    }
-    else{
-        return result
-    }
-    delete result.rmks
-    delete result.deptime
-    delete result.hrsfuel
-    console.log(result.EET)
-    return result
-}
-
-export async function sendReminderAdd(onlineList, userId, channelId, env, unsentList = null){
-    const webhookEndpoint = `https://discord.com/api/v10/channels/${channelId}/messages`
-
-    let field = []
-
-    for(let atc of onlineList){
-        field.push({name: `📡 ${atc.callsign}`, value: `👤 ${atc.id}\n🕒 ${atc.time}`})
-    }
-    
-    const msg = {
-        content: `<@${userId}><:8fo1d9:1234443545339887627>`,
-        embeds: [
-            {
-                title: `LMAOOO🫵`,
-                color: 0x1D9BF0,
-                fields: field,
-            }
-        ],
-    }
-
-    if(unsentList != null){
-        const newATC = unsentList.map(unsent => unsent.callsign)
-        msg.content = `<@${userId}><:8fo1d9:1234443545339887627> ${newATC.join(` `)} online`
-    }
-
-    const content = {
-        method: 'POST',
-        headers: {
-            "Authorization": `Bot ${env.DISCORD_TOKEN}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(msg),
-    }
-
-    const response = await fetch(webhookEndpoint, content)
-    // console.log(response.ok)
-    // console.log(await response.text());
-    // console.log(response.status);
-}
-
-export async function sendReminderMin(offlineList, userId, channelId, env){
-    const webhookEndpoint = `https://discord.com/api/v10/channels/${channelId}/messages`
-
-    let field = ''
-
-    if(offlineList.length>1){
-        for (let i = 0; i < offlineList.length; i++){
-            switch(i){
-                case offlineList.length-1:
-                    field += `ama ${offlineList[i]}`
-                    break
-                default:
-                    field += `${offlineList[i]} `
-            }
-        }
-    }
-    else{
-        field = offlineList[0]
-    }
-    
-    const msg = {
-        content: `Hoki ngntd ${field} offline 🖕`,
-    }
-
-    const content = {
-        method: 'POST',
-        headers: {
-            "Authorization": `Bot ${env.DISCORD_TOKEN}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(msg),
-    }
-
-    const response = await fetch(webhookEndpoint, content)
-    // console.log(response.ok)
-    // console.log(await response.text());
-    // console.log(response.status);
 }
 
 //function to remove the notification from KV pair
