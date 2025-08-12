@@ -10,7 +10,7 @@ import {
   ButtonStyleTypes,
   verifyKey,
 } from 'discord-interactions';
-import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM } from './commands.js';
+import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM, REMOVE_NOTIF } from './commands.js';
 import { getSceneryVersion, checkReleased, sendSceneryFile, sendOnlineATC, addReminder, getOnlineATC, sendReminderAdd, sendReminderMin } from './logic.js'
 import { DiscordRequest } from './utils.js';
 
@@ -149,6 +149,13 @@ router.post('/', async (request, env, ctx) => {
           type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
         });
         ctx.waitUntil(addReminder(interaction.data.options[0].value, interaction, env))
+        return deferredResponse
+      }
+      case REMOVE_NOTIF.name.toLowerCase():{
+        const deferredResponse = new JsonResponse({
+          type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+        });
+        ctx.waitUntil()
         return deferredResponse
       }
       default:
@@ -293,11 +300,6 @@ export default {
 
       //Copy all the online atc that match the watch list to a new array
       let onlineList = atcList.filter(onlineFir => watch.check.includes(onlineFir.callsign.slice(0,4)))
-
-      // console.log(onlineList.length)
-      // console.log(watch.check)
-      // console.log(atcList)
-      // console.log(atcList.map(onlineFir => onlineFir.callsign.slice(0,4)))
 
       //Continue to next CID when there is no match
       if((!watch.sent || watch.sent.length === 0) && (!onlineList || onlineList.length === 0)) {

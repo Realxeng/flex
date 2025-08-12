@@ -62,3 +62,19 @@ export const MONITOR_VATSIM = {
     }
   ]
 }
+
+export const REMOVE_NOTIF = {
+  name: 'removenotif',
+  description: 'Stop notification manually',
+  type: 1,
+  integration_types: [0, 1],
+  contexts: [0, 1, 2],
+  options:[
+    {
+      type: 3,
+      name: 'cid',
+      description: 'Enter your VATSIM CID',
+      required: true,
+    }
+  ]
+}
