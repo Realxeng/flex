@@ -7,7 +7,7 @@ import { InteractionResponseType, InteractionType } from 'discord-interactions';
 import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM, REMOVE_NOTIF } from '../tool/commands.js';
 import { sceneryHandler } from '../model/sceneryModel.js';
 import { addNotification, removeNotification } from '../model/notify.js';
-import { scheduledCheck } from '../model/scheduledCheck.js';
+import { scheduledCheck } from '../model/watchList.js';
 import { verifyDiscordRequest } from '../tool/discordFunctions.js';
 import { sendOnlineATC } from './atc.js';
 import { sendSceneryFile } from './scenery.js';
