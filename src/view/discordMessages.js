@@ -154,6 +154,33 @@ export async function sendOnlineATCMessage(env, webhookEndpoint, covSort, type, 
     }
 }
 
+export async function sendSceneryFile(env, json, zipFile, webhookEndpoint){
+    const form = new FormData();
+
+    form.append('payload_json', JSON.stringify({
+        content: 'Here is your scenery file!',
+        attachments: [
+            {
+                id: 0,
+                filename: `${json.scenery.additionalMetadata.icao_code}_Scenery_Pack.zip`
+            }
+        ]
+    }));
+
+    form.append('files[0]',
+        zipFile,
+        `${json.scenery.additionalMetadata.icao_code}_Scenery_Pack.zip`
+    );
+
+    console.log(form)
+
+    const options = {
+        method: 'POST',
+        body: form
+    }
+    await DiscordRequest(env, webhookEndpoint, options)
+}
+
 function generateATCTypeButtons(covSort, pressed){
     let count = 1, i = 0
     let msg = [{
