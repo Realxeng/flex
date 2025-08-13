@@ -11,6 +11,6 @@ export async function checkOnlineATC(env, interaction, type = '') {
         return
     }
     else{
-        await sendOnlineATC(env, covSort, webhookEndpoint, type)
+        await sendOnlineATC(env, covSort, webhookEndpoint, type, first)
     }
 }
