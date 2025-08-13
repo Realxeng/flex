@@ -3,7 +3,7 @@ import { DiscordRequest } from "../tool/discordFunctions";
 import { generateATCTypeButtons } from "../view/discordMessages";
 import { coverageOrder } from "../model/API/vatsimAPI";
 
-export async function sendOnlineATC(env, interaction, type = '') {
+export async function checkOnlineATC(env, interaction, type = '') {
     const first = type ? false : true
     let response
     const webhookEndpoint = first ? `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}` : `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}/messages/@original`;
