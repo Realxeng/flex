@@ -1,6 +1,6 @@
 import { sendOnlineATCMessage } from "../view/discordMessages"
 
-export async function sendOnlineATC(env, covSort, webhookEndpoint){
+export async function sendOnlineATC(env, covSort, webhookEndpoint, type){
     let response = []
     const highestCoverage = Object.keys(covSort)[0]
     let field = []
