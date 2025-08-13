@@ -8,5 +8,5 @@ export async function sendOnlineATC(env, covSort, webhookEndpoint, type){
     for(let atc of covSort[type]){
         field.push({name: `📡 ${atc.callsign}`, value: `👤 ${atc.id}\n🕒 ${atc.time}`})
     }
-    await sendOnlineATCMessage(env, webhookEndpoint, covSort, type)
+    await sendOnlineATCMessage(env, webhookEndpoint, covSort, type, field)
 }

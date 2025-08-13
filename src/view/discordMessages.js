@@ -123,7 +123,7 @@ export async function sendNoOnlineATCMessage(env, webhookEndpoint){
     })
 }
 
-export async function sendOnlineATCMessage(env, webhookEndpoint, covSort, type){
+export async function sendOnlineATCMessage(env, webhookEndpoint, covSort, type, field){
     const msg = {
         content: '**📡Current online ATC in VATSIM network:**',
         embeds: [
