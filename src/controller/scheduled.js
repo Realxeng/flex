@@ -25,7 +25,11 @@ export async function checkWatchList(env){
 
   //Get the list of cid to watch
   const cids = finishList.map(entry => entry.cid)
-  
-  //Notify for any atc in route
-  await checkRouteATC(env, cids, atcList)
+
+  //Iterate through the watch list
+  for (let cid of cids){
+    const watch = await getWatchList(env, cid)
+    //Notify for any atc in route
+    await checkRouteATC(env, cid, atcList, watch)
+  }
 }

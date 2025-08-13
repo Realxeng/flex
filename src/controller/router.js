@@ -9,7 +9,7 @@ import { sceneryHandler } from '../model/scenery.js';
 import { addNotification, removeNotification } from '../model/notify.js';
 import { verifyDiscordRequest } from '../tool/discordFunctions.js';
 import { checkOnlineATC } from './atc.js';
-import { sendSceneryFile } from './scenery.js';
+import { findSceneryFile } from './scenery.js';
 import { checkWatchList } from './scheduled.js';
 
 export class JsonResponse extends Response {
@@ -110,7 +110,7 @@ router.post('/', async (request, env, ctx) => {
       // Delete message with token in request body
       const endpoint = `webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}/messages/${interaction.message.id}`;
       try {
-        ctx.waitUntil(sendSceneryFile(sceneryId, env, interaction));
+        ctx.waitUntil(findSceneryFile(sceneryId, env, interaction));
         return new JsonResponse({
           type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
         });
