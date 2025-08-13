@@ -1,3 +1,4 @@
+import { coverageOrder } from "../model/API/vatsimAPI"
 import { DiscordRequest } from "../tool/discordFunctions"
 
 export async function sendReminderAdd(onlineList, userId, channelId, env, unsentList = null){
@@ -69,47 +70,6 @@ export async function sendReminderMin(offlineList, userId, channelId, env){
     await DiscordRequest(env, webhookEndpoint, content)
 }
 
-export function generateATCTypeButtons(covSort, pressed){
-    let count = 1, i = 0
-    let msg = [{
-        type: 1,
-        components: [],
-    }]
-    for (let coverage of Object.keys(covSort)){
-        if (count % 5 === 0){
-            msg.push(
-                {
-                    type: 1,
-                    components: [],
-                }
-            )
-            i++
-        }
-        if (coverage === pressed){
-            msg[i].components.push(
-                {
-                    type: 2,
-                    label: coverage,
-                    style: 1,
-                    custom_id: `atc_type_${coverage}`
-                }
-            )
-        }
-        else{
-            msg[i].components.push(
-                {
-                    type: 2,
-                    label: coverage,
-                    style: 2,
-                    custom_id: `atc_type_${coverage}`
-                }
-            )
-        }
-        count++
-    }
-    return msg
-}
-
 export async function sendCheckingFlightplanMessage(env, flightPlan, userId, CID, webhookEndpoint){
     let response = []
     if (!flightPlan || flightPlan.length < 1 || flightPlan === null || flightPlan == []) {
@@ -148,4 +108,89 @@ export async function sendCheckingFlightplanMessage(env, flightPlan, userId, CID
         })
         return true
     }
+}
+
+export async function sendNoOnlineATCMessage(env, webhookEndpoint){
+    response = await DiscordRequest(env, webhookEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+            embeds: [
+                {
+                    title: `There are currently no ATC online on VATSIM`
+                }
+            ]
+        }),
+    })
+}
+
+export async function sendOnlineATCMessage(env, webhookEndpoint, covSort, type){
+    const msg = {
+        content: '**📡Current online ATC in VATSIM network:**',
+        embeds: [
+            {
+                title: coverageOrder[type],
+                color: 0x1D9BF0,
+                fields: field,
+            }
+        ],
+        components: generateATCTypeButtons(covSort, type),
+    }
+    try{
+        if(first){
+            response = await DiscordRequest(env, webhookEndpoint, {
+                method: 'POST',
+                body: JSON.stringify(msg),
+            })
+        }
+        else{
+            response = await DiscordRequest(env, webhookEndpoint, {
+                method: 'PATCH',
+                body: JSON.stringify(msg),
+            })
+        }
+    }
+    catch (err){
+        console.log(err)
+    }
+}
+
+function generateATCTypeButtons(covSort, pressed){
+    let count = 1, i = 0
+    let msg = [{
+        type: 1,
+        components: [],
+    }]
+    for (let coverage of Object.keys(covSort)){
+        if (count % 5 === 0){
+            msg.push(
+                {
+                    type: 1,
+                    components: [],
+                }
+            )
+            i++
+        }
+        if (coverage === pressed){
+            msg[i].components.push(
+                {
+                    type: 2,
+                    label: coverage,
+                    style: 1,
+                    custom_id: `atc_type_${coverage}`
+                }
+            )
+        }
+        else{
+            msg[i].components.push(
+                {
+                    type: 2,
+                    label: coverage,
+                    style: 2,
+                    custom_id: `atc_type_${coverage}`
+                }
+            )
+        }
+        count++
+    }
+    return msg
 }
