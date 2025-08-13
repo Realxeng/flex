@@ -16,8 +16,9 @@ export async function getReminderFinishList(env){
   }
   else{
     //finish job if the list is empty
-    return
+    return null
   }
+  return finishList
 }
 
 export async function putKeyValue(env, key, value){
@@ -26,7 +27,7 @@ export async function putKeyValue(env, key, value){
 
 export async function getWatchList(env, cid){
   const watchRaw = await env.reminderList.get(cid)
-  watch = watchRaw ? JSON.parse(watchRaw) : null;
+  const watch = watchRaw ? JSON.parse(watchRaw) : null;
   return watch
 }
 
