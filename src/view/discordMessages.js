@@ -110,16 +110,16 @@ export function generateATCTypeButtons(covSort, pressed){
     return msg
 }
 
-export async function sendCheckingFlightplanMessage(env, flightPlan, userId, CID,){
-    const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}/messages/@original`;
-    if (!flightPlan) {
+export async function sendCheckingFlightplanMessage(env, flightPlan, userId, CID, webhookEndpoint){
+    let response = []
+    if (!flightPlan || flightPlan.length < 1 || flightPlan === null || flightPlan == []) {
         response = await DiscordRequest(env, webhookEndpoint, {
             method: 'PATCH',
             body: JSON.stringify({
                 content: `No flight plan found for CID ${CID} or it's incomplete.`
             }),
         })
-        return
+        return false
     }
     else if(!flightPlan.EET){
         response = await DiscordRequest(env, webhookEndpoint, {
@@ -128,7 +128,7 @@ export async function sendCheckingFlightplanMessage(env, flightPlan, userId, CID
                 content: `<@${userId}> Your flight plan doesn't include EET remarks.`
             }),
         })
-        return
+        return false
     }
     else if(new Date(flightPlan.finishTime) < new Date()){
         response = await DiscordRequest(env, webhookEndpoint, {
@@ -137,7 +137,7 @@ export async function sendCheckingFlightplanMessage(env, flightPlan, userId, CID
                 content: `<@${userId}> Your latest flight plan has concluded.`
             }),
         })
-        return
+        return false
     }
     else {
         response = await DiscordRequest(env, webhookEndpoint, {
@@ -146,5 +146,6 @@ export async function sendCheckingFlightplanMessage(env, flightPlan, userId, CID
                 content: '⏳Adding your reminder...'
             })
         })
+        return true
     }
 }

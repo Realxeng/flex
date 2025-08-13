@@ -12,14 +12,12 @@ export async function addNotification(CID, interaction, env){
             content: 'Checking VATSIM flight plan...✈️'
         })
     })
-    console.log(response.ok)
-    // console.log(await response.text());
-    // console.log(response.status);
     webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}/messages/@original`;
     const user = interaction.member?.user || interaction.user;
     const userId = user.id;
     const flightPlan = await getVatsimFlightPlan(CID)
-    sendCheckingFlightplanMessage(env, flightPlan, userId, CID)
+
+    if(!await sendCheckingFlightplanMessage(env, flightPlan, userId, CID, webhookEndpoint)) return
 
     flightPlan.EET.push(flightPlan.dep)
     flightPlan.EET.push(flightPlan.arr)
