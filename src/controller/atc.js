@@ -1,7 +1,5 @@
 import { getOnlineATC } from "../model/API/vatsimAPI";
-import { DiscordRequest } from "../tool/discordFunctions";
-import { generateATCTypeButtons, sendNoOnlineATCMessage } from "../view/discordMessages";
-import { coverageOrder } from "../model/API/vatsimAPI";
+import { sendNoOnlineATCMessage } from "../view/discordMessages";
 import { sendOnlineATC } from "../model/atc";
 
 export async function checkOnlineATC(env, interaction, type = '') {
