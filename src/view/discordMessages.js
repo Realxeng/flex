@@ -1,3 +1,5 @@
+import { DiscordRequest } from "../tool/discordFunctions"
+
 export async function sendReminderAdd(onlineList, userId, channelId, env, unsentList = null){
     const webhookEndpoint = `https://discord.com/api/v10/channels/${channelId}/messages`
 
@@ -25,17 +27,10 @@ export async function sendReminderAdd(onlineList, userId, channelId, env, unsent
 
     const content = {
         method: 'POST',
-        headers: {
-            "Authorization": `Bot ${env.DISCORD_TOKEN}`,
-            'Content-Type': 'application/json',
-        },
         body: JSON.stringify(msg),
     }
 
-    const response = await fetch(webhookEndpoint, content)
-    // console.log(response.ok)
-    // console.log(await response.text());
-    // console.log(response.status);
+    await DiscordRequest(env, webhookEndpoint, content)
 }
 
 export async function sendReminderMin(offlineList, userId, channelId, env){
@@ -71,10 +66,7 @@ export async function sendReminderMin(offlineList, userId, channelId, env){
         body: JSON.stringify(msg),
     }
 
-    const response = await fetch(webhookEndpoint, content)
-    // console.log(response.ok)
-    // console.log(await response.text());
-    // console.log(response.status);
+    await DiscordRequest(env, webhookEndpoint, content)
 }
 
 export function generateATCTypeButtons(covSort, pressed){
