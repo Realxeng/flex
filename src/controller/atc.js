@@ -53,12 +53,6 @@ export async function sendOnlineATC(env, interaction, type = '') {
                 body: JSON.stringify(msg),
             })
         }
-        console.log('Response OK:', response.ok);
-        // console.log('Status:', response.status);
-        // console.log('Status Text:', response.statusText);
-        // const text = await response.text();
-        // console.log('Body:', text);
-        // console.log(msg)
     }
     catch (err){
         console.log(err)

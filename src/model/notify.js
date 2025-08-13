@@ -1,5 +1,7 @@
 import { DiscordRequest } from "../tool/discordFunctions";
+import { sendCheckingFlightplanMessage } from "../view/discordMessages";
 import { getVatsimFlightPlan } from "./API/vatsimAPI";
+import { deleteWatchList, getReminderFinishList, putKeyValue } from "./watchList";
 
 //Add the cid into the watch list in cloudflare kv pair
 export async function addNotification(CID, interaction, env){
@@ -17,74 +19,21 @@ export async function addNotification(CID, interaction, env){
     const user = interaction.member?.user || interaction.user;
     const userId = user.id;
     const flightPlan = await getVatsimFlightPlan(CID)
-    if (!flightPlan) {
-        response = await DiscordRequest(env, webhookEndpoint, {
-            method: 'PATCH',
-            body: JSON.stringify({
-                content: `No flight plan found for CID ${CID} or it's incomplete.`
-            }),
-        })
-        console.log(response.ok)
-        // console.log(await response.text());
-        // console.log(response.status);
-        return
-    }
-    else if(!flightPlan.EET){
-        response = await DiscordRequest(env, webhookEndpoint, {
-            method: 'PATCH',
-            body: JSON.stringify({
-                content: `<@${userId}> Your flight plan doesn't include EET remarks.`
-            }),
-        })
-        console.log(response.ok)
-        // console.log(await response.text());
-        // console.log(response.status);
-        return
-    }
-    else if(new Date(flightPlan.finishTime) < new Date()){
-        response = await DiscordRequest(env, webhookEndpoint, {
-            method: 'PATCH',
-            body: JSON.stringify({
-                content: `<@${userId}> Your latest flight plan has concluded.`
-            }),
-        })
-        console.log(response.ok)
-        // console.log(await response.text());
-        // console.log(response.status);
-        return
-    }
-
-    response = await DiscordRequest(env, webhookEndpoint, {
-        method: 'PATCH',
-        body: JSON.stringify({
-            content: '⏳Adding your reminder...'
-        })
-    })
+    sendCheckingFlightplanMessage(env, flightPlan, userId, CID)
 
     flightPlan.EET.push(flightPlan.dep)
     flightPlan.EET.push(flightPlan.arr)
     try{
-        await env.reminderList.put(CID, JSON.stringify({
+        await putKeyValue(env, CID, {
             userId: userId,
             check: flightPlan.EET,
             channelId: `${interaction.channel_id}`
-        }))
+        })
     }catch (err) {
         console.error(`Error saving reminder for user: ${userId}`, err);
     }
 
-    let reminderFinishRaw = await env.reminderList.get('finish')
-    let reminderFinish = []
-
-    if (reminderFinishRaw) {
-        try {
-            reminderFinish = JSON.parse(reminderFinishRaw)
-            reminderFinish = Array.isArray(reminderFinish) ? reminderFinish : [reminderFinish]
-        } catch (err) {
-            console.error('Could not parse reminderFinish:', err)
-            reminderFinish = []
-        }
-    }
+    let reminderFinish = await getReminderFinishList(env)
     
     const userEntry = reminderFinish.find(entry => entry.cid === flightPlan.cid)
     if(userEntry){
@@ -94,7 +43,7 @@ export async function addNotification(CID, interaction, env){
         reminderFinish.push({cid: flightPlan.cid, finishTime: flightPlan.finishTime})
     }
     try{
-        await env.reminderList.put('finish', JSON.stringify(reminderFinish))
+        await putKeyValue(env, 'finish', reminderFinish)
     }catch (err) {
         console.error(`Error saving finish reminder for user: ${userId}`, err);
     }
@@ -114,19 +63,7 @@ export async function removeNotification(cid, interaction, env){
     const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
 
     //Get the current finish time list
-    const reminderFinishRaw = await env.reminderList.get('finish')
-    let reminderFinish = []
-
-    //Put the finish time list into an array
-    if (reminderFinishRaw) {
-        try {
-            reminderFinish = JSON.parse(reminderFinishRaw)
-            reminderFinish = Array.isArray(reminderFinish) ? reminderFinish : [reminderFinish]
-        } catch (err) {
-            console.error('Could not parse reminderFinish:', err)
-            reminderFinish = []
-        }
-    }
+    let reminderFinish = await getReminderFinishList(env)
 
     //Make reminder finish empty if its the last record
     if(reminderFinish.length < 1 || !reminderFinish.find(entry => entry.cid === cid)){
@@ -142,17 +79,17 @@ export async function removeNotification(cid, interaction, env){
     //Check if the list is empty or the cid is not found
     else if(reminderFinish.length === 1){
         reminderFinish = []
-        await env.reminderList.put('finish', JSON.stringify(reminderFinish))
+        await putKeyValue(env, 'finish', reminderFinish)
     }
     //Remove only the target cid from the reminder finish list
     else{
         let updatedReminderFinish = reminderFinish.filter(entry => entry.cid !== cid)
-        await env.reminderList.put('finish', JSON.stringify(updatedReminderFinish))
+        await putKeyValue(env, 'finish', updatedReminderFinish)
     }
     console.log('Updated reminder time list')
 
     //Remove the cid from the watch list
-    await env.reminderList.delete(cid)
+    await deleteWatchList(env, cid)
     console.log('Removed notification')
 
     //Send confirmation message to discord

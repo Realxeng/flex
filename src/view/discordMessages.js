@@ -109,3 +109,42 @@ export function generateATCTypeButtons(covSort, pressed){
     }
     return msg
 }
+
+export async function sendCheckingFlightplanMessage(env, flightPlan, userId, CID,){
+    const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}/messages/@original`;
+    if (!flightPlan) {
+        response = await DiscordRequest(env, webhookEndpoint, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                content: `No flight plan found for CID ${CID} or it's incomplete.`
+            }),
+        })
+        return
+    }
+    else if(!flightPlan.EET){
+        response = await DiscordRequest(env, webhookEndpoint, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                content: `<@${userId}> Your flight plan doesn't include EET remarks.`
+            }),
+        })
+        return
+    }
+    else if(new Date(flightPlan.finishTime) < new Date()){
+        response = await DiscordRequest(env, webhookEndpoint, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                content: `<@${userId}> Your latest flight plan has concluded.`
+            }),
+        })
+        return
+    }
+    else {
+        response = await DiscordRequest(env, webhookEndpoint, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                content: '⏳Adding your reminder...'
+            })
+        })
+    }
+}
