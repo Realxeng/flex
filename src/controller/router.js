@@ -8,7 +8,7 @@ import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM, 
 import { sceneryHandler } from '../model/scenery.js';
 import { addNotification, removeNotification } from '../model/notify.js';
 import { verifyDiscordRequest } from '../tool/discordFunctions.js';
-import { sendOnlineATC } from './atc.js';
+import { checkOnlineATC } from './atc.js';
 import { sendSceneryFile } from './scenery.js';
 import { checkWatchList } from './scheduled.js';
 
@@ -74,7 +74,7 @@ router.post('/', async (request, env, ctx) => {
         const deferredResponse = new JsonResponse({
           type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
         });
-        ctx.waitUntil(sendOnlineATC(env, interaction))
+        ctx.waitUntil(checkOnlineATC(env, interaction))
         return deferredResponse
       }
       //notify command
@@ -123,7 +123,7 @@ router.post('/', async (request, env, ctx) => {
     else if (componentId.startsWith('atc_type_')){
       const type = componentId.replace('atc_type_', '');
       try{
-        ctx.waitUntil(sendOnlineATC(env, interaction, type));
+        ctx.waitUntil(checkOnlineATC(env, interaction, type));
         return new JsonResponse({
           type: InteractionResponseType.DEFERRED_UPDATE_MESSAGE,
         });
@@ -146,6 +146,7 @@ router.post('/', async (request, env, ctx) => {
   console.error('Unknown Type');
   return new JsonResponse({ error: 'Unknown Type' }, { status: 400 });
 });
+
 //Handle unknown route
 router.all('*', () => new Response('Not Found.', { status: 404 }));
 
@@ -159,6 +160,7 @@ export default {
       return new Response("Internal error", { status: 500 });
     }
   },
+  //CRON Trigger entry point
   async scheduled(controller, env, ctx){
     await checkWatchList(env)
   }
