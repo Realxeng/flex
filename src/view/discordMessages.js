@@ -181,6 +181,15 @@ export async function sendSceneryFile(env, json, zipFile, webhookEndpoint){
     await DiscordRequest(env, webhookEndpoint, options)
 }
 
+export async function sendNoSceneryMessage(env, endpoint, icao){
+    await DiscordRequest(env, endpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `❌ No scenery is found with the ID ${icao}`,
+        }),
+    });
+}
+
 function generateATCTypeButtons(covSort, pressed){
     let count = 1, i = 0
     let msg = [{
