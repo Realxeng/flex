@@ -1,33 +1,21 @@
 import { ButtonStyleTypes, MessageComponentTypes } from "discord-interactions";
 import { DiscordRequest } from "../tool/discordFunctions";
 import { getAirport, getReleases } from "./API/xpgatewayAPI";
+import { sendNoSceneryMessage } from "../view/discordMessages";
 
 export async function sceneryHandler(env, interaction, icao) {
     const endpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
     try {
+        
+
         let data = await getSceneryVersion(icao);
 
         if (!data || !data.sid) {
-            await DiscordRequest(env, endpoint, {
-                method: 'POST',
-                body: JSON.stringify({
-                    content: `❌ No scenery is found with the ID ${icao}`,
-                }),
-            });
+            await sendNoSceneryMessage(env, endpoint, icao)
             return;
         }
 
         const result = await checkReleased(data.sid);
-
-        if (!result) {
-            await DiscordRequest(env, endpoint, {
-                method: 'POST',
-                body: JSON.stringify({
-                    content: `❌ No scenery found or error checking for ${icao}`,
-                }),
-            });
-            return;
-        }
 
         await DiscordRequest(env, endpoint, {
             method: 'POST',
@@ -67,7 +55,7 @@ export async function sceneryHandler(env, interaction, icao) {
     }
 }
 
-export async function getSceneryVersion(icao) {
+async function getSceneryVersion(icao) {
     try {
         const json = await getAirport(icao)
         if (!json) {
@@ -85,7 +73,7 @@ export async function getSceneryVersion(icao) {
     }
 }
 
-export async function checkReleased(SID) {
+async function checkReleased(SID) {
     try {
         const [json, latest] = await getReleases()
         const included = json.SceneryPacks.includes(SID)

@@ -1,6 +1,5 @@
 import { getScenery } from "../model/API/xpgatewayAPI";
 import { base64ToBlob } from "../tool/base64";
-import { DiscordRequest } from "../tool/discordFunctions";
 import { sendSceneryFile } from "../view/discordMessages";
 
 export async function findSceneryFile(SID, env, interaction) {
