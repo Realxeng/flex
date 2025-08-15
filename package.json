@@ -1,6 +1,6 @@
 {
   "name": "flex",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A simple discord bot that uses intents to post pictures from r/aww",
   "type": "module",
   "private": true,
@@ -15,7 +15,7 @@
     "publish": "wrangler deploy"
   },
   "keywords": [],
-  "author": "Justin Beckwith <justin.beckwith@gmail.com>",
+  "author": "Realxeng Pandelaki <realxengpandelaki@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "discord-interactions": "^4.0.0",
