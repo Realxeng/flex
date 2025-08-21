@@ -50,7 +50,7 @@ export async function addNotification(CID, interaction, env){
     response = await DiscordRequest(env, webhookEndpoint, {
         method: 'PATCH',
         body: JSON.stringify({
-            content: `Reminder set for <@${userId}> until <t:${unixTimestamp}:F>`,
+            content: `Reminder set for <@${userId}> until <t:${unixTimestamp}:R>`,
         }),
     })
     console.log(response.ok)
