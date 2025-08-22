@@ -85,7 +85,7 @@ export async function sendCheckingFlightplanMessage(env, flightPlan, userId, CID
         response = await DiscordRequest(env, webhookEndpoint, {
             method: 'PATCH',
             body: JSON.stringify({
-                content: `No flight plan found with CID ${CID}😔`
+                content: `${CID} has not created a flightplan yet😔`
             }),
         })
         return false
