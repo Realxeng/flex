@@ -76,7 +76,7 @@ export async function sendCheckingFlightplanMessage(env, flightPlan, userId, CID
         response = await DiscordRequest(env, webhookEndpoint, {
             method: 'PATCH',
             body: JSON.stringify({
-                content: `No flight plan found for CID ${CID} or it's incomplete.`
+                content: `‼️Impostor detected‼️ <@${userId}> The CID ${CID} is invalid🫵🤨`
             }),
         })
         return false
