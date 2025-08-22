@@ -9,6 +9,10 @@ workers_dev = true
 binding = "reminderList"
 id = "7c5d87b1221b45ddb4bb93f84961d67b"
 
+[[kv_namespaces]]
+binding = "firBoundaries"
+id = "822ff44da9b2493da2b519b20d25a8d4"
+
 [triggers]
 crons = [ "*/5 * * * *"]
 
