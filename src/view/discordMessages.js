@@ -72,11 +72,20 @@ export async function sendReminderMin(offlineList, userId, channelId, env){
 
 export async function sendCheckingFlightplanMessage(env, flightPlan, userId, CID, webhookEndpoint){
     let response = []
-    if (!flightPlan || flightPlan.length < 1 || flightPlan === null || flightPlan == []) {
+    if (flightPlan === null) {
         response = await DiscordRequest(env, webhookEndpoint, {
             method: 'PATCH',
             body: JSON.stringify({
-                content: `‼️Impostor detected‼️ <@${userId}> The CID ${CID} is invalid🫵🤨`
+                content: `‼️Impostor detected‼️ <@${userId}> CID ${CID} is invalid🫵🤨`
+            }),
+        })
+        return false
+    }
+    else if (!flightPlan || flightPlan.length < 1 || flightPlan == []) {
+        response = await DiscordRequest(env, webhookEndpoint, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                content: `Your flight plan is incomplete`
             }),
         })
         return false

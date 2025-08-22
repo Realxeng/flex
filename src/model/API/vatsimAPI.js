@@ -44,9 +44,11 @@ export async function getVatsimFlightPlan(CID){
         return null
     }
 
+    if (res.status !== 200) return null
+
     const response = await res.json()
 
-    if (!response || response.length < 1 || response === null || response == {} || res.status !== 200) return null
+    if (!response || response.length < 1 || response === null || response == {}) return false
 
     const item = response[0]
 
