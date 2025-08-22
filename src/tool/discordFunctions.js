@@ -4,7 +4,7 @@ export async function DiscordRequest(env, endpoint, options) {
   let headers = {
     ...(options.headers || {}),
     Authorization: `Bot ${env.BOT_TOKEN}`,
-    'User-Agent': 'DiscordBot (https://flex.realxengpandelaki-2c3.workers.dev, 2.0.0b1)',
+    'User-Agent': 'DiscordBot (https://flex.realxengpandelaki-2c3.workers.dev, 2.0.0r1)',
   };
 
   if(!headers['Content-Type'] && !(options.body instanceof FormData)){
