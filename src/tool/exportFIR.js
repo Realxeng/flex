@@ -38,7 +38,7 @@ fs.readFile('../model/FIR/UIR.dat', "utf8", (err, data) => {
     
     const lines = data.trim().split('\n')
 
-    const UIR = lines.map(line => {
+    UIR = lines.map(line => {
         const [callsign, name, fir] = line.split('|')
         return {
             callsign: callsign.trim(),
