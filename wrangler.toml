@@ -23,4 +23,11 @@ head_sampling_rate = 1
 # [secrets]
 # DISCORD_TOKEN
 # DISCORD_PUBLIC_KEY
+# DISCORD_TEST_GUILD_ID
 # DISCORD_APPLICATION_ID
+# gsa_client_email
+# gsa_client_id
+# gsa_client_x509_cert_url
+# gsa_private_key
+# gsa_private_key_id
+# service_account_key
