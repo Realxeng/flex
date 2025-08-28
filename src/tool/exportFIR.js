@@ -1,5 +1,4 @@
 import fs from 'fs'
-import 'dotenv/config'
 let geojson = {}
 let FIR = {}
 let UIR = {}
@@ -51,10 +50,4 @@ fs.readFile('../model/FIR/UIR.dat', "utf8", (err, data) => {
     })
 })
 
-let service_account_key = JSON.parse(env.service_account_key || process.env.service_account_key)
-service_account_key.private_key_id = env.private_key_id || process.env.private_key_id
-service_account_key.client_email = process.env.client_email
-service_account_key.client_id = env.client_id || process.env.client_id
-service_account_key.client_x509_cert_url = env.client_x509_cert_url || process.env.client_x509_cert_url
-service_account_key.private_key = (env.private_key || process.env.private_key || "").replace(/\\n/g, '\n')
 
