@@ -1,28 +1,18 @@
-import fs from 'fs'
-let geojson = {}
-let FIR = {}
-let UIR = {}
+import fs from 'fs/promises'
+import { getAccessToken } from './firebaseConnect'
+let geojson = []
+let FIR = []
+let UIR = []
 
-fs.readFile('../model/FIR/Boundaries.geojson', "utf8", (err, data) => {
-    if(err){
-        console.error(err)
-        return
-    }
-    const geojsonRaw = JSON.parse(data)
+async function loadFIRData() {
+    const geojsonData = await fs.readFile('../model/FIR/Boundaries.geojson', "utf8")
 
+    const geojsonRaw = JSON.parse(geojsonData)
     const geojsonFeatures = geojsonRaw.features
-    geojson = geojsonFeatures.map(features => ({id: features.properties.id, geometry: features.properties.geometry}))
-})
+    geojson = geojsonFeatures.map(features => ({id: features.properties.id, geometry: features.geometry}))
 
-fs.readFile('../model/FIR/FIR.dat', "utf8", (err, data) => {
-    if(err){
-        console.log(err)
-        return
-    }
-    
-    const lines = data.trim().split('\n')
-
-    FIR = lines.map(line => {
+    const firData = await fs.readFile('../model/FIR/FIR.dat', "utf8")
+    FIR = firData.trim().split('\n').map(line => {
         const [icao = '', name = '', callsign = '', fir = ''] = line.split('|')
         return {
             callsign: callsign.trim() || icao.trim(),
@@ -30,24 +20,31 @@ fs.readFile('../model/FIR/FIR.dat', "utf8", (err, data) => {
             fir: fir.trim(),
         }
     })
-})
-
-fs.readFile('../model/FIR/UIR.dat', "utf8", (err, data) => {
-    if(err){
-        console.log(err)
-        return
-    }
     
-    const lines = data.trim().split('\n')
-
-    UIR = lines.map(line => {
-        const [callsign, name, fir] = line.split('|')
+    const uirData = await fs.readFile('../model/FIR/UIR.dat', "utf8")
+    UIR = uirData.trim().split('\n').map(line => {
+        const [callsign = '', name = '', fir = ''] = line.split('|')
         return {
             callsign: callsign.trim(),
             name: name.trim(),
             fir: fir.trim().split(','),
         }
     })
+}
+
+await loadFIRData()
+
+const mergedFIR = FIR.map(fir => {
+    const firBoundary =  geojson.find(boundary => boundary.id === fir.fir)
+    return {
+        ...fir,
+        geometry: firBoundary.geometry || null
+    }
 })
 
+const rawToken = await getAccessToken()
+const accessToken = rawToken.access_token
 
+const response = await fetch (
+    `https://firestore.googleapis.com/v1/projects/flex-c305e/databases/(default)/documents/fir`
+)
