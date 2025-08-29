@@ -34,6 +34,33 @@ export async function getOnlineATC(){
     return covSort
 }
 
+export async function getCurrentPosition(CID){
+    try {
+        const res = await fetch(`https://slurper.vatsim.net/users/info?cid=${CID}`, {method: 'GET'})
+        if(res.data){
+            const data = res.data.split(',')
+            if(data[2] == "pilot"){
+                if(data[5] && data[6]){
+                    return {lat: data[5], lon: data[6]}
+                }
+                else{
+                    return {message: `CID ${CID} does not have valid position coordinates`}
+                }
+            }
+            else{
+                return {message: `CID ${CID} is not connected as a pilot`}
+            }
+        }
+        else{
+            console.log(await res.text())
+            return {message: `CID ${CID} is currently not connected`}
+        }
+    } catch (error) {
+        console.log(error)
+        return {message: error}
+    }
+}
+
 export async function getVatsimFlightPlan(CID){
     let res = {}
     try{
