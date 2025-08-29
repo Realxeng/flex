@@ -8,7 +8,8 @@
   "scripts": {
     "start": "wrangler dev",
     "register": "node src/tool/register.js",
-    "publish": "wrangler deploy"
+    "publish": "wrangler deploy",
+    "export": "node src/tool/exportFIR.js"
   },
   "keywords": [],
   "author": "Realxeng Pandelaki <realxengpandelaki@gmail.com>",
