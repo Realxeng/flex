@@ -1,19 +1,15 @@
 import fs from 'fs/promises'
 import { getAccessToken } from './firebaseConnect.js'
-import { write } from 'fs'
-let geojson = []
-let FIR = []
-let UIR = []
 
-async function loadFIRData() {
+async function getFIRData() {
     const geojsonData = await fs.readFile('src/model/FIR/Boundaries.geojson', "utf8")
 
     const geojsonRaw = JSON.parse(geojsonData)
     const geojsonFeatures = geojsonRaw.features
-    geojson = geojsonFeatures.map(features => ({id: features.properties.id.trim(), geometry: features.geometry}))
+    const geojson = geojsonFeatures.map(features => ({ id: features.properties.id.trim(), geometry: features.geometry }))
 
     const firData = await fs.readFile('src/model/FIR/FIR.dat', "utf8")
-    FIR = firData.trim().split('\n').filter(line => line.trim() && !line.startsWith(';')).map(line => {
+    const FIR = firData.trim().split('\n').filter(line => line.trim() && !line.startsWith(';')).map(line => {
         const [icao = '', name = '', callsign = '', fir = ''] = line.split('|')
         return {
             callsign: callsign.trim() || icao.trim(),
@@ -21,9 +17,9 @@ async function loadFIRData() {
             fir: fir.trim(),
         }
     })
-    
+
     const uirData = await fs.readFile('src/model/FIR/UIR.dat', "utf8")
-    UIR = uirData.trim().split('\n').map(line => {
+    const UIR = uirData.trim().split('\n').map(line => {
         const [callsign = '', name = '', fir = ''] = line.split('|')
         return {
             callsign: callsign.trim(),
@@ -31,84 +27,102 @@ async function loadFIRData() {
             fir: fir.trim().split(','),
         }
     })
+
+    return {FIR, UIR, geojson}
 }
 
-await loadFIRData()
-
-const mergedFIR = FIR.map(fir => {
-    const firBoundary =  geojson.find(boundary => boundary.id === fir.fir)
-    return {
-        ...fir,
-        geometry: firBoundary.geometry || null
-    }
-})
-
-const rawToken = await getAccessToken()
-const accessToken = rawToken.access_token
-
-let writes = []
-let writesUIR = []
-
-// for(const eachFIR of mergedFIR){
-//     writes.push({
-//         update: {
-//             name: `projects/flex-c305e/databases/(default)/documents/fir/${eachFIR.callsign}`,
-//             fields: {
-//                 name: { stringValue: eachFIR.name },
-//                 fir: { stringValue: eachFIR.fir },
-//                 boundary: geometryToFirestore(eachFIR.geometry),
-//             }
-//         }
-//     })
-// }
-
-for(const eachUIR of UIR){
-    writesUIR.push({
-        update: {
-            name: `projects/flex-c305e/databases/(default)/documents/uir/${eachUIR.callsign}`,
-            fields: {
-                name: { stringValue: eachUIR.name },
-                fir: {
-                    arrayValue: {
-                        values: eachUIR.fir.map(firId => ({
-                            stringValue: firId
-                        }))
-                    }
-                },
-            }
+function processFIRData(FIR, geojson) {
+    const mergedFIR = FIR.map(fir => {
+        const firBoundary = geojson.find(boundary => boundary.id === fir.fir)
+        return {
+            ...fir,
+            geometry: firBoundary.geometry || null
         }
     })
+
+    let writes = []
+
+    for (const eachFIR of mergedFIR) {
+        writes.push({
+            update: {
+                name: `projects/flex-c305e/databases/(default)/documents/fir/${eachFIR.callsign}`,
+                fields: {
+                    name: { stringValue: eachFIR.name },
+                    fir: { stringValue: eachFIR.fir },
+                    boundary: geometryToFirestore(eachFIR.geometry),
+                }
+            }
+        })
+    }
+
+    //console.dir(writes[1], { depth: null });
+
+    return writes
 }
 
-//console.dir(writes[1], { depth: null });
-/*
-const response = await fetch (
-    `https://firestore.googleapis.com/v1/projects/flex-c305e/databases/(default)/documents:commit`,
-    {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ writes: writes })
-    }
-)
+function processUIRData(UIR) {
+    let writes = []
 
-console.log(await response.text())
-*/
-const responseUIR = await fetch (
-    `https://firestore.googleapis.com/v1/projects/flex-c305e/databases/(default)/documents:commit`,
-    {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ writes: writesUIR })
+    for (const eachUIR of UIR) {
+        writesUIR.push({
+            update: {
+                name: `projects/flex-c305e/databases/(default)/documents/uir/${eachUIR.callsign}`,
+                fields: {
+                    name: { stringValue: eachUIR.name },
+                    fir: {
+                        arrayValue: {
+                            values: eachUIR.fir.map(firId => ({
+                                stringValue: firId
+                            }))
+                        }
+                    },
+                }
+            }
+        })
     }
-)
 
-console.log(await responseUIR.text())
+    //console.dir(writes[1], { depth: null });
+
+    return writes
+}
+
+async function uploadFIRData(writes) {
+    const rawToken = await getAccessToken()
+    const accessToken = rawToken.access_token
+
+    const response = await fetch(
+        `https://firestore.googleapis.com/v1/projects/flex-c305e/databases/(default)/documents:commit`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ writes })
+        }
+    )
+
+    console.log(await response.text())
+}
+
+async function uploadUIRData(writes) {
+    const rawToken = await getAccessToken()
+    const accessToken = rawToken.access_token
+
+    const response = await fetch(
+        `https://firestore.googleapis.com/v1/projects/flex-c305e/databases/(default)/documents:commit`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ writes })
+        }
+    )
+
+    console.log(await response.text())
+}
 
 function geometryToFirestore(geometry) {
     const values = [];
@@ -126,7 +140,7 @@ function geometryToFirestore(geometry) {
                 }
             });
         }
-    } 
+    }
     else if (geometry.type === "MultiPolygon") {
         for (const polygon of geometry.coordinates) {
             for (const [lon, lat] of polygon[0]) {
@@ -144,3 +158,12 @@ function geometryToFirestore(geometry) {
 
     return { arrayValue: { values } };
 }
+
+//Get all the FIR data
+const { FIR, UIR, geojson } = await getFIRData()
+
+//Upload FIR data into firestore
+//await uploadFIRData(processFIRData(FIR, geojson))
+
+//Upload UIR data into firestore
+//await uploadUIRData(processUIRData(UIR))
