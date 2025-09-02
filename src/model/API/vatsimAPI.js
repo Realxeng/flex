@@ -6,6 +6,10 @@ export async function getOnlineATC(){
     let json = {}
     try {
         const res = await fetch(`${apiUrl}/atc/online`, {method: 'GET'})
+        if (!res){
+            console.log('No atc found')
+            return covSort = null
+        }
         json = await res.json()
     } catch (error) {
         console.log(error)
