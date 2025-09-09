@@ -1,5 +1,5 @@
 import fs from 'fs/promises'
-import { getAccessToken } from './firebaseConnect.js'
+import { uploadFIRData, uploadUIRData } from '../model/API/firestroreAPI'
 
 async function getFIRData() {
     const geojsonData = await fs.readFile('src/model/FIR/Boundaries.geojson', "utf8")
@@ -84,44 +84,6 @@ function processUIRData(UIR) {
     //console.dir(writes[1], { depth: null });
 
     return writes
-}
-
-async function uploadFIRData(writes) {
-    const rawToken = await getAccessToken()
-    const accessToken = rawToken.access_token
-
-    const response = await fetch(
-        `https://firestore.googleapis.com/v1/projects/flex-c305e/databases/(default)/documents:commit`,
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ writes })
-        }
-    )
-
-    console.log(await response.text())
-}
-
-async function uploadUIRData(writes) {
-    const rawToken = await getAccessToken()
-    const accessToken = rawToken.access_token
-
-    const response = await fetch(
-        `https://firestore.googleapis.com/v1/projects/flex-c305e/databases/(default)/documents:commit`,
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ writes })
-        }
-    )
-
-    console.log(await response.text())
 }
 
 function geometryToFirestore(geometry) {
