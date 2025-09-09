@@ -1,7 +1,7 @@
 import { DiscordRequest } from "../tool/discordFunctions";
 import { sendCheckingFlightplanMessage } from "../view/discordMessages";
-import { getVatsimFlightPlan } from "./API/vatsimAPI";
-import { deleteWatchList, getReminderFinishList, putKeyValue } from "./watchList";
+import { getVatsimFlightPlan } from "../model/API/vatsimAPI";
+import { deleteWatchList, getReminderFinishList, putKeyValue } from "../model/watchList";
 
 //Add the cid into the watch list in cloudflare kv pair
 export async function addNotification(CID, interaction, env){
@@ -62,8 +62,8 @@ export async function removeNotification(cid, interaction, env){
 
     //Get the current finish time list
     let reminderFinish = await getReminderFinishList(env)
-
-    //Make reminder finish empty if its the last record
+    
+    //Check if the list is empty or the cid is not found
     if(reminderFinish.length < 1 || !reminderFinish.find(entry => entry.cid === cid)){
         await DiscordRequest(env, webhookEndpoint, {
             method: 'POST',
@@ -74,7 +74,7 @@ export async function removeNotification(cid, interaction, env){
         })
         return
     }
-    //Check if the list is empty or the cid is not found
+    //Make reminder finish empty if its the last record
     else if(reminderFinish.length === 1){
         reminderFinish = []
         await putKeyValue(env, 'finish', reminderFinish)
