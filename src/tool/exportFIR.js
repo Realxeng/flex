@@ -124,12 +124,12 @@ function geometryToFirestore(geometry) {
 //Get all the FIR data
 const { FIR, UIR, geojson } = await getFIRData()
 
-/*
-The upload function call is commented to avoid accidental batch upload
 
-##Uncomment the lines below to execute the upload##
+//The upload function call is commented to avoid accidental batch upload
 
-*/
+//
+/*  Uncomment the lines below to execute the upload  */
+//
 
 //Upload FIR data into firestore
 //await uploadFIRData(processFIRData(FIR, geojson))
