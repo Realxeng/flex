@@ -91,7 +91,6 @@ export async function getVatsimFlightPlan(CID){
         deptime: item.deptime,
         hrsfuel: item.hrsfuel,
         filed: item.filed,
-        route: item.route,
     }
 
     if (!result.dep || !result.arr || !result.deptime || !result.hrsfuel) {
@@ -124,5 +123,6 @@ export async function getVatsimFlightPlan(CID){
     delete result.deptime
     delete result.hrsfuel
     console.log(result.EET)
+
     return result
 }
