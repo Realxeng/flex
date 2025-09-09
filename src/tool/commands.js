@@ -31,17 +31,23 @@ export const CHECK_ONLINE_ATC = {
   contexts: [0, 1, 2],
 }
 
-export const GET_ROUTE = {
-  name: 'route',
-  description: 'Get the latest route from the user Navigraph account',
+export const TRACK_USER = {
+  name: 'track',
+  description: 'Dynamically notify when a controller is online based on your online position and route',
   type: 1,
   integration_types: [0, 1],
   contexts: [0, 1, 2],
   options:[
     {
       type: 3,
-      name: 'icao',
-      description: 'Enter the identifier (ICAO) for the airport',
+      name: 'cid',
+      description: 'Enter your VATSIM CID',
+      required: true,
+    },
+    {
+      type: 11,
+      name: 'fms file',
+      description: 'Upload X-Plane .FMS file of your route',
       required: true,
     }
   ]
