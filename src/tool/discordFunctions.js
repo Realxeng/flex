@@ -22,7 +22,6 @@ export async function DiscordRequest(env, endpoint, options) {
       throw new Error(`${res.status} ${res.statusText}`);
     }
     const data = await res.json()
-    //console.log(data)
     return data;
   } catch (err) {
     console.error('Fetch error:', err);
