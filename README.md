@@ -4,6 +4,7 @@ A Discord Bot used to get information for flight simulation purposes that runs i
 ## API Used
 - X-Plane Scenery Gateway (https://gateway.x-plane.com/apiv1/)
 - VATSIM (https://api.vatsim.net/v2/)
+- Firestore (https://firestore.googleapis.com/v1/projects/flex/databases)
 
 ## Webhooks Used
 - Discord Messages Webhook
@@ -12,6 +13,7 @@ A Discord Bot used to get information for flight simulation purposes that runs i
 - Cloudflare Worker
 - Cloudflare Key-Value Pair
 - Cloudflare CRON Trigger
+- Firebase Firestore
 
 ## Implemented Commands
 * `/test`  
@@ -28,3 +30,6 @@ A Discord Bot used to get information for flight simulation purposes that runs i
 
 * `/remove <VATSIM CID>`  
     Remove notification for the specified CID
+
+* `/track <VATSIM CID> <X-Plane .FMS file>`
+    Actively track the flight in VATSIM and send a dynamic notification when a VATSIM ATC is online
