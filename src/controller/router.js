@@ -4,7 +4,7 @@
 
 import { AutoRouter } from 'itty-router';
 import { InteractionResponseType, InteractionType } from 'discord-interactions';
-import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM, REMOVE_NOTIF } from '../tool/commands.js';
+import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM, REMOVE_NOTIF, TRACK_USER } from '../tool/commands.js';
 import { sceneryHandler } from '../model/scenery.js';
 import { addNotification, removeNotification } from './notify.js';
 import { verifyDiscordRequest } from '../tool/discordFunctions.js';
@@ -93,6 +93,14 @@ router.post('/', async (request, env, ctx) => {
         ctx.waitUntil(removeNotification(interaction.data.options[0].value, interaction, env))
         return deferredResponse
       }
+      //track command
+      case TRACK_USER.name.toLowerCase():{
+        const deferredResponse = new JsonResponse({
+          type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+        });
+        //ctx.waitUntil(removeNotification(interaction.data.options[0].value, interaction, env))
+        return deferredResponse
+      }
       //Handle unknown command
       default:
         return new JsonResponse({ error: 'Unknown Type' }, { status: 400 });
@@ -119,7 +127,7 @@ router.post('/', async (request, env, ctx) => {
       }
     }
 
-    //switch atc type button component
+    //Change ATC type buttons interaction
     else if (componentId.startsWith('atc_type_')){
       const type = componentId.replace('atc_type_', '');
       try{
