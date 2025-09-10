@@ -31,9 +31,10 @@ export async function addTrackUser(env, interaction) {
     //Fetch the fms file
     const response = await fetch(fmsFile.url)
     const fms = await response.text()
+    const fmsLines = fms.split(/\r?\n/).map(line => line.trim()).filter(Boolean)
 
     //Verify fms file header
-    if (!fms.startsWith("I\n1100 Version")) {
+    if (fmsLines[0] !== "I" || fmsLines[1] !== "1100 Version") {
         console.log("File header is invalid")
         return sendInvalidFMSFile(env, webhookEndpoint, "header")
     }
@@ -41,7 +42,6 @@ export async function addTrackUser(env, interaction) {
     //Get the route body of the fms file
     let route = []
     try {
-        const fmsLines = fms.split('\n').map(line => line.trim()).filter(Boolean)
         const NUMENRline = fmsLines.findIndex(line => line.startsWith("NUMENR"))
         const totalLineRaw = fmsLines[NUMENRline]
         const totalLine = parseInt(totalLineRaw.substring(6).trim(), 10)
