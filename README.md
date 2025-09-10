@@ -3,7 +3,8 @@ A Discord Bot used to get information for flight simulation purposes that runs i
 
 ## API Used
 - X-Plane Scenery Gateway (https://gateway.x-plane.com/apiv1/)
-- VATSIM (https://api.vatsim.net/v2/)
+- VATSIM Core (https://api.vatsim.net/v2/)
+- VATSIM Slurper (https://slurper.vatsim.net/)
 - Firestore (https://firestore.googleapis.com/v1/projects/flex/databases)
 
 ## Webhooks Used
