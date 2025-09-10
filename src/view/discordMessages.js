@@ -71,52 +71,31 @@ export async function sendReminderMin(offlineList, userId, channelId, env){
 }
 
 export async function sendCheckingFlightplanMessage(env, flightPlan, userId, CID, webhookEndpoint){
-    let response = []
+    let bool = false
+    let content = {}
     if (flightPlan === null) {
-        response = await DiscordRequest(env, webhookEndpoint, {
-            method: 'PATCH',
-            body: JSON.stringify({
-                content: `‼️Impostor detected‼️ <@${userId}> CID ${CID} is invalid🫵🤨`
-            }),
-        })
-        return false
+        content = `‼️Impostor detected‼️ <@${userId}> CID ${CID} is invalid🫵🤨`
     }
-    else if (!flightPlan || flightPlan.length < 1 || flightPlan == []) {
-        response = await DiscordRequest(env, webhookEndpoint, {
-            method: 'PATCH',
-            body: JSON.stringify({
-                content: `CID ${CID} has not created a flightplan yet😔`
-            }),
-        })
-        return false
+    else if (!flightPlan || flightPlan.length < 1) {
+        content = `CID ${CID} has not created a flightplan yet😔`
     }
     else if(!flightPlan.EET){
-        response = await DiscordRequest(env, webhookEndpoint, {
-            method: 'PATCH',
-            body: JSON.stringify({
-                content: `<@${userId}> Your flight plan doesn't include EET remarks.`
-            }),
-        })
-        return false
+        content = `<@${userId}> Your flight plan doesn't include EET remarks.`
     }
     else if(new Date(flightPlan.finishTime) < new Date()){
-        response = await DiscordRequest(env, webhookEndpoint, {
-            method: 'PATCH',
-            body: JSON.stringify({
-                content: `<@${userId}> Your latest flight plan has concluded.`
-            }),
-        })
-        return false
+        content = `<@${userId}> Your latest flight plan has concluded.`
     }
     else {
-        response = await DiscordRequest(env, webhookEndpoint, {
-            method: 'PATCH',
-            body: JSON.stringify({
-                content: '⏳Adding your reminder...'
-            })
-        })
-        return true
+        content = '⏳Adding your reminder...'
+        bool = true
     }
+
+    await DiscordRequest(env, webhookEndpoint, {
+        method: 'PATCH',
+        body: JSON.stringify({ content })
+    })
+    
+    return bool
 }
 
 export async function sendNoOnlineATCMessage(env, webhookEndpoint){
@@ -219,35 +198,25 @@ export async function sendTrackAdded(env, webhookEndpoint, uid, route){
 }
 
 export async function sendInvalidFMSFile(env, webhookEndpoint, reason){
-    switch(reason){
+    let content = {}
+    switch(reason) {
         case "extension":
-            await DiscordRequest(env, webhookEndpoint, {
-                method: 'POST',
-                body: JSON.stringify({
-                    content: `The file must be in .fms extension`,
-                }),
-            });
+            content = `The file must be in .fms extension`
             break;
         case "size":
-            await DiscordRequest(env, webhookEndpoint, {
-                method: 'POST',
-                body: JSON.stringify({
-                    content: `The .fms file is unbelievably large`,
-                }),
-            });
+            content = `The .fms file is unbelievably large`
             break;
         case "header":
-            await DiscordRequest(env, webhookEndpoint, {
-                method: 'POST',
-                body: JSON.stringify({
-                    content: `The .fms file does not follow the standard format`,
-                }),
-            });
+            content = `The .fms file is not in standard format`
             break;
         default:
             console.log("There's no way you ended up here but i'll just put you just in case")
             break;
     }
+    await DiscordRequest(env, webhookEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({ content }),
+    });
 }
 
 export async function unexpectedFMSFileFormat(env, webhookEndpoint){
