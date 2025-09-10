@@ -47,7 +47,7 @@ async function generateJWT(service_account) {
 export async function getAccessToken(env = {}){
     let service_account = JSON.parse(env.service_account_key || process.env.service_account_key)
     service_account.private_key_id = env.private_key_id || process.env.private_key_id
-    service_account.client_email = process.env.client_email
+    service_account.client_email = env.client_email || process.env.client_email
     service_account.client_id = env.client_id || process.env.client_id
     service_account.client_x509_cert_url = env.client_x509_cert_url || process.env.client_x509_cert_url
     service_account.private_key = (env.private_key || process.env.private_key || "").replace(/\\n/g, '\n')
