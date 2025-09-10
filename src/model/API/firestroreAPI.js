@@ -1,4 +1,4 @@
-import { getAccessToken } from './firebaseConnect.js'
+import { getAccessToken } from '../../tool/firebaseConnect'
 
 export async function uploadFirestore(writes) {
     const rawToken = await getAccessToken()

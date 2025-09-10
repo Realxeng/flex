@@ -1,6 +1,7 @@
 name = "flex"
 main = "./src/controller/router.js"
 compatibility_date="2025-08-05"
+compatibility_flags = [ "nodejs_compat" ]
 
 account_id = "2c3a662f1c50e7d9b72682cbfae3363c"
 workers_dev = true
