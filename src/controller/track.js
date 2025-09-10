@@ -17,8 +17,8 @@ export async function addTrackUser(env, interaction) {
     const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
 
     //Check file extension
-    if (fmsFile.content_type !== "application/octet-stream" || file.content_type !== "text/plain") {
-        console.log(`File type not supported: ${fmsFile.content_type}`)
+    if (!fmsFile.filename.endsWith(".fms")) {
+        console.log(`File type not supported: ${fmsFile.filename.substring(fmsFile.filename.length - 4)}`)
         return sendInvalidFMSFile(env, webhookEndpoint, "extension")
     }
 
