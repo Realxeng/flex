@@ -15,7 +15,7 @@ binding = "firBoundaries"
 id = "822ff44da9b2493da2b519b20d25a8d4"
 
 [triggers]
-crons = [ "*/5 * * * *"]
+crons = [ "*/3 * * * *"]
 
 [observability]
 enabled = true
