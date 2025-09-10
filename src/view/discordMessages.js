@@ -200,13 +200,61 @@ export async function sendNoSceneryMessage(env, webhookEndpoint, icao){
     });
 }
 
-export async function sendCIDInvalid(env, cid){
-    const endpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
-
-    await DiscordRequest(env, endpoint, {
+export async function sendCIDInvalid(env, webhookEndpoint, cid){
+    await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify({
             content: `CID ${cid} is not a valid member`,
+        }),
+    });
+}
+
+export async function sendTrackAdded(env, webhookEndpoint, uid, route){
+    await DiscordRequest(env, webhookEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `🛫Tracking <@${uid}> from ${route[0].ident} to ${route[route.length - 1].ident}`,
+        }),
+    });
+}
+
+export async function sendInvalidFMSFile(env, webhookEndpoint, reason){
+    switch(reason){
+        case "extension":
+            await DiscordRequest(env, webhookEndpoint, {
+                method: 'POST',
+                body: JSON.stringify({
+                    content: `The file must be in .fms extension`,
+                }),
+            });
+            break;
+        case "size":
+            await DiscordRequest(env, webhookEndpoint, {
+                method: 'POST',
+                body: JSON.stringify({
+                    content: `The .fms file is unbelievably large`,
+                }),
+            });
+            break;
+        case "header":
+            await DiscordRequest(env, webhookEndpoint, {
+                method: 'POST',
+                body: JSON.stringify({
+                    content: `The .fms file does not follow the standard format`,
+                }),
+            });
+            break;
+        default:
+            console.log("There's no way you ended up here but i'll just put you just in case")
+            break;
+    }
+}
+
+export async function unexpectedFMSFileFormat(env, webhookEndpoint){
+    await DiscordRequest(env, webhookEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `Error parsing your route from the .fms file`,
         }),
     });
 }
