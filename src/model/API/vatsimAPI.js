@@ -41,8 +41,9 @@ export async function getOnlineATC(){
 export async function getCurrentPosition(CID){
     try {
         const res = await fetch(`https://slurper.vatsim.net/users/info?cid=${CID}`, {method: 'GET'})
-        if(res.data){
-            const data = res.data.split(',')
+        const slurperData = await res.text()
+        if(slurperData){
+            const data = slurperData.split(',')
             if(data[2] == "pilot"){
                 if(data[5] && data[6]){
                     return {lat: data[5], lon: data[6]}
