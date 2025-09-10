@@ -35,3 +35,24 @@ export async function deleteWatchList(env, key){
   console.log(`deleting reminder for ${key}`)
   await env.reminderList.delete(key)
 }
+
+export async function getTrackingList(env){
+  //Get the CIDs
+  let trackingListRaw = await env.reminderList.get('track')
+  //check if the list has value
+  if (trackingListRaw) {
+    //assign the values to array
+    try {
+        trackingList = JSON.parse(trackingListRaw)
+        trackingList = Array.isArray(trackingList) ? trackingList : [trackingList]
+    } catch (err) {
+        console.error('Could not parse reminderFinish:', err)
+        trackingList = []
+    }
+  }
+  else{
+    //finish job if the list is empty
+    return null
+  }
+  return trackingList
+}
