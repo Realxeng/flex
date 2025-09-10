@@ -1,4 +1,4 @@
-import { getOnlineATC } from "../model/API/vatsimAPI"
+import { getCurrentPosition, getOnlineATC } from "../model/API/vatsimAPI"
 import { checkFinishTime, checkRouteATC } from "../model/scheduled"
 import { getReminderFinishList } from "../model/watchList"
 
@@ -31,5 +31,34 @@ export async function checkWatchList(env){
     const watch = await getWatchList(env, cid)
     //Notify for any atc in route
     await checkRouteATC(env, cid, atcList, watch)
+  }
+}
+
+export async function checkTrackList(env){
+  //Get all online atc
+  const atcGrouped = await getOnlineATC()
+  //Finish job if there are no online ATC
+  if(!atcGrouped){
+    return
+  }
+
+  //Get tracking list
+  let trackingList = await getTrackingList(env)
+  //Finish job if empty
+  if(!trackingList || trackingList.length < 1) return
+
+  //Get the boundaries
+
+  //Iterate through the cid list
+  for (const cid of trackingList){
+    //Get the live position of the user
+    const position = await getCurrentPosition(cid)
+    //Handle empty or errorneous position
+    if(position.message){
+      console.log(position.message)
+      continue
+    }
+
+    //Check the position with waypoints
   }
 }
