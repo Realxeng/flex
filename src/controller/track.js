@@ -1,4 +1,7 @@
+import { uploadRouteData } from "../model/API/firestroreAPI"
+import { verifyCID } from "../model/API/vatsimAPI"
 import { putKeyValue } from "../model/watchList"
+import { sendCIDInvalid } from "../view/discordMessages"
 
 export async function addTrackUser(env, interaction) {
     //Get username
@@ -41,9 +44,25 @@ export async function addTrackUser(env, interaction) {
     })
 
     try {
+        console.log("Verifying user CID")
+        if(!verifyCID(cid)){
+            return sendCIDInvalid(env, cid)
+        }
+    } catch (err) {
+        console.error(`Error verifying CID for cid: ${cid}`)
+    }
+
+    try {
+        console.log("Adding user to active tracking")
         await putKeyValue(env, "track", cid)
     } catch (err) {
         console.error(`Error saving reminder for user: ${username}`, err);
     }
 
+    try{
+        console.log("Adding user route to database")
+        await uploadRouteData(route, cid)
+    } catch (err) {
+        console.error(`Error saving route data for user: ${username}`, err)
+    }
 }

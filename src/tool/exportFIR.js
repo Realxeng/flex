@@ -1,5 +1,5 @@
 import fs from 'fs/promises'
-import { uploadFIRData, uploadUIRData } from '../model/API/firestroreAPI'
+import { uploadFirestore } from '../model/API/firestroreAPI'
 
 async function getFIRData() {
     const geojsonData = await fs.readFile('src/model/FIR/Boundaries.geojson', "utf8")
@@ -132,7 +132,7 @@ const { FIR, UIR, geojson } = await getFIRData()
 //
 
 //Upload FIR data into firestore
-//await uploadFIRData(processFIRData(FIR, geojson))
+//await uploadFirestore(processFIRData(FIR, geojson))
 
 //Upload UIR data into firestore
-//await uploadUIRData(processUIRData(UIR))
+//await uploadFirestore(processUIRData(UIR))
