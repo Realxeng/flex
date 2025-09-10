@@ -85,7 +85,7 @@ export const TRACK_USER = {
     },
     {
       type: 11,
-      name: 'fms file',
+      name: 'fms',
       description: 'Upload X-Plane .FMS file of your route',
       required: true,
     }
