@@ -126,3 +126,21 @@ export async function getVatsimFlightPlan(CID){
 
     return result
 }
+
+export async function verifyCID(CID){
+    let res = {}
+    try{
+        res = await fetch(`${apiUrl}/members/${CID}/stats`, {method: 'GET'})
+    }
+    catch(err){
+        console.err(err)
+        return null
+    }
+
+    if (res.status === 404) return false
+
+    const response = await res.json()
+
+    if (!response || response.length < 1 || response === null || response == {}) return false
+    else return true
+}

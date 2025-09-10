@@ -191,11 +191,22 @@ export async function sendSceneryFile(env, json, zipFile, webhookEndpoint){
     await DiscordRequest(env, webhookEndpoint, options)
 }
 
-export async function sendNoSceneryMessage(env, endpoint, icao){
-    await DiscordRequest(env, endpoint, {
+export async function sendNoSceneryMessage(env, webhookEndpoint, icao){
+    await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify({
             content: `❌ No scenery is found with the ID ${icao}`,
+        }),
+    });
+}
+
+export async function sendCIDInvalid(env, cid){
+    const endpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
+
+    await DiscordRequest(env, endpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `CID ${cid} is not a valid member`,
         }),
     });
 }
