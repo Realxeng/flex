@@ -1,7 +1,7 @@
 import { getAccessToken } from '../../tool/firebaseConnect'
 
-export async function uploadFirestore(writes) {
-    const rawToken = await getAccessToken()
+export async function uploadFirestore(env, writes) {
+    const rawToken = await getAccessToken(env)
     const accessToken = rawToken.access_token
 
     const response = await fetch(
@@ -19,7 +19,7 @@ export async function uploadFirestore(writes) {
     console.log(await response.text())
 }
 
-export async function uploadRouteData(routes, cid){
+export async function uploadRouteData(env, routes, cid){
     let writes = {
         update: {
             name: `projects/flex-c305e/databases/(default)/documents/routes/${cid}`,
@@ -48,5 +48,5 @@ export async function uploadRouteData(routes, cid){
         })
     }
 
-    await uploadFirestore(writes)
+    await uploadFirestore(env, writes)
 }

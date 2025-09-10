@@ -76,7 +76,7 @@ export async function addTrackUser(env, interaction) {
     //Add user route to firestore
     try {
         console.log("Adding user route to database")
-        await uploadRouteData(route, cid)
+        await uploadRouteData(env, route, cid)
     } catch (err) {
         return console.error(`Error saving route data for user: ${username}`, err)
     }
