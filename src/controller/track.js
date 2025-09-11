@@ -89,7 +89,7 @@ export async function addTrackUser(env, interaction) {
     await sendTrackAdded(env, webhookEndpoint, uid, route)
 }
 
-export async function trackUserPosition(env, cid, routeData, position) {
+export async function trackUserPosition(routeData, position) {
     //Remove past waypoints
     let routes = routeData.routes
     for(wpt of routes) {
@@ -100,6 +100,10 @@ export async function trackUserPosition(env, cid, routeData, position) {
     }
     routes = routes.filter(route => route.airway !== "ADES")
     return routes
+}
+
+export async function checkOnlineATCInRoute(env, cid, updatedRoute, atcGrouped, boundary) {
+    
 }
 
 function angularDifference(h1, h2) {
