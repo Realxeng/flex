@@ -49,7 +49,7 @@ export async function checkTrackList(env, ctx){
 
     //Check the position with waypoints
     const routeData = fetchRouteData(env, cid)
-    ctx.waitUntil(trackUserPosition(env, cid, routeData, position))
+    const updatedRoute = trackUserPosition(env, cid, routeData, position)
   }
 
   //Get all online atc

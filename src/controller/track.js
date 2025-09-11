@@ -99,6 +99,7 @@ export async function trackUserPosition(env, cid, routeData, position) {
         else break
     }
     updateRouteData(env, routes, cid)
+    return routes
 }
 
 function angularDifference(h1, h2) {
