@@ -1,6 +1,8 @@
+import { fetchRouteData } from "../model/API/firestroreAPI"
 import { getCurrentPosition, getOnlineATC } from "../model/API/vatsimAPI"
 import { checkFinishTime, checkRouteATC } from "../model/scheduled"
 import { getReminderFinishList } from "../model/watchList"
+import { trackUserPosition } from "./track"
 
 export async function checkWatchList(env){
   //Get all online atc
@@ -34,7 +36,22 @@ export async function checkWatchList(env){
   }
 }
 
-export async function checkTrackList(env){
+export async function checkTrackList(env, ctx){
+  //Iterate through the cid list
+  for (const cid of trackingList){
+    //Get the live position of the user
+    const position = await getCurrentPosition(cid)
+    //Handle empty or errorneous position
+    if(position.message){
+      console.log(position.message)
+      continue
+    }
+
+    //Check the position with waypoints
+    const routeData = fetchRouteData(env, cid)
+    ctx.waitUntil(trackUserPosition(env, cid, routeData, position))
+  }
+
   //Get all online atc
   const atcGrouped = await getOnlineATC()
   //Finish job if there are no online ATC
@@ -48,17 +65,5 @@ export async function checkTrackList(env){
   if(!trackingList || trackingList.length < 1) return
 
   //Get the boundaries
-
-  //Iterate through the cid list
-  for (const cid of trackingList){
-    //Get the live position of the user
-    const position = await getCurrentPosition(cid)
-    //Handle empty or errorneous position
-    if(position.message){
-      console.log(position.message)
-      continue
-    }
-
-    //Check the position with waypoints
-  }
+  
 }

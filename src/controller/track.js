@@ -1,4 +1,4 @@
-import { uploadRouteData } from "../model/API/firestroreAPI"
+import { updateRouteData, uploadRouteData } from "../model/API/firestroreAPI"
 import { verifyCID } from "../model/API/vatsimAPI"
 import { putKeyValue } from "../model/watchList"
 import { sendCIDInvalid, sendInvalidFMSFile, sendTrackAdded, unexpectedFMSFileFormat } from "../view/discordMessages"
@@ -87,4 +87,41 @@ export async function addTrackUser(env, interaction) {
     //Send success message
     console.log('Tracking')
     await sendTrackAdded(env, webhookEndpoint, uid, route)
+}
+
+export async function trackUserPosition(env, cid, routeData, position) {
+    //Remove past waypoints
+    let routes = routeData.routes
+    for(wpt of routes) {
+        if(!isAhead(routeData.dep, position, wpt)){
+            routes = routes.filter(route => route.ident !== wpt.ident)
+        }
+        else break
+    }
+    updateRouteData(env, routes, cid)
+}
+
+function angularDifference(h1, h2) {
+    let diff = Math.abs(h1 - h2) % 360
+    return diff > 180 ? 360 - diff : diff
+}
+
+function bearingFromTo(lat1, lon1, lat2, lon2) {
+    const φ1 = (lat1 * Math.PI) / 180
+    const φ2 = (lat2 * Math.PI) / 180
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180
+
+    const y = Math.sin(Δλ) * Math.cos(φ2)
+    const x = Math.cos(φ1) * Math.sin(φ2) -
+        Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ)
+
+    let θ = Math.atan2(y, x) * 180 / Math.PI
+    return (θ + 360) % 360
+}
+
+function isAhead(dep, position, wpt) {
+    const heading = bearingFromTo(position.lat, position.lon, dep.lat, dep.lon)
+    const bearing = bearingFromTo(position.lat, position.lon, wpt.lat, wpt.lon)
+    const diff = angularDifference(heading, bearing)
+    return diff <= 90
 }
