@@ -101,7 +101,7 @@ export async function checkTrackList(env, ctx) {
     const fssFIR = await fetchUIRData(env, fssList)
     const fssCallsignList = fssFIR.flatMap(fss => fss.fir)
     //Add to list of fir to fetch
-    callsignList.push(...fssCallsignList)
+    callsignList.push(...new Set(fssCallsignList))
   }
 
   //Get the boundary of every online fir
