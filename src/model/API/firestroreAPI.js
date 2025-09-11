@@ -175,6 +175,12 @@ export async function fetchFIRData(env, callsignList) {
     return data
 }
 
+export async function fetchUIRData(env, fssList) {
+    const documents = fssList.map(fss => `projects/flex-c305e/databases/(default)/documents/uir/${fss}`)
+    const data = fetchFirestoreBatch(env, documents)
+    return data
+}
+
 function unwrapFirestoreValue(value) {
     if (value.stringValue !== undefined) return value.stringValue
     if (value.integerValue !== undefined) return parseInt(value.integerValue, 10)

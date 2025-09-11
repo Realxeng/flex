@@ -77,23 +77,34 @@ export async function checkTrackList(env, ctx) {
     return
   }
 
-  //Get the list of atc callsigns
+  //Get the list of CTR and APP callsigns
   const callsignList = [
     ...new Set(
       Object.values(atcGrouped).flatMap(group =>
-        group.map(atc => atc.callsign.slice(0, -4))
+        group.filter(atc =>
+          atc.callsign.endsWith("CTR") || atc.callsign.endsWith("APP")
+        ).map(
+          atc => atc.callsign.slice(0, -4)
+        )
       )
     )
   ]
 
+  //Check for UIRs
+  if("FSS" in atcGrouped){
+    let fssList = []
+    //Get the fss callsigns
+    for(const fss of atcGrouped["FSS"]){
+      fssList.push(fss.callsign.slice(0, -4))
+    }
+    //Get the fss FIR coverages
+    const fssFIR = await fetchUIRData(env, fssList)
+    const fssCallsignList = fssFIR.flatMap(fss => fss.fir)
+    //Add to list of fir to fetch
+    callsignList.push(...fssCallsignList)
+  }
+
   //Get the boundary of every online fir
   const boundary = await fetchFIRData(env, callsignList)
-
-  //Check for UIRs
-  if(Object.keys(atcGrouped).includes("FSS")){
-    for(const fss of atcGrouped.fss){
-      
-    }
-  }
 
 }
