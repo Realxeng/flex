@@ -2,7 +2,7 @@ import { fetchFIRData, fetchRouteData, updateBatchRouteData } from "../model/API
 import { getCurrentPosition, getOnlineATC } from "../model/API/vatsimAPI"
 import { checkFinishTime, checkRouteATC } from "../model/scheduled"
 import { getReminderFinishList, getTrackingList, putKeyValue } from "../model/watchList"
-import { trackUserPosition } from "./track"
+import { checkOnlineATCInRoute, trackUserPosition } from "./track"
 
 export async function checkWatchList(env) {
   //Get all online atc
@@ -59,9 +59,11 @@ export async function checkTrackList(env, ctx) {
     updatedRoute[cid] = await trackUserPosition(env, cid, routeData, position)
 
     //Remove tracking when there are no remaining waypoints
+    let removed = {}
     if (updatedRoute[cid].length < 1) {
-      putKeyValue(env, 'track', trackingList.filter(track => track !== cid))
+      removed.push(cid)
     }
+    await putKeyValue(env, 'track', trackingList.filter(track => !removed.includes(track)))
   }
 
   //Push the updated route to firestore
@@ -107,4 +109,6 @@ export async function checkTrackList(env, ctx) {
   //Get the boundary of every online fir
   const boundary = await fetchFIRData(env, callsignList)
 
+  //Check the route with online ATC
+  await checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundary)
 }
