@@ -98,6 +98,7 @@ export async function trackUserPosition(env, cid, routeData, position) {
         }
         else break
     }
+    routes = routes.filter(route => route.airway !== "ADES")
     return routes
 }
 

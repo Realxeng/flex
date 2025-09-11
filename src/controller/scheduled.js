@@ -1,7 +1,7 @@
 import { fetchRouteData, updateBatchRouteData } from "../model/API/firestroreAPI"
 import { getCurrentPosition, getOnlineATC } from "../model/API/vatsimAPI"
 import { checkFinishTime, checkRouteATC } from "../model/scheduled"
-import { getReminderFinishList, getTrackingList } from "../model/watchList"
+import { getReminderFinishList, getTrackingList, putKeyValue } from "../model/watchList"
 import { trackUserPosition } from "./track"
 
 export async function checkWatchList(env){
@@ -57,6 +57,11 @@ export async function checkTrackList(env, ctx){
     //Check the position with waypoints
     const routeData = await fetchRouteData(env, cid)
     updatedRoute[cid] = await trackUserPosition(env, cid, routeData, position)
+
+    //Remove tracking when there are no remaining waypoints
+    if (updatedRoute[cid].length < 1){
+      putKeyValue(env, 'track', trackingList.filter(track => track !== cid))
+    }
   }
 
   //Push the updated route to firestore
