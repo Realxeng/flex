@@ -93,7 +93,7 @@ export async function trackUserPosition(env, cid, routeData, position) {
     //Remove past waypoints
     let routes = routeData.routes
     for(wpt of routes) {
-        if(!isAhead(routeData.dep, position, wpt)){
+        if(!isAhead(routeData.arr, position, wpt)){
             routes = routes.filter(route => route.ident !== wpt.ident)
         }
         else break
@@ -120,8 +120,8 @@ function bearingFromTo(lat1, lon1, lat2, lon2) {
     return (θ + 360) % 360
 }
 
-function isAhead(dep, position, wpt) {
-    const heading = bearingFromTo(position.lat, position.lon, dep.lat, dep.lon)
+function isAhead(arr, position, wpt) {
+    const heading = bearingFromTo(position.lat, position.lon, arr.lat, arr.lon)
     const bearing = bearingFromTo(position.lat, position.lon, wpt.lat, wpt.lon)
     const diff = angularDifference(heading, bearing)
     return diff <= 90
