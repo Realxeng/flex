@@ -36,12 +36,10 @@ function processFIRData(FIR, geojson) {
         const firBoundary = geojson.find(boundary => boundary.id === fir.fir)
         if (!firBoundary) {
             console.warn(`⚠️ No boundary found for FIR ${fir.fir}`)
+            return null
         }
-        return {
-            ...fir,
-            geometry: firBoundary?.geometry || null
-        }
-    })
+        return { ...fir, geometry: firBoundary.geometry }
+    }).filter(Boolean)
 
     let writes = []
 
@@ -66,7 +64,7 @@ function processFIRData(FIR, geojson) {
         })
     }
 
-    //console.dir(writes[1], { depth: null });
+    console.dir({ writes }, { depth: null })
 
     return writes
 }
@@ -92,7 +90,7 @@ function processUIRData(UIR) {
         })
     }
 
-    //console.dir(writes[1], { depth: null });
+    console.dir(writes[1], { depth: null });
 
     return writes
 }
@@ -169,7 +167,8 @@ const { FIR, UIR, geojson } = await getFIRData()
 //
 
 //Upload FIR data into firestore
-await uploadFirestore(processFIRData(FIR, geojson))
+//await uploadFirestore({}, processFIRData(FIR, geojson))
+
 
 //Upload UIR data into firestore
-await uploadFirestore(processUIRData(UIR))
+//await uploadFirestore({}, processUIRData(UIR))
