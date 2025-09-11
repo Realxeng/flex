@@ -55,6 +55,9 @@ export async function addTrackUser(env, interaction) {
         await unexpectedFMSFileFormat(env, webhookEndpoint)
     }
 
+    const dep = route.find(wpt => wpt.airway === "ADEP")
+    const arr = route.find(wpt => wpt.airway === "ADES")
+
     //Verify user CID
     try {
         console.log("Verifying user CID")
@@ -76,7 +79,7 @@ export async function addTrackUser(env, interaction) {
     //Add user route to firestore
     try {
         console.log("Adding user route to database")
-        await uploadRouteData(env, route, cid)
+        await uploadRouteData(env, route, cid, dep, arr)
     } catch (err) {
         return console.error(`Error saving route data for user: ${username}`, err)
     }

@@ -19,7 +19,7 @@ export async function uploadFirestore(env, writes) {
     console.log(await response.text())
 }
 
-export async function uploadRouteData(env, routes, cid){
+export async function uploadRouteData(env, routes, cid, dep, arr){
     let writes = {
         update: {
             name: `projects/flex-c305e/databases/(default)/documents/routes/${cid}`,
@@ -27,6 +27,24 @@ export async function uploadRouteData(env, routes, cid){
                 routes: { 
                     arrayValue: {
                         values: []
+                    }
+                },
+                dep: {
+                    mapValue:{
+                        fields: {
+                            ident: { stringValue: dep.ident },
+                            lat: { stringValue: dep.lat },
+                            lon: { stringValu: dep.lon },
+                        }
+                    }
+                },
+                arr: {
+                    mapValue:{
+                        fields: {
+                            ident: { stringValue: arr.ident },
+                            lat: { stringValue: arr.lat },
+                            lon: { stringValu: arr.lon },
+                        }
                     }
                 }
             },
