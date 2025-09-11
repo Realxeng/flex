@@ -1,7 +1,7 @@
 import { fetchRouteData } from "../model/API/firestroreAPI"
 import { getCurrentPosition, getOnlineATC } from "../model/API/vatsimAPI"
 import { checkFinishTime, checkRouteATC } from "../model/scheduled"
-import { getReminderFinishList } from "../model/watchList"
+import { getReminderFinishList, getTrackingList } from "../model/watchList"
 import { trackUserPosition } from "./track"
 
 export async function checkWatchList(env){
