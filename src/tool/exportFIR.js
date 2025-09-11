@@ -1,5 +1,5 @@
 import fs from 'fs/promises'
-import { uploadFirestore } from '../model/API/firestroreAPI'
+import { uploadFirestore } from '../model/API/firestroreAPI.js'
 
 async function getFIRData() {
     const geojsonData = await fs.readFile('src/model/FIR/Boundaries.geojson', "utf8")
@@ -34,9 +34,12 @@ async function getFIRData() {
 function processFIRData(FIR, geojson) {
     const mergedFIR = FIR.map(fir => {
         const firBoundary = geojson.find(boundary => boundary.id === fir.fir)
+        if (!firBoundary) {
+            console.warn(`⚠️ No boundary found for FIR ${fir.fir}`)
+        }
         return {
             ...fir,
-            geometry: firBoundary.geometry || null
+            geometry: firBoundary?.geometry || null
         }
     })
 
@@ -72,7 +75,7 @@ function processUIRData(UIR) {
     let writes = []
 
     for (const eachUIR of UIR) {
-        writesUIR.push({
+        writes.push({
             update: {
                 name: `projects/flex-c305e/databases/(default)/documents/uir/${eachUIR.callsign}`,
                 fields: {
@@ -166,7 +169,7 @@ const { FIR, UIR, geojson } = await getFIRData()
 //
 
 //Upload FIR data into firestore
-//await uploadFirestore(processFIRData(FIR, geojson))
+await uploadFirestore(processFIRData(FIR, geojson))
 
 //Upload UIR data into firestore
-//await uploadFirestore(processUIRData(UIR))
+await uploadFirestore(processUIRData(UIR))
