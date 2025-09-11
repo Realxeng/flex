@@ -1,4 +1,4 @@
-import { fetchRouteData } from "../model/API/firestroreAPI"
+import { fetchRouteData, updateBatchRouteData } from "../model/API/firestroreAPI"
 import { getCurrentPosition, getOnlineATC } from "../model/API/vatsimAPI"
 import { checkFinishTime, checkRouteATC } from "../model/scheduled"
 import { getReminderFinishList, getTrackingList } from "../model/watchList"
@@ -43,7 +43,7 @@ export async function checkTrackList(env, ctx){
   if(!trackingList || trackingList.length < 1) return
 
   //Initialize the routes array for all cid
-  let updatedRoute = []
+  let updatedRoute = {}
   //Iterate through the cid list
   for (const cid of trackingList){
     //Get the live position of the user
@@ -55,9 +55,12 @@ export async function checkTrackList(env, ctx){
     }
 
     //Check the position with waypoints
-    const routeData = fetchRouteData(env, cid)
-    updatedRoute.push = { cid: trackUserPosition(env, cid, routeData, position) }
+    const routeData = await fetchRouteData(env, cid)
+    updatedRoute[cid] = await trackUserPosition(env, cid, routeData, position)
   }
+
+  //Push the updated route to firestore
+  await updateBatchRouteData(env, updatedRoute)
 
   //Get all online atc
   const atcGrouped = await getOnlineATC()
@@ -67,5 +70,11 @@ export async function checkTrackList(env, ctx){
   }
 
   //Get the boundaries
-  
+  for(key in atcGrouped){
+    if(key === "CTR"){
+      for(atc of atcGrouped[key]){
+
+      }
+    }
+  }
 }

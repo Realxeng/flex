@@ -96,35 +96,42 @@ export async function uploadRouteData(env, routes, cid, dep, arr) {
     await uploadFirestore(env, writes)
 }
 
-export async function updateRouteData(env, routes, cid) {
-    let writes = {
-        update: {
-            name: `projects/flex-c305e/databases/(default)/documents/routes/${cid}`,
-            fields: {
-                routes: {
-                    arrayValue: {
-                        values: []
+export async function updateBatchRouteData(env, updatedRoute) {
+    let writes = []
+
+    for (const cid in updatedRoute) {
+        const routes = updatedRoute[cid]
+        
+        let write = {
+            update: {
+                name: `projects/flex-c305e/databases/(default)/documents/routes/${cid}`,
+                fields: {
+                    routes: {
+                        arrayValue: {
+                            values: []
+                        }
                     }
                 }
             }
         }
-    }
 
-    for (const wpt of routes) {
-        writes.update.fields.routes.arrayValue.values.push({
-            mapValue: {
-                fields: {
-                    type: { integerValue: String(wpt.type) },
-                    ident: { stringValue: wpt.ident },
-                    airway: { stringValue: wpt.airway },
-                    altitude: { integerValue: String(wpt.altitude) },
-                    lat: { doubleValue: wpt.lat },
-                    lon: { doubleValue: wpt.lon },
+        for (const wpt of routes) {
+            write.update.fields.routes.arrayValue.values.push({
+                mapValue: {
+                    fields: {
+                        type: { integerValue: String(wpt.type) },
+                        ident: { stringValue: wpt.ident },
+                        airway: { stringValue: wpt.airway },
+                        altitude: { integerValue: String(wpt.altitude) },
+                        lat: { doubleValue: wpt.lat },
+                        lon: { doubleValue: wpt.lon },
+                    }
                 }
-            }
-        })
-    }
+            })
+        }
 
+        writes.push(write)
+    }
     await uploadFirestore(env, writes)
 }
 
