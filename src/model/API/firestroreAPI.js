@@ -46,6 +46,34 @@ export async function fetchFirestore(env, path) {
     return data
 }
 
+export async function fetchFirestoreBatch(env, documents) {
+    const rawToken = await getAccessToken(env)
+    const accessToken = rawToken.access_token
+
+    const res = await fetch(
+        `https://firestore.googleapis.com/v1/projects/flex-c305e/databases/(default)/documents:batchGet`,
+        {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({ documents })
+        }
+    )
+
+    if (!res.ok) {
+        console.error(`Error fetching document: ${res.status}`)
+        console.log(await res.text())
+    }
+
+    const dataRaw = await res.json()
+    console.log(dataRaw)
+
+    const data = unwrapFirestoreBatch(dataRaw)
+
+    return data
+}
+
 export async function uploadRouteData(env, routes, cid, dep, arr) {
     let writes = {
         update: {
@@ -101,7 +129,7 @@ export async function updateBatchRouteData(env, updatedRoute) {
 
     for (const cid in updatedRoute) {
         const routes = updatedRoute[cid]
-        
+
         let write = {
             update: {
                 name: `projects/flex-c305e/databases/(default)/documents/routes/${cid}`,
@@ -141,6 +169,12 @@ export async function fetchRouteData(env, cid) {
     return data
 }
 
+export async function fetchFIRData(env, callsignList) {
+    const documents = callsignList.map(cs => `projects/flex-c305e/databases/(default)/documents/fir/${cs}`)
+    const data = fetchFirestoreBatch(env, documents)
+    return data
+}
+
 function unwrapFirestoreValue(value) {
     if (value.stringValue !== undefined) return value.stringValue
     if (value.integerValue !== undefined) return parseInt(value.integerValue, 10)
@@ -162,4 +196,17 @@ function unwrapFirestoreFields(fields) {
         obj[key] = unwrapFirestoreValue(val)
     }
     return obj
+}
+
+function unwrapFirestoreBatch(dataRaw) {
+    const docs = {} 
+
+    for (const item of dataRaw) {
+        if (item.found && item.found.fields) {
+            const docId = item.found.name.split("/").pop()
+            docs[docId] = unwrapFirestoreFields(item.found.fields)
+        }
+    }
+
+    return docs
 }

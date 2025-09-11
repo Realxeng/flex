@@ -1,14 +1,14 @@
-import { fetchRouteData, updateBatchRouteData } from "../model/API/firestroreAPI"
+import { fetchFIRData, fetchRouteData, updateBatchRouteData } from "../model/API/firestroreAPI"
 import { getCurrentPosition, getOnlineATC } from "../model/API/vatsimAPI"
 import { checkFinishTime, checkRouteATC } from "../model/scheduled"
 import { getReminderFinishList, getTrackingList, putKeyValue } from "../model/watchList"
 import { trackUserPosition } from "./track"
 
-export async function checkWatchList(env){
+export async function checkWatchList(env) {
   //Get all online atc
   const covSort = await getOnlineATC()
   //Finish job if there are no online ATC
-  if(!covSort){
+  if (!covSort) {
     return
   }
   //Ungroup the ATC
@@ -17,7 +17,7 @@ export async function checkWatchList(env){
   //Get the finish times
   let finishList = await getReminderFinishList(env)
   //Check if its empty
-  if(!finishList || finishList.length < 1) return
+  if (!finishList || finishList.length < 1) return
 
   //Check the finish time
   finishList = await checkFinishTime(env, finishList)
@@ -29,27 +29,27 @@ export async function checkWatchList(env){
   const cids = finishList.map(entry => entry.cid)
 
   //Iterate through the watch list
-  for (let cid of cids){
+  for (let cid of cids) {
     const watch = await getWatchList(env, cid)
     //Notify for any atc in route
     await checkRouteATC(env, cid, atcList, watch)
   }
 }
 
-export async function checkTrackList(env, ctx){
+export async function checkTrackList(env, ctx) {
   //Get tracking list
   let trackingList = await getTrackingList(env)
   //Finish job if empty
-  if(!trackingList || trackingList.length < 1) return
+  if (!trackingList || trackingList.length < 1) return
 
   //Initialize the routes array for all cid
   let updatedRoute = {}
   //Iterate through the cid list
-  for (const cid of trackingList){
+  for (const cid of trackingList) {
     //Get the live position of the user
     const position = await getCurrentPosition(cid)
     //Handle empty or errorneous position
-    if(position.message){
+    if (position.message) {
       console.log(position.message)
       continue
     }
@@ -59,7 +59,7 @@ export async function checkTrackList(env, ctx){
     updatedRoute[cid] = await trackUserPosition(env, cid, routeData, position)
 
     //Remove tracking when there are no remaining waypoints
-    if (updatedRoute[cid].length < 1){
+    if (updatedRoute[cid].length < 1) {
       putKeyValue(env, 'track', trackingList.filter(track => track !== cid))
     }
   }
@@ -67,19 +67,33 @@ export async function checkTrackList(env, ctx){
   //Push the updated route to firestore
   await updateBatchRouteData(env, updatedRoute)
 
+  //Finish job when the list is empty
+  if (updatedRoute.length < 1) return
+
   //Get all online atc
   const atcGrouped = await getOnlineATC()
   //Finish job if there are no online ATC
-  if(!atcGrouped){
+  if (!atcGrouped) {
     return
   }
 
-  //Get the boundaries
-  for(key in atcGrouped){
-    if(key === "CTR"){
-      for(atc of atcGrouped[key]){
+  //Get the list of atc callsigns
+  const callsignList = [
+    ...new Set(
+      Object.values(atcGrouped).flatMap(group =>
+        group.map(atc => atc.callsign.slice(0, -4))
+      )
+    )
+  ]
 
-      }
+  //Get the boundary of every online fir
+  const boundary = await fetchFIRData(env, callsignList)
+
+  //Check for UIRs
+  if(Object.keys(atcGrouped).includes("FSS")){
+    for(const fss of atcGrouped.fss){
+      
     }
   }
+
 }
