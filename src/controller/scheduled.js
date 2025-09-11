@@ -37,6 +37,13 @@ export async function checkWatchList(env){
 }
 
 export async function checkTrackList(env, ctx){
+  //Get tracking list
+  let trackingList = await getTrackingList(env)
+  //Finish job if empty
+  if(!trackingList || trackingList.length < 1) return
+
+  //Initialize the routes array for all cid
+  let updatedRoute = []
   //Iterate through the cid list
   for (const cid of trackingList){
     //Get the live position of the user
@@ -49,7 +56,7 @@ export async function checkTrackList(env, ctx){
 
     //Check the position with waypoints
     const routeData = fetchRouteData(env, cid)
-    const updatedRoute = trackUserPosition(env, cid, routeData, position)
+    updatedRoute.push = { cid: trackUserPosition(env, cid, routeData, position) }
   }
 
   //Get all online atc
@@ -58,11 +65,6 @@ export async function checkTrackList(env, ctx){
   if(!atcGrouped){
     return
   }
-
-  //Get tracking list
-  let trackingList = await getTrackingList(env)
-  //Finish job if empty
-  if(!trackingList || trackingList.length < 1) return
 
   //Get the boundaries
   
