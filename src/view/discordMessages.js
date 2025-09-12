@@ -229,7 +229,36 @@ export async function unexpectedFMSFileFormat(env, webhookEndpoint){
 }
 
 export async function sendATCInRouteMessage(env, user, inside){
+    const webhookEndpoint = `https://discord.com/api/v10/channels/${channelId}/messages`
+
+    let field = []
+
+    for(let each of inside){
+        field.push({name: `📡 ${each.atc.callsign}`, value: `📍${each.wpt.ident}\n👤 ${each.atc.id}\n🕒 ${each.atc.time}`})
+    }
     
+    const msg = {
+        content: `<@${user.uid}><:8fo1d9:1234443545339887627>`,
+        embeds: [
+            {
+                title: `LMAOOO🫵`,
+                color: 0x1D9BF0,
+                fields: field,
+            }
+        ],
+    }
+
+    if(unsentList != null){
+        const newATC = unsentList.map(unsent => unsent.callsign)
+        msg.content = `<@${userId}><:8fo1d9:1234443545339887627> ${newATC.join(` `)} online`
+    }
+
+    const content = {
+        method: 'POST',
+        body: JSON.stringify(msg),
+    }
+
+    await DiscordRequest(env, webhookEndpoint, content)
 }
 
 function generateATCTypeButtons(covSort, pressed){

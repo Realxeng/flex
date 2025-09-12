@@ -104,14 +104,26 @@ export async function trackUserPosition(routeData, position) {
     return { dep: routeData.dep, routes, arr: routeData.arr }
 }
 
-export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundaries) {
+export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundaries, fssFIR) {
     //Map boundary data to atc callsign
     const atcBoundaryMap = {}
-    for (const key of ["CTR", "APP"]) {
+    for (const key of ["CTR", "APP", "DEP"]) {
         for (const atc of atcGrouped[key] || []) {
-            const callsignKey = atc.callsign.slice(0, atc.callsign.length - 4)
-            if (boundaries[callsignKey]) {
-                atcBoundaryMap[atc.callsign] = { atc, boundary: boundaries[callsignKey] }
+            //Map multiple FIR boundaries from fss
+            if (key === "FSS") {
+                const fssCallsign = fss.callsign.slice(0, -4)
+                for (const fir of fssFIR[fssCallsign] || []) {
+                    if (boundaries[fir]) {
+                        atcBoundaryMap[`${fss.callsign}:${fir}`] = { atc: fss, boundary: boundaries[fir] }
+                    }
+                }
+            }
+            //Map boundary from other types
+            else {
+                const callsignKey = atc.callsign.slice(0, atc.callsign.length - 4)
+                if (boundaries[callsignKey]) {
+                    atcBoundaryMap[atc.callsign] = { atc, boundary: boundaries[callsignKey] }
+                }
             }
         }
     }
@@ -123,9 +135,9 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
         for (const wpt of userRoute) {
             for (const { atc, boundary } of Object.values(atcBoundaryMap)) {
                 // Bounding box check
-                if (!isPointInBBox({ lat: wpt.lat, lon: wpt.lon }, boundary.bbox)) continue
+                if (!isPointInBBox(wpt, boundary.bbox)) continue
                 // Polygon check
-                if (isPointInPolygon({ lat: wpt.lat, lon: wpt.lon }, boundary.boundary)) {
+                if (isPointInPolygon(wpt, boundary.boundary)) {
                     inside.push({ wpt, atc })
                     break
                 }

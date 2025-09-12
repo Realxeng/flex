@@ -53,7 +53,7 @@ export async function fetchFirestoreBatch(env, documents) {
     const res = await fetch(
         `https://firestore.googleapis.com/v1/projects/flex-c305e/databases/(default)/documents:batchGet`,
         {
-            method: "GET",
+            method: "POST",
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
@@ -128,7 +128,7 @@ export async function updateBatchRouteData(env, updatedRoute) {
     let writes = []
 
     for (const cid in updatedRoute) {
-        const routes = updatedRoute[cid]
+        const routes = updatedRoute[cid].routes
 
         let write = {
             update: {
@@ -137,6 +137,24 @@ export async function updateBatchRouteData(env, updatedRoute) {
                     routes: {
                         arrayValue: {
                             values: []
+                        }
+                    },
+                    dep: {
+                        mapValue: {
+                            fields: {
+                                ident: { stringValue: updatedRoute[cid].dep.ident },
+                                lat: { stringValue: updatedRoute[cid].dep.lat },
+                                lon: { stringValu: updatedRoute[cid].dep.lon },
+                            }
+                        }
+                    },
+                    arr: {
+                        mapValue: {
+                            fields: {
+                                ident: { stringValue: updatedRoute[cid].arr.ident },
+                                lat: { stringValue: updatedRoute[cid].arr.lat },
+                                lon: { stringValu: updatedRoute[cid].arr.lon },
+                            }
                         }
                     }
                 }
@@ -163,12 +181,12 @@ export async function updateBatchRouteData(env, updatedRoute) {
     await uploadFirestore(env, writes)
 }
 
-export async function deleteBatchRouteData(env, removed){
+export async function deleteBatchRouteData(env, removed) {
     let writes = []
 
-    writes = removed.map(cid => ({delete: `projects/flex-c305e/databases/(default)/documents/routes/${cid}`}))
+    writes = removed.map(cid => ({ delete: `projects/flex-c305e/databases/(default)/documents/routes/${cid}` }))
 
-    for(const cid of removed){
+    for (const cid of removed) {
         writes.push({
             delete: `projects/flex-c305e/databases/(default)/documents/routes/${cid}`
         })
@@ -179,19 +197,19 @@ export async function deleteBatchRouteData(env, removed){
 
 export async function fetchRouteData(env, cid) {
     const path = `routes/${cid}`
-    const data = fetchFirestore(env, path)
+    const data = await fetchFirestore(env, path)
     return data
 }
 
 export async function fetchFIRData(env, callsignList) {
     const documents = callsignList.map(cs => `projects/flex-c305e/databases/(default)/documents/fir/${cs}`)
-    const data = fetchFirestoreBatch(env, documents)
+    const data = await fetchFirestoreBatch(env, documents)
     return data
 }
 
 export async function fetchUIRData(env, fssList) {
     const documents = fssList.map(fss => `projects/flex-c305e/databases/(default)/documents/uir/${fss}`)
-    const data = fetchFirestoreBatch(env, documents)
+    const data = await fetchFirestoreBatch(env, documents)
     return data
 }
 
@@ -219,7 +237,7 @@ function unwrapFirestoreFields(fields) {
 }
 
 function unwrapFirestoreBatch(dataRaw) {
-    const docs = {} 
+    const docs = {}
 
     for (const item of dataRaw) {
         if (item.found && item.found.fields) {

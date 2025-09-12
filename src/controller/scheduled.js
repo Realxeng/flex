@@ -1,4 +1,4 @@
-import { deleteBatchRouteData, fetchFIRData, fetchRouteData, updateBatchRouteData } from "../model/API/firestroreAPI"
+import { deleteBatchRouteData, fetchFIRData, fetchRouteData, fetchUIRData, updateBatchRouteData } from "../model/API/firestroreAPI"
 import { getCurrentPosition, getOnlineATC } from "../model/API/vatsimAPI"
 import { checkFinishTime, checkRouteATC } from "../model/scheduled"
 import { getReminderFinishList, getTrackingList, putKeyValue } from "../model/watchList"
@@ -100,22 +100,21 @@ export async function checkTrackList(env) {
   ]
 
   //Check for UIRs
+  let fssFIR = {}
   if("FSS" in atcGrouped){
-    let fssList = []
     //Get the fss callsigns
-    for(const fss of atcGrouped["FSS"]){
-      fssList.push(fss.callsign.slice(0, -4))
-    }
+    let fssList = atcGrouped["FSS"]
+    const fssCallsignList = fssList.map(fss => fss.callsign)
     //Get the fss FIR coverages
-    const fssFIR = await fetchUIRData(env, fssList)
-    const fssCallsignList = fssFIR.flatMap(fss => fss.fir)
+    fssFIR = await fetchUIRData(env, fssCallsignList)
+    const fssFIRList = fssFIR.flatMap(fss => fss.fir)
     //Add to list of fir to fetch
-    callsignList.push(...new Set(fssCallsignList))
+    callsignList.push(...new Set(fssFIRList))
   }
 
   //Get the boundary of every online fir
   const boundary = await fetchFIRData(env, callsignList)
 
   //Check the route with online ATC
-  await checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundary)
+  await checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundary, fssFIR)
 }
