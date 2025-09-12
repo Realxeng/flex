@@ -1,4 +1,4 @@
-import { deleteBatchRouteData, fetchFIRData, fetchRouteData, fetchUIRData, updateBatchRouteData } from "../model/API/firestroreAPI"
+import { deleteBatchRouteData, fetchChecked, fetchFIRData, fetchRouteData, fetchUIRData, updateBatchRouteData, uploadCheckedATC } from "../model/API/firestroreAPI"
 import { getCurrentPosition, getOnlineATC } from "../model/API/vatsimAPI"
 import { checkFinishTime, checkRouteATC } from "../model/scheduled"
 import { getReminderFinishList, getTrackingList, putKeyValue } from "../model/watchList"
@@ -68,7 +68,7 @@ export async function checkTrackList(env) {
   }
 
   //Remove finished routes
-  if(removed.length > 0){
+  if (removed.length > 0) {
     await putKeyValue(env, 'track', trackingList.filter(track => !removed.includes(track)))
     await deleteBatchRouteData(env, removed)
   }
@@ -80,11 +80,27 @@ export async function checkTrackList(env) {
   if (updatedRoute.length < 1) return
 
   //Get all online atc
-  const atcGrouped = await getOnlineATC()
+  let atcGrouped = await getOnlineATC()
   //Finish job if there are no online ATC
   if (!atcGrouped) {
     return
   }
+
+  //Get the list of checked atc
+  const checked = await fetchChecked(env, trackingList)
+  if (checked && Object.keys(checked).length > 0) {
+    const checkedATC = Object.values(checked)[0];
+    //Remove checked atc from atcGrouped
+    atcGrouped = Object.fromEntries(
+      Object.entries(atcGrouped).map(([key, arr]) => [
+        key,
+        arr.filter(atc => !checkedATC.includes(atc.callsign))
+      ])
+    )
+  }
+
+  //Finish the job if every atc is checked
+  if(Object.values(atcGrouped).every(arr => arr.length === 0)) return
 
   //Get the list of CTR and APP callsigns
   const callsignList = [
@@ -101,7 +117,7 @@ export async function checkTrackList(env) {
 
   //Check for UIRs
   let fssFIR = {}
-  if("FSS" in atcGrouped){
+  if ("FSS" in atcGrouped) {
     //Get the fss callsigns
     let fssList = atcGrouped["FSS"]
     const fssCallsignList = fssList.map(fss => fss.callsign)
@@ -117,4 +133,9 @@ export async function checkTrackList(env) {
 
   //Check the route with online ATC
   await checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundary, fssFIR)
+
+  //Get lists of checked atc
+  const checkedList = Object.values(atcGrouped).flatMap(arr => arr.map(atc => atc.callsign))
+
+  await uploadCheckedATC(env, trackingList, checkedList)
 }

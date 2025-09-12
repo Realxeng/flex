@@ -124,6 +124,29 @@ export async function uploadRouteData(env, routes, cid, dep, arr) {
     await uploadFirestore(env, writes)
 }
 
+export async function uploadCheckedATC(env, trackingList, checkedList) {
+    let writes = []
+
+    for (const user in trackingList) {
+        let write = {
+            update: {
+                name: `projects/flex-c305e/databases/(default)/documents/checked/${cid}`,
+                fields: {
+                    atc: {
+                        arrayValue: {
+                            values: checkedList
+                        }
+                    },
+                }
+            }
+        }
+
+        writes.push(write)
+    }
+
+    await uploadFirestore(env, writes)
+}
+
 export async function updateBatchRouteData(env, updatedRoute) {
     let writes = []
 
@@ -198,6 +221,13 @@ export async function deleteBatchRouteData(env, removed) {
 export async function fetchRouteData(env, cid) {
     const path = `routes/${cid}`
     const data = await fetchFirestore(env, path)
+    return data
+}
+
+export async function fetchChecked(env, trackingList) {
+    const documents = trackingList.map(user => `projects/flex-c305e/databases/(default)/documents/checked/${user.cid}`)
+    const data = await fetchFirestoreBatch(env, documents)
+    if (!data || Object.keys(data).length < trackingList.length) return null
     return data
 }
 
