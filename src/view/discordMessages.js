@@ -228,6 +228,10 @@ export async function unexpectedFMSFileFormat(env, webhookEndpoint){
     });
 }
 
+export async function sendATCInRouteMessage(env, user, inside){
+    
+}
+
 function generateATCTypeButtons(covSort, pressed){
     let count = 1, i = 0
     let msg = [{

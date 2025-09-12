@@ -71,7 +71,7 @@ export async function addTrackUser(env, interaction) {
     //Add user CID to tracking list
     try {
         let trackingList = await getTrackingList(env)
-        trackingList.push({cid, uid})
+        trackingList.push({ cid, uid })
         console.log("Adding user to active tracking")
         await putKeyValue(env, "track", trackingList)
     } catch (err) {
@@ -94,38 +94,45 @@ export async function addTrackUser(env, interaction) {
 export async function trackUserPosition(routeData, position) {
     //Remove past waypoints
     let routes = routeData.routes
-    for(wpt of routes) {
-        if(!isAhead(routeData.arr, position, wpt)){
+    for (wpt of routes) {
+        if (!isAhead(routeData.arr, position, wpt)) {
             routes = routes.filter(route => route.ident !== wpt.ident)
         }
         else break
     }
     routes = routes.filter(route => route.airway !== "ADES")
-    return {dep: routeData.dep, routes, arr: routeData.arr}
+    return { dep: routeData.dep, routes, arr: routeData.arr }
 }
 
 export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundaries) {
+    //Map boundary data to atc callsign
+    const atcBoundaryMap = {}
+    for (const key of ["CTR", "APP"]) {
+        for (const atc of atcGrouped[key] || []) {
+            const callsignKey = atc.callsign.slice(0, atc.callsign.length - 4)
+            if (boundaries[callsignKey]) {
+                atcBoundaryMap[atc.callsign] = { atc, boundary: boundaries[callsignKey] }
+            }
+        }
+    }
+
+    //Check for each user
     for (const user of trackingList) {
-        let inside = []
-        for(const key in atcGrouped){
-            if(["CTR","APP"].includes(key)){
-                wptLoop: for(const wpt of updatedRoute[user.cid].routes){
-                    for(const atc of atcGrouped[key]){
-                        const boundary = boundaries[atc.callsign.slice(0, atc.callsign.length - 4)]
-                        if(!boundary) continue
-                        if(isPointInBBox({lat: wpt.lat, lon:wpt.lon}, boundary.bbox)){
-                            /*
-                                To implement boundary polygon check
-                            */
-                            inside.push({wpt,atc})
-                            continue wptLoop
-                        }
-                    }
+        const inside = []
+        const userRoute = updatedRoute[user.cid]?.routes || []
+        for (const wpt of userRoute) {
+            for (const { atc, boundary } of Object.values(atcBoundaryMap)) {
+                // Bounding box check
+                if (!isPointInBBox({ lat: wpt.lat, lon: wpt.lon }, boundary.bbox)) continue
+                // Polygon check
+                if (isPointInPolygon({ lat: wpt.lat, lon: wpt.lon }, boundary.boundary)) {
+                    inside.push({ wpt, atc })
+                    break
                 }
             }
         }
-        if(inside.length > 1){
-            await sendATCInRouteMessage(user, inside)
+        if (inside.length > 0) {
+            await sendATCInRouteMessage(env, user, inside)
         }
     }
 }
@@ -156,10 +163,38 @@ function isAhead(arr, position, wpt) {
 }
 
 function isPointInBBox(point, bbox) {
-  return (
-    point.lat >= bbox.minLat &&
-    point.lat <= bbox.maxLat &&
-    point.lon >= bbox.minLon &&
-    point.lon <= bbox.maxLon
-  )
+    return (
+        point.lat >= bbox.minLat &&
+        point.lat <= bbox.maxLat &&
+        point.lon >= bbox.minLon &&
+        point.lon <= bbox.maxLon
+    )
+}
+
+function isPointOnSegment(P, A, B, epsilon = 0.00005) {
+    const cross = (P.lon - A.lon) * (B.lat - A.lat) - (P.lat - A.lat) * (B.lon - A.lon);
+    if (Math.abs(cross) > epsilon) return false;
+    const dot = (P.lon - A.lon) * (B.lon - A.lon) + (P.lat - A.lat) * (B.lat - A.lat);
+    if (dot < 0) return false;
+    const lenSq = (B.lon - A.lon) ** 2 + (B.lat - A.lat) ** 2;
+    return dot <= lenSq;
+}
+
+function isPointInPolygon(point, polygon) {
+    let inside = false;
+    const n = polygon.length;
+    for (let i = 0, j = n - 1; i < n; j = i++) {
+        const A = polygon[i];
+        const B = polygon[j];
+
+        //Check boundary
+        if (isPointOnSegment(point, A, B)) return true;
+
+        //Ray-casting
+        if (((A.lat > point.lat) != (B.lat > point.lat)) &&
+            (point.lon < (B.lon - A.lon) * (point.lat - A.lat) / (B.lat - A.lat) + A.lon)) {
+            inside = !inside;
+        }
+    }
+    return inside;
 }
