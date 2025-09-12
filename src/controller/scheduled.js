@@ -47,7 +47,8 @@ export async function checkTrackList(env) {
   //Initialize array of cid with finished routes
   let removed = []
   //Iterate through the cid list
-  for (const cid of trackingList) {
+  for (const user of trackingList) {
+    const cid = user.cid
     //Get the live position of the user
     const position = await getCurrentPosition(cid)
     //Handle empty or errorneous position

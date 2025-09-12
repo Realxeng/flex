@@ -1,6 +1,6 @@
 import { updateRouteData, uploadRouteData } from "../model/API/firestroreAPI"
 import { verifyCID } from "../model/API/vatsimAPI"
-import { putKeyValue } from "../model/watchList"
+import { getTrackingList, putKeyValue } from "../model/watchList"
 import { sendCIDInvalid, sendInvalidFMSFile, sendTrackAdded, unexpectedFMSFileFormat } from "../view/discordMessages"
 
 export async function addTrackUser(env, interaction) {
@@ -70,8 +70,10 @@ export async function addTrackUser(env, interaction) {
 
     //Add user CID to tracking list
     try {
+        let trackingList = await getTrackingList(env)
+        trackingList.push({cid, uid})
         console.log("Adding user to active tracking")
-        await putKeyValue(env, "track", cid)
+        await putKeyValue(env, "track", trackingList)
     } catch (err) {
         return console.error(`Error saving reminder for user: ${username}`, err);
     }
@@ -102,11 +104,28 @@ export async function trackUserPosition(routeData, position) {
     return {dep: routeData.dep, routes, arr: routeData.arr}
 }
 
-export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundary) {
-    let insideBbox = {}
-    for(const key in atcGrouped){
-        if(["CTR","APP"].includes(key)){
-
+export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundaries) {
+    for (const user of trackingList) {
+        let inside = []
+        for(const key in atcGrouped){
+            if(["CTR","APP"].includes(key)){
+                wptLoop: for(const wpt of updatedRoute[user.cid].routes){
+                    for(const atc of atcGrouped[key]){
+                        const boundary = boundaries[atc.callsign.slice(0, atc.callsign.length - 4)]
+                        if(!boundary) continue
+                        if(isPointInBBox({lat: wpt.lat, lon:wpt.lon}, boundary.bbox)){
+                            /*
+                                To implement boundary polygon check
+                            */
+                            inside.push({wpt,atc})
+                            continue wptLoop
+                        }
+                    }
+                }
+            }
+        }
+        if(inside.length > 1){
+            await sendATCInRouteMessage(user, inside)
         }
     }
 }
@@ -134,4 +153,13 @@ function isAhead(arr, position, wpt) {
     const bearing = bearingFromTo(position.lat, position.lon, wpt.lat, wpt.lon)
     const diff = angularDifference(heading, bearing)
     return diff <= 90
+}
+
+function isPointInBBox(point, bbox) {
+  return (
+    point.lat >= bbox.minLat &&
+    point.lat <= bbox.maxLat &&
+    point.lon >= bbox.minLon &&
+    point.lon <= bbox.maxLon
+  )
 }
