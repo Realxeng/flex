@@ -170,7 +170,7 @@ export default {
     }
   },
   //CRON Trigger entry point
-  async scheduled(controller, env, ctx){
+  async scheduled(controller, env){
     await checkWatchList(env)
   }
 };

@@ -19,14 +19,14 @@ export async function uploadFirestore(env, writes) {
     console.log(await response.text())
 }
 
-export async function fetchFirestore(env, path) {
+export async function fetchFirestore(env, path, method = "GET") {
     const rawToken = await getAccessToken(env)
     const accessToken = rawToken.access_token
 
     const res = await fetch(
         `https://firestore.googleapis.com/v1/projects/flex-c305e/databases/(default)/documents/${path}`,
         {
-            method: "GET",
+            method: method,
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             }
@@ -160,6 +160,20 @@ export async function updateBatchRouteData(env, updatedRoute) {
 
         writes.push(write)
     }
+    await uploadFirestore(env, writes)
+}
+
+export async function deleteBatchRouteData(env, removed){
+    let writes = []
+
+    writes = removed.map(cid => ({delete: `projects/flex-c305e/databases/(default)/documents/routes/${cid}`}))
+
+    for(const cid of removed){
+        writes.push({
+            delete: `projects/flex-c305e/databases/(default)/documents/routes/${cid}`
+        })
+    }
+
     await uploadFirestore(env, writes)
 }
 

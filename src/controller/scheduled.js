@@ -1,4 +1,4 @@
-import { fetchFIRData, fetchRouteData, updateBatchRouteData } from "../model/API/firestroreAPI"
+import { deleteBatchRouteData, fetchFIRData, fetchRouteData, updateBatchRouteData } from "../model/API/firestroreAPI"
 import { getCurrentPosition, getOnlineATC } from "../model/API/vatsimAPI"
 import { checkFinishTime, checkRouteATC } from "../model/scheduled"
 import { getReminderFinishList, getTrackingList, putKeyValue } from "../model/watchList"
@@ -36,7 +36,7 @@ export async function checkWatchList(env) {
   }
 }
 
-export async function checkTrackList(env, ctx) {
+export async function checkTrackList(env) {
   //Get tracking list
   let trackingList = await getTrackingList(env)
   //Finish job if empty
@@ -44,6 +44,8 @@ export async function checkTrackList(env, ctx) {
 
   //Initialize the routes array for all cid
   let updatedRoute = {}
+  //Initialize array of cid with finished routes
+  let removed = []
   //Iterate through the cid list
   for (const cid of trackingList) {
     //Get the live position of the user
@@ -59,11 +61,15 @@ export async function checkTrackList(env, ctx) {
     updatedRoute[cid] = await trackUserPosition(env, cid, routeData, position)
 
     //Remove tracking when there are no remaining waypoints
-    let removed = {}
-    if (updatedRoute[cid].length < 1) {
+    if (updatedRoute[cid].routes.length < 1) {
       removed.push(cid)
     }
+  }
+
+  //Remove finished routes
+  if(removed.length > 0){
     await putKeyValue(env, 'track', trackingList.filter(track => !removed.includes(track)))
+    await deleteBatchRouteData(env, removed)
   }
 
   //Push the updated route to firestore

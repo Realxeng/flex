@@ -99,11 +99,16 @@ export async function trackUserPosition(routeData, position) {
         else break
     }
     routes = routes.filter(route => route.airway !== "ADES")
-    return routes
+    return {dep: routeData.dep, routes, arr: routeData.arr}
 }
 
-export async function checkOnlineATCInRoute(env, cid, updatedRoute, atcGrouped, boundary) {
-    
+export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundary) {
+    let insideBbox = {}
+    for(const key in atcGrouped){
+        if(["CTR","APP"].includes(key)){
+
+        }
+    }
 }
 
 function angularDifference(h1, h2) {
