@@ -89,7 +89,7 @@ export async function uploadRouteData(env, routes, cid, dep, arr) {
                         fields: {
                             ident: { stringValue: dep.ident },
                             lat: { stringValue: dep.lat },
-                            lon: { stringValu: dep.lon },
+                            lon: { stringValue: dep.lon },
                         }
                     }
                 },
@@ -98,7 +98,7 @@ export async function uploadRouteData(env, routes, cid, dep, arr) {
                         fields: {
                             ident: { stringValue: arr.ident },
                             lat: { stringValue: arr.lat },
-                            lon: { stringValu: arr.lon },
+                            lon: { stringValue: arr.lon },
                         }
                     }
                 }
