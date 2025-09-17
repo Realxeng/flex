@@ -120,7 +120,7 @@ export async function checkTrackList(env) {
   if ("FSS" in atcGrouped) {
     //Get the fss callsigns
     let fssList = atcGrouped["FSS"]
-    const fssCallsignList = fssList.map(fss => fss.callsign)
+    const fssCallsignList = fssList.map(fss => fss.callsign.slice(0, fss.callsign.length - 4))
     //Get the fss FIR coverages
     fssFIR = await fetchUIRData(env, fssCallsignList)
     const fssFIRList = fssFIR.flatMap(fss => fss.fir)

@@ -1,4 +1,4 @@
-import { updateRouteData, uploadRouteData } from "../model/API/firestroreAPI"
+import { uploadRouteData } from "../model/API/firestroreAPI"
 import { verifyCID } from "../model/API/vatsimAPI"
 import { getTrackingList, putKeyValue } from "../model/watchList"
 import { sendATCInRouteMessage, sendCIDInvalid, sendInvalidFMSFile, sendTrackAdded, unexpectedFMSFileFormat } from "../view/discordMessages"
@@ -92,7 +92,7 @@ export async function addTrackUser(env, interaction) {
 }
 
 export async function removeTrackUser(env, interaction) {
-    
+
 }
 
 export async function trackUserPosition(routeData, position) {
