@@ -1,7 +1,7 @@
 import { uploadRouteData } from "../model/API/firestroreAPI"
 import { verifyCID } from "../model/API/vatsimAPI"
 import { getTrackingList, putKeyValue } from "../model/watchList"
-import { sendATCInRouteMessage, sendCIDInvalid, sendInvalidFMSFile, sendTrackAdded, unexpectedFMSFileFormat } from "../view/discordMessages"
+import { sendATCInRouteMessage, sendCIDExists, sendCIDInvalid, sendInvalidFMSFile, sendTrackAdded, unexpectedFMSFileFormat } from "../view/discordMessages"
 
 export async function addTrackUser(env, interaction) {
     //Get username and user id
@@ -74,6 +74,7 @@ export async function addTrackUser(env, interaction) {
         if(trackingList.find(user => user.cid === cid && user.uid === uid)){
             console.log("User is in tracking list")
             await sendCIDExists(env, interaction, cid)
+            return
         }
         trackingList.push({ cid, uid })
         console.log("Adding user to active tracking")
