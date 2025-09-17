@@ -144,7 +144,7 @@ export async function trackUserPosition(routeData, position) {
         updatedRoute = routes.slice(i)
         break
     }
-    return { routes: updatedRoute, changed }
+    return { routes: updatedRoute, dep: routeData.dep, arr: routeData.arr, changed }
 }
 
 export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundaries, fssFIR) {
