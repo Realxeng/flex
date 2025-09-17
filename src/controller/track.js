@@ -75,7 +75,7 @@ export async function addTrackUser(env, interaction) {
         let trackingList = await getTrackingList(env)
         if(trackingList.find(user => user.cid === cid && user.uid === uid)){
             console.log("User is in tracking list")
-            await sendCIDExists(env, interaction, cid)
+            await sendCIDExists(env, webhookEndpoint, cid)
             return
         }
         trackingList.push({ cid, uid })
