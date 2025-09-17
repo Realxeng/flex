@@ -1,15 +1,15 @@
 import { coverageOrder } from "../model/API/vatsimAPI"
 import { DiscordRequest } from "../tool/discordFunctions"
 
-export async function sendReminderAdd(onlineList, userId, channelId, env, unsentList = null){
+export async function sendReminderAdd(onlineList, userId, channelId, env, unsentList = null) {
     const webhookEndpoint = `https://discord.com/api/v10/channels/${channelId}/messages`
 
     let field = []
 
-    for(let atc of onlineList){
-        field.push({name: `📡 ${atc.callsign}`, value: `👤 ${atc.id}\n🕒 ${atc.time}`})
+    for (let atc of onlineList) {
+        field.push({ name: `📡 ${atc.callsign}`, value: `👤 ${atc.id}\n🕒 ${atc.time}` })
     }
-    
+
     const msg = {
         content: `<@${userId}><:8fo1d9:1234443545339887627>`,
         embeds: [
@@ -21,7 +21,7 @@ export async function sendReminderAdd(onlineList, userId, channelId, env, unsent
         ],
     }
 
-    if(unsentList != null){
+    if (unsentList != null) {
         const newATC = unsentList.map(unsent => unsent.callsign)
         msg.content = `<@${userId}><:8fo1d9:1234443545339887627> ${newATC.join(` `)} online`
     }
@@ -34,15 +34,15 @@ export async function sendReminderAdd(onlineList, userId, channelId, env, unsent
     await DiscordRequest(env, webhookEndpoint, content)
 }
 
-export async function sendReminderMin(offlineList, userId, channelId, env){
+export async function sendReminderMin(offlineList, userId, channelId, env) {
     const webhookEndpoint = `https://discord.com/api/v10/channels/${channelId}/messages`
 
     let field = ''
 
-    if(offlineList.length>1){
-        for (let i = 0; i < offlineList.length; i++){
-            switch(i){
-                case offlineList.length-1:
+    if (offlineList.length > 1) {
+        for (let i = 0; i < offlineList.length; i++) {
+            switch (i) {
+                case offlineList.length - 1:
                     field += `ama ${offlineList[i]}`
                     break
                 default:
@@ -50,10 +50,10 @@ export async function sendReminderMin(offlineList, userId, channelId, env){
             }
         }
     }
-    else{
+    else {
         field = offlineList[0]
     }
-    
+
     const msg = {
         content: `Hoki ngntd ${field} offline 🖕`,
     }
@@ -70,7 +70,7 @@ export async function sendReminderMin(offlineList, userId, channelId, env){
     await DiscordRequest(env, webhookEndpoint, content)
 }
 
-export async function sendCheckingFlightplanMessage(env, flightPlan, userId, CID, webhookEndpoint){
+export async function sendCheckingFlightplanMessage(env, flightPlan, userId, CID, webhookEndpoint) {
     let bool = false
     let content = {}
     if (flightPlan === null) {
@@ -79,10 +79,10 @@ export async function sendCheckingFlightplanMessage(env, flightPlan, userId, CID
     else if (!flightPlan || flightPlan.length < 1) {
         content = `CID ${CID} has not created a flightplan yet😔`
     }
-    else if(!flightPlan.EET){
+    else if (!flightPlan.EET) {
         content = `<@${userId}> Your flight plan doesn't include EET remarks.`
     }
-    else if(new Date(flightPlan.finishTime) < new Date()){
+    else if (new Date(flightPlan.finishTime) < new Date()) {
         content = `<@${userId}> Your latest flight plan has concluded.`
     }
     else {
@@ -94,11 +94,11 @@ export async function sendCheckingFlightplanMessage(env, flightPlan, userId, CID
         method: 'PATCH',
         body: JSON.stringify({ content })
     })
-    
+
     return bool
 }
 
-export async function sendNoOnlineATCMessage(env, webhookEndpoint){
+export async function sendNoOnlineATCMessage(env, webhookEndpoint) {
     response = await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify({
@@ -111,7 +111,7 @@ export async function sendNoOnlineATCMessage(env, webhookEndpoint){
     })
 }
 
-export async function sendOnlineATCMessage(env, webhookEndpoint, covSort, type, field, first){
+export async function sendOnlineATCMessage(env, webhookEndpoint, covSort, type, field, first) {
     let response = null
     const msg = {
         content: '**📡Current online ATC in VATSIM network:**',
@@ -124,26 +124,26 @@ export async function sendOnlineATCMessage(env, webhookEndpoint, covSort, type, 
         ],
         components: generateATCTypeButtons(covSort, type),
     }
-    try{
-        if(first){
+    try {
+        if (first) {
             response = await DiscordRequest(env, webhookEndpoint, {
                 method: 'POST',
                 body: JSON.stringify(msg),
             })
         }
-        else{
+        else {
             response = await DiscordRequest(env, webhookEndpoint, {
                 method: 'PATCH',
                 body: JSON.stringify(msg),
             })
         }
     }
-    catch (err){
+    catch (err) {
         console.log(err)
     }
 }
 
-export async function sendSceneryFile(env, json, zipFile, webhookEndpoint){
+export async function sendSceneryFile(env, json, zipFile, webhookEndpoint) {
     const form = new FormData();
 
     form.append('payload_json', JSON.stringify({
@@ -170,7 +170,7 @@ export async function sendSceneryFile(env, json, zipFile, webhookEndpoint){
     await DiscordRequest(env, webhookEndpoint, options)
 }
 
-export async function sendNoSceneryMessage(env, webhookEndpoint, icao){
+export async function sendNoSceneryMessage(env, webhookEndpoint, icao) {
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify({
@@ -179,7 +179,7 @@ export async function sendNoSceneryMessage(env, webhookEndpoint, icao){
     });
 }
 
-export async function sendCIDInvalid(env, webhookEndpoint, cid){
+export async function sendCIDInvalid(env, webhookEndpoint, cid) {
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify({
@@ -188,7 +188,7 @@ export async function sendCIDInvalid(env, webhookEndpoint, cid){
     });
 }
 
-export async function sendTrackAdded(env, webhookEndpoint, uid, route){
+export async function sendTrackAdded(env, webhookEndpoint, uid, route) {
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify({
@@ -197,9 +197,9 @@ export async function sendTrackAdded(env, webhookEndpoint, uid, route){
     });
 }
 
-export async function sendInvalidFMSFile(env, webhookEndpoint, reason){
+export async function sendInvalidFMSFile(env, webhookEndpoint, reason) {
     let content = {}
-    switch(reason) {
+    switch (reason) {
         case "extension":
             content = `The file must be in .fms extension`
             break;
@@ -219,7 +219,7 @@ export async function sendInvalidFMSFile(env, webhookEndpoint, reason){
     });
 }
 
-export async function unexpectedFMSFileFormat(env, webhookEndpoint){
+export async function unexpectedFMSFileFormat(env, webhookEndpoint) {
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify({
@@ -228,47 +228,48 @@ export async function unexpectedFMSFileFormat(env, webhookEndpoint){
     });
 }
 
-export async function sendATCInRouteMessage(env, user, inside){
+export async function sendATCInRouteMessage(env, user, inside) {
     const webhookEndpoint = `https://discord.com/api/v10/channels/${channelId}/messages`
 
-    let field = []
+    const chunkSize = 25
+    for (let i = 0; i < inside.length; i += chunkSize) {
+        const chunk = inside.slice(i, i + chunkSize)
 
-    for(let each of inside){
-        field.push({name: `📡 ${each.atc.callsign}`, value: `📍${each.wpt.ident}\n👤 ${each.atc.id}\n🕒 ${each.atc.time}`})
-    }
-    
-    const msg = {
-        content: `<@${user.uid}><:8fo1d9:1234443545339887627>`,
-        embeds: [
-            {
-                title: `LMAOOO🫵`,
-                color: 0x1D9BF0,
-                fields: field,
-            }
-        ],
-    }
+        const fields = chunk.map(each => ({
+            name: `📡 ${each.atc.callsign}`,
+            value: `📍${each.wpt.ident}\n👤 ${each.atc.id}\n🕒 ${each.atc.time}`,
+        }))
 
-    if(unsentList != null){
-        const newATC = unsentList.map(unsent => unsent.callsign)
-        msg.content = `<@${userId}><:8fo1d9:1234443545339887627> ${newATC.join(` `)} online`
-    }
+        const msg = {
+            content: i === 0
+                ? `<@${user.uid}><:8fo1d9:1234443545339887627>`
+                : null,
+            embeds: [
+                {
+                    title: `${i > 0 ? `${i+1} pages??` : "LMAOOO🫵"}`,
+                    color: 0x1D9BF0,
+                    fields,
+                }
+            ],
+        }
 
-    const content = {
-        method: 'POST',
-        body: JSON.stringify(msg),
-    }
+        const content = {
+            method: 'POST',
+            body: JSON.stringify(msg),
+        }
 
-    await DiscordRequest(env, webhookEndpoint, content)
+        await DiscordRequest(env, webhookEndpoint, content)
+    }
 }
 
-function generateATCTypeButtons(covSort, pressed){
+function generateATCTypeButtons(covSort, pressed) {
     let count = 1, i = 0
     let msg = [{
         type: 1,
         components: [],
     }]
-    for (let coverage of Object.keys(covSort)){
-        if (count % 5 === 0){
+    for (let coverage of Object.keys(covSort)) {
+        if (count % 5 === 0) {
             msg.push(
                 {
                     type: 1,
@@ -277,7 +278,7 @@ function generateATCTypeButtons(covSort, pressed){
             )
             i++
         }
-        if (coverage === pressed){
+        if (coverage === pressed) {
             msg[i].components.push(
                 {
                     type: 2,
@@ -287,7 +288,7 @@ function generateATCTypeButtons(covSort, pressed){
                 }
             )
         }
-        else{
+        else {
             msg[i].components.push(
                 {
                     type: 2,
