@@ -58,6 +58,8 @@ export async function addTrackUser(env, interaction) {
     const dep = route.find(wpt => wpt.airway === "ADEP")
     const arr = route.find(wpt => wpt.airway === "ADES")
 
+    route = route.filter(wpt => wpt.airway !== "ADES")
+
     //Verify user CID
     try {
         console.log("Verifying user CID")
@@ -109,8 +111,7 @@ export async function trackUserPosition(routeData, position) {
         }
         else break
     }
-    routes = routes.filter(route => route.airway !== "ADES")
-    return { dep: routeData.dep, routes, arr: routeData.arr }
+    return routes
 }
 
 export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundaries, fssFIR) {

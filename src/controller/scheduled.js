@@ -4,6 +4,7 @@ import { checkFinishTime, checkRouteATC } from "../model/scheduled"
 import { getReminderFinishList, getTrackingList, putKeyValue } from "../model/watchList"
 import { checkOnlineATCInRoute, trackUserPosition } from "./track"
 
+/* DEPRECATED
 export async function checkWatchList(env) {
   //Get all online atc
   const covSort = await getOnlineATC()
@@ -35,6 +36,7 @@ export async function checkWatchList(env) {
     await checkRouteATC(env, cid, atcList, watch)
   }
 }
+*/
 
 export async function checkTrackList(env) {
   //Get tracking list
@@ -59,7 +61,7 @@ export async function checkTrackList(env) {
 
     //Check the position with waypoints
     const routeData = await fetchRouteData(env, cid)
-    updatedRoute[cid] = await trackUserPosition(env, cid, routeData, position)
+    updatedRoute[cid].routes = await trackUserPosition(env, cid, routeData, position)
 
     //Remove tracking when there are no remaining waypoints
     if (updatedRoute[cid].routes.length < 1) {
