@@ -60,7 +60,7 @@ export async function getCurrentPosition(CID){
             return {message: `CID ${CID} is currently not connected`}
         }
     } catch (error) {
-        console.log(error)
+        console.log("Error checking position", error)
         return {message: error}
     }
 }

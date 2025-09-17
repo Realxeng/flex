@@ -127,14 +127,14 @@ export async function uploadRouteData(env, routes, cid, dep, arr) {
 export async function uploadCheckedATC(env, trackingList, checkedList) {
     let writes = []
 
-    for (const user in trackingList) {
+    for (const user of trackingList) {
         let write = {
             update: {
                 name: `projects/flex-c305e/databases/(default)/documents/checked/${user.cid}`,
                 fields: {
                     atc: {
                         arrayValue: {
-                            values: checkedList
+                            values: checkedList.map(item => ({ stringValue: item }))
                         }
                     },
                 }
