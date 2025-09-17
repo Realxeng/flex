@@ -130,16 +130,18 @@ export async function removeTrackUser(env, interaction) {
 export async function trackUserPosition(routeData, position) {
     //Remove past waypoints
     let changed = false
-    console.dir(routeData, { depth: null, colors: true })
     let routes = Object.values(routeData.routes)
     let updatedRoute = routes
-    for (const wpt of routes) {
+    for (let i = 0; i < routes.length; i++) {
+        const wpt = routes[i]
+
         if (!isAhead(routeData.arr, position, wpt)) {
             console.log(`Removing ${wpt.ident}`)
             changed = true
             continue
         }
-        updatedRoute = routes.slice(routes.indexOf(wpt)) // keep the rest in one go
+
+        updatedRoute = routes.slice(i)
         break
     }
     return { routes: updatedRoute, changed }

@@ -26,9 +26,9 @@ export async function checkTrackList(env) {
 
     //Check the position with waypoints
     const routeData = await fetchRouteData(env, cid)
-    const {routes, changed} = await trackUserPosition(env, cid, routeData, position)
-    updatedRoute[cid].routes = routes
-    updatedRoute[cid].changed = changed
+    console.log("Tracking user")
+    updatedRoute[cid] = await trackUserPosition(routeData, position)
+    console.log("Finished tracking")
 
     //Remove tracking when there are no remaining waypoints
     if (updatedRoute[cid].routes.length < 1) {
@@ -38,12 +38,14 @@ export async function checkTrackList(env) {
 
   //Remove finished routes
   if (removed.length > 0) {
+    console.log("Removing track")
     await putKeyValue(env, 'track', trackingList.filter(track => !removed.includes(track.cid)))
     await deleteBatchRouteData(env, removed)
     if (!trackingList || trackingList.length < 1) return
   }
 
   //Push the updated route to firestore
+  console.log("Updating route")
   await updateBatchRouteData(env, updatedRoute)
 
   //Finish job when the list is empty
@@ -56,6 +58,7 @@ export async function checkTrackList(env) {
     return
   }
 
+  console.log("1")
   //Get the list of checked atc
   const checked = await fetchChecked(env, trackingList)
   if (checked && Object.keys(checked).length > 0) {
