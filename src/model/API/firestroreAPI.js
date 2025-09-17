@@ -216,11 +216,13 @@ export async function deleteBatchRouteData(env, removed) {
 
     writes = removed.map(cid => ({ delete: `projects/flex-c305e/databases/(default)/documents/routes/${cid}` }))
 
-    for (const cid of removed) {
-        writes.push({
-            delete: `projects/flex-c305e/databases/(default)/documents/routes/${cid}`
-        })
-    }
+    await uploadFirestore(env, writes)
+}
+
+export async function deleteBatchCheckedData(env, removed) {
+    let writes = []
+    
+    writes = removed.map(cid => ({ delete: `projects/flex-c305e/databases/(default)/documents/checked/${cid}` }))
 
     await uploadFirestore(env, writes)
 }

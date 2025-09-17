@@ -1,4 +1,4 @@
-import { deleteBatchRouteData, uploadRouteData } from "../model/API/firestroreAPI"
+import { deleteBatchCheckedData, deleteBatchRouteData, uploadRouteData } from "../model/API/firestroreAPI"
 import { verifyCID } from "../model/API/vatsimAPI"
 import { getTrackingList, putKeyValue } from "../model/watchList"
 import { sendATCInRouteMessage, sendCIDExists, sendCIDInvalid, sendInvalidFMSFile, sendNoUserFound, sendTrackAdded, sendTrackRemoved, unexpectedFMSFileFormat } from "../view/discordMessages"
@@ -73,7 +73,7 @@ export async function addTrackUser(env, interaction) {
     //Add user CID to tracking list
     try {
         let trackingList = await getTrackingList(env)
-        if(trackingList.find(user => user.cid === cid && user.uid === uid)){
+        if (trackingList.find(user => user.cid === cid && user.uid === uid)) {
             console.log("User is in tracking list")
             await sendCIDExists(env, webhookEndpoint, cid)
             return
@@ -104,21 +104,22 @@ export async function removeTrackUser(env, interaction) {
     const uid = interaction.member?.user.id || interaction.user.id
     //Get the CID
     const cid = interaction.data.options[0].value.toUpperCase()
-    
+
     //Define the discord endpoint
     const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
 
     //Get the tracking list
     let trackingList = await getTrackingList(env)
-    if(!trackingList.find(track => track.cid === cid && track.uid === uid)){
+    if (!trackingList.find(track => track.cid === cid && track.uid === uid)) {
         await sendNoUserFound(env, webhookEndpoint, cid)
         return console.log(`No tracking for cid ${cid} on user ${uid}`)
     }
     const updatedTrackingList = trackingList.filter(user => user.cid !== cid && user.uid !== uid)
-    
-    try{
+
+    try {
         await putKeyValue(env, "track", updatedTrackingList)
         await deleteBatchRouteData(env, [cid])
+        await deleteBatchCheckedData(env, [cid])
         await sendTrackRemoved(env, webhookEndpoint, cid)
     }
     catch (error) {
@@ -131,15 +132,17 @@ export async function trackUserPosition(routeData, position) {
     let changed = false
     console.dir(routeData, { depth: null, colors: true })
     let routes = Object.values(routeData.routes)
+    let updatedRoute = routes
     for (const wpt of routes) {
         if (!isAhead(routeData.arr, position, wpt)) {
             console.log(`Removing ${wpt.ident}`)
-            routes = routes.filter(route => route.ident !== wpt.ident)
             changed = true
+            continue
         }
-        else break
+        updatedRoute = routes.slice(routes.indexOf(wpt)) // keep the rest in one go
+        break
     }
-    return {routes, changed}
+    return { routes: updatedRoute, changed }
 }
 
 export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundaries, fssFIR) {
