@@ -65,68 +65,6 @@ export async function getCurrentPosition(CID){
     }
 }
 
-export async function getVatsimFlightPlan(CID){
-    let res = {}
-    try{
-        res = await fetch(`${apiUrl}/members/${CID}/flightplans`, {method: 'GET'})
-    }
-    catch(err){
-        console.err(err)
-        return null
-    }
-
-    if (res.status !== 200) return null
-
-    const response = await res.json()
-
-    if (!response || response.length < 1 || response === null || response == {}) return false
-
-    const item = response[0]
-
-    let result = {
-        cid: item.vatsim_id,
-        dep: item.dep,
-        arr: item.arr,
-        rmks: item.rmks,
-        deptime: item.deptime,
-        hrsfuel: item.hrsfuel,
-        filed: item.filed,
-    }
-
-    if (!result.dep || !result.arr || !result.deptime || !result.hrsfuel) {
-        return null;
-    }
-
-    const filedDate = new Date(item.filed);
-    const year = filedDate.getUTCFullYear();
-    const month = filedDate.getUTCMonth();
-    const day = filedDate.getUTCDate();
-    const hours = Number(result.deptime.slice(0, 2));
-    const minutes = Number(result.deptime.slice(2));
-
-    const deptimeDate = new Date(Date.UTC(year, month, day, hours, minutes));
-
-    result.finishTime = new Date(deptimeDate.getTime() + (result.hrsfuel * 3600000)).toISOString();
-
-    const rmkRaw = result.rmks
-    const match = rmkRaw.match(/EET\/(.*?)(?=\s[A-Z]{3,}\/|$)/)
-
-    let EET = {}
-    if(match){
-        EET = match[1].trim().split(/\s+/)
-        result.EET = EET.map(fir => fir.slice(0,4))
-    }
-    else{
-        return result
-    }
-    delete result.rmks
-    delete result.deptime
-    delete result.hrsfuel
-    console.log(result.EET)
-
-    return result
-}
-
 export async function verifyCID(CID){
     let res = {}
     try{

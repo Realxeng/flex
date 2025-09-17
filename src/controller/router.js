@@ -4,9 +4,8 @@
 
 import { AutoRouter } from 'itty-router';
 import { InteractionResponseType, InteractionType } from 'discord-interactions';
-import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, MONITOR_VATSIM, REMOVE_NOTIF, TRACK_USER } from '../tool/commands.js';
+import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, REMOVE_NOTIF, TRACK_USER } from '../tool/commands.js';
 import { sceneryHandler } from '../model/scenery.js';
-import { addNotification, removeNotification } from './notify.js';
 import { verifyDiscordRequest } from '../tool/discordFunctions.js';
 import { checkOnlineATC } from './atc.js';
 import { findSceneryFile } from './scenery.js';
@@ -78,16 +77,6 @@ router.post('/', async (request, env, ctx) => {
         ctx.waitUntil(checkOnlineATC(env, interaction))
         return deferredResponse
       }
-      /* DEPRECATED
-      //notify command
-      case MONITOR_VATSIM.name.toLowerCase():{
-        const deferredResponse = new JsonResponse({
-          type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
-        });
-        ctx.waitUntil(addNotification(interaction.data.options[0].value, interaction, env))
-        return deferredResponse
-      }
-      */
       //remove command
       case REMOVE_NOTIF.name.toLowerCase():{
         const deferredResponse = new JsonResponse({

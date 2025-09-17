@@ -35,23 +35,6 @@ export const CHECK_ONLINE_ATC = {
   contexts: [0, 1, 2],
 }
 
-//Notify of online ATC based on user EET remarks
-export const MONITOR_VATSIM = {
-  name: 'notify',
-  description: 'Send a notification when a controller within the planned route is online',
-  type: 1,
-  integration_types: [0, 1],
-  contexts: [0, 1, 2],
-  options:[
-    {
-      type: 3,
-      name: 'cid',
-      description: 'Enter your VATSIM CID',
-      required: true,
-    }
-  ]
-}
-
 //Remove user from getting notified
 export const REMOVE_NOTIF = {
   name: 'remove',
