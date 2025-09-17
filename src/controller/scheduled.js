@@ -71,6 +71,7 @@ export async function checkTrackList(env) {
   if (removed.length > 0) {
     await putKeyValue(env, 'track', trackingList.filter(track => !removed.includes(track)))
     await deleteBatchRouteData(env, removed)
+    if (!trackingList || trackingList.length < 1) return
   }
 
   //Push the updated route to firestore
