@@ -103,7 +103,7 @@ export async function checkTrackList(env) {
   }
 
   //Finish the job if every atc is checked
-  if(Object.values(atcGrouped).every(arr => arr.length === 0)) return
+  if(Object.values(atcGrouped).every(arr => arr.length === 0)) return console.log("Checked all")
 
   //Get the list of CTR and APP callsigns
   const callsignList = [
