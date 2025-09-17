@@ -26,7 +26,9 @@ export async function checkTrackList(env) {
 
     //Check the position with waypoints
     const routeData = await fetchRouteData(env, cid)
-    updatedRoute[cid].routes = await trackUserPosition(env, cid, routeData, position)
+    const {routes, changed} = await trackUserPosition(env, cid, routeData, position)
+    updatedRoute[cid].routes = routes
+    updatedRoute[cid].changed = changed
 
     //Remove tracking when there are no remaining waypoints
     if (updatedRoute[cid].routes.length < 1) {

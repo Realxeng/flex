@@ -94,7 +94,7 @@ export async function addTrackUser(env, interaction) {
     }
 
     //Send success message
-    console.log('Tracking')
+    console.log(`Tracking ${cid}`)
     await sendTrackAdded(env, webhookEndpoint, uid, dep, arr)
 }
 
@@ -128,15 +128,18 @@ export async function removeTrackUser(env, interaction) {
 
 export async function trackUserPosition(routeData, position) {
     //Remove past waypoints
+    let changed = false
+    console.dir(routeData, { depth: null, colors: true })
     let routes = Object.values(routeData.routes)
     for (const wpt of routes) {
         if (!isAhead(routeData.arr, position, wpt)) {
             console.log(`Removing ${wpt.ident}`)
             routes = routes.filter(route => route.ident !== wpt.ident)
+            changed = true
         }
         else break
     }
-    return routes
+    return {routes, changed}
 }
 
 export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundaries, fssFIR) {

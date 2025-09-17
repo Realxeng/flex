@@ -149,8 +149,11 @@ export async function uploadCheckedATC(env, trackingList, checkedList) {
 
 export async function updateBatchRouteData(env, updatedRoute) {
     let writes = []
+    let changed = false
 
     for (const cid in updatedRoute) {
+        if (!updatedRoute[cid].changed) continue
+        changed = true
         const routes = updatedRoute[cid].routes
 
         let write = {
@@ -201,7 +204,11 @@ export async function updateBatchRouteData(env, updatedRoute) {
 
         writes.push(write)
     }
-    await uploadFirestore(env, writes)
+    if (changed) {
+        await uploadFirestore(env, writes)
+    } else {
+        console.log('No route update')
+    }
 }
 
 export async function deleteBatchRouteData(env, removed) {
@@ -250,15 +257,18 @@ function unwrapFirestoreValue(value) {
     if (value.booleanValue !== undefined) return value.booleanValue
     if (value.timestampValue !== undefined) return new Date(value.timestampValue)
     if (value.arrayValue !== undefined) {
-        return (value.arrayValue.values || []).map(unwrapFirestoreValue)
+        const arr = value.arrayValue.values || []
+        return arr.map(unwrapFirestoreValue)
     }
     if (value.mapValue !== undefined) {
-        return unwrapFirestoreFields(value.mapValue.fields || {})
+        const fields = value.mapValue.fields || {}
+        return unwrapFirestoreFields(fields)
     }
     return null
 }
 
 function unwrapFirestoreFields(fields) {
+    if (!fields || typeof fields !== "object") return {}
     const obj = {}
     for (const [key, val] of Object.entries(fields)) {
         obj[key] = unwrapFirestoreValue(val)
