@@ -174,6 +174,15 @@ export async function sendCIDExists(env, webhookEndpoint, cid) {
     });
 }
 
+export async function sendNoUserFound(env, webhookEndpoint, cid) {
+    await DiscordRequest(env, webhookEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `No tracking found with CID ${cid}`,
+        }),
+    });
+}
+
 export async function sendTrackRemoved(env, webhookEndpoint, cid) {
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
