@@ -72,13 +72,13 @@ export async function verifyCID(CID){
     }
     catch(err){
         console.err(err)
-        return null
+        return false
     }
 
     if (res.status === 404) return false
 
     const response = await res.json()
 
-    if (!response || response.length < 1 || response === null || response == {}) return false
+    if (!response || response.length < 1 || response === null || response == {} || response.detail) return false
     else return true
 }

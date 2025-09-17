@@ -1,3 +1,4 @@
+import { getUserDMChannelId } from "../model/API/discordAPI"
 import { deleteBatchCheckedData, deleteBatchRouteData, uploadRouteData } from "../model/API/firestroreAPI"
 import { verifyCID } from "../model/API/vatsimAPI"
 import { getTrackingList, putKeyValue } from "../model/watchList"
@@ -7,6 +8,15 @@ export async function addTrackUser(env, interaction) {
     //Get username and user id
     const username = interaction.member?.user.username || interaction.user.username
     const uid = interaction.member?.user.id || interaction.user.id
+    //Determine the response channel
+    let channel = null
+    if(interaction.channel.type === 3){
+        const dm = await getUserDMChannelId(env, uid)
+        channel = dm.id;
+    }
+    else{
+        channel = interaction.channel.id
+    }
     //Get the CID
     const cid = interaction.data.options[0].value.toUpperCase()
     //Get the FMS file reference
@@ -43,9 +53,7 @@ export async function addTrackUser(env, interaction) {
     let route = []
     try {
         const NUMENRline = fmsLines.findIndex(line => line.startsWith("NUMENR"))
-        const totalLineRaw = fmsLines[NUMENRline]
-        const totalLine = parseInt(totalLineRaw.substring(6).trim(), 10)
-        const routeRaw = fmsLines.slice(NUMENRline + 1, NUMENRline + totalLine + 1)
+        const routeRaw = fmsLines.slice(NUMENRline + 1)
         route = routeRaw.map(line => {
             const [type, ident, airway, altitude, lat, lon] = line.trim().split(/\s+/);
             return { type: parseInt(type, 10), ident, airway, altitude: parseFloat(altitude), lat: parseFloat(lat), lon: parseFloat(lon) };
@@ -63,8 +71,9 @@ export async function addTrackUser(env, interaction) {
     //Verify user CID
     try {
         console.log("Verifying user CID")
-        if (!verifyCID(cid)) {
-            return sendCIDInvalid(env, webhookEndpoint, cid)
+        const verify = await verifyCID(cid)
+        if (!verify) {
+            return await sendCIDInvalid(env, webhookEndpoint, cid)
         }
     } catch (err) {
         return console.error(`Error verifying CID for cid: ${cid}`)
@@ -73,12 +82,12 @@ export async function addTrackUser(env, interaction) {
     //Add user CID to tracking list
     try {
         let trackingList = await getTrackingList(env)
-        if (trackingList.find(user => user.cid === cid && user.uid === uid)) {
+        if (trackingList.find(user => user.cid === cid && user.uid === uid && user.channel === channel)) {
             console.log("User is in tracking list")
             await sendCIDExists(env, webhookEndpoint, cid)
             return
         }
-        trackingList.push({ cid, uid })
+        trackingList.push({ cid, uid, channel })
         console.log("Adding user to active tracking")
         await putKeyValue(env, "track", trackingList)
     } catch (err) {
