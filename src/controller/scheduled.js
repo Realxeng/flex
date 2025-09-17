@@ -98,7 +98,7 @@ export async function checkTrackList(env) {
     const fssCallsignList = fssList.map(fss => fss.callsign.slice(0, fss.callsign.length - 4))
     //Get the fss FIR coverages
     fssFIR = await fetchUIRData(env, fssCallsignList)
-    const fssFIRList = fssFIR.flatMap(fss => fss.fir)
+    const fssFIRList = Object.values(fssFIR).flatMap(fss => fss.fir)
     //Add to list of fir to fetch
     callsignList.push(...new Set(fssFIRList))
   }
