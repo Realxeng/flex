@@ -1,7 +1,7 @@
 import { updateRouteData, uploadRouteData } from "../model/API/firestroreAPI"
 import { verifyCID } from "../model/API/vatsimAPI"
 import { getTrackingList, putKeyValue } from "../model/watchList"
-import { sendCIDInvalid, sendInvalidFMSFile, sendTrackAdded, unexpectedFMSFileFormat } from "../view/discordMessages"
+import { sendATCInRouteMessage, sendCIDInvalid, sendInvalidFMSFile, sendTrackAdded, unexpectedFMSFileFormat } from "../view/discordMessages"
 
 export async function addTrackUser(env, interaction) {
     //Get username and user id
@@ -107,7 +107,7 @@ export async function trackUserPosition(routeData, position) {
 export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundaries, fssFIR) {
     //Map boundary data to atc callsign
     const atcBoundaryMap = {}
-    for (const key of ["CTR", "APP", "DEP"]) {
+    for (const key of ["CTR", "APP", "DEP", "FSS"]) {
         for (const atc of atcGrouped[key] || []) {
             //Map multiple FIR boundaries from fss
             if (key === "FSS") {
@@ -131,18 +131,40 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
     //Check for each user
     for (const user of trackingList) {
         const inside = []
+        const seen = new Set()
         const userRoute = updatedRoute[user.cid]?.routes || []
+        const dep = updatedRoute[user.cid]?.dep?.ident
+        const arr = updatedRoute[user.cid]?.arr?.ident
+        const airfieldATC = ["TWR", "GND", "DEL", "APP", "DEP"]
+            .flatMap(type => atcGrouped[type] || [])
+            .map(atc => ({
+                ...atc,
+                ident: atc.callsign.split("_")[0]
+            }))
+            .filter(atc => [dep, arr].includes(atc.ident))
+
+        //Check for departure airport
+        for (const atc of airfieldATC.filter(a => a.ident === dep)) {
+            addOnlineATC(inside, seen, { wpt: { ident: dep, type: "ADEP" }, atc })
+        }
+        //Check for enroute
         for (const wpt of userRoute) {
             for (const { atc, boundary } of Object.values(atcBoundaryMap)) {
                 // Bounding box check
                 if (!isPointInBBox(wpt, boundary.bbox)) continue
                 // Polygon check
                 if (isPointInPolygon(wpt, boundary.boundary)) {
-                    inside.push({ wpt, atc })
+                    addOnlineATC(inside, seen, { wpt, atc })
                     break
                 }
             }
         }
+        //Check for arrival airport
+        for (const atc of airfieldATC.filter(a => a.ident === arr)) {
+            addOnlineATC(inside, seen, { wpt: { ident: arr, type: "ADES" }, atc })
+        }
+
+        //Send message if theres ATC in route
         if (inside.length > 0) {
             await sendATCInRouteMessage(env, user, inside)
         }
@@ -209,4 +231,12 @@ function isPointInPolygon(point, polygon) {
         }
     }
     return inside;
+}
+
+function addOnlineATC(inside, seen, entry) {
+    const key = `${entry.atc.callsign}` // you could also add wpt.ident if needed
+    if (!seen.has(key)) {
+        inside.push(entry)
+        seen.add(key)
+    }
 }
