@@ -11,7 +11,7 @@ import { verifyDiscordRequest } from '../tool/discordFunctions.js';
 import { checkOnlineATC } from './atc.js';
 import { findSceneryFile } from './scenery.js';
 import { checkTrackList } from './scheduled.js';
-import { addTrackUser } from './track.js';
+import { addTrackUser, removeTrackUser } from './track.js';
 
 export class JsonResponse extends Response {
   constructor(body, init) {
@@ -93,9 +93,7 @@ router.post('/', async (request, env, ctx) => {
         const deferredResponse = new JsonResponse({
           type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
         });
-        /*
-        ctx.waitUntil(removeNotification(interaction.data.options[0].value, interaction, env))
-        */
+        ctx.waitUntil(removeTrackUser(env, interaction))
         return deferredResponse
       }
       //track command

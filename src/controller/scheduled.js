@@ -71,7 +71,7 @@ export async function checkTrackList(env) {
 
   //Remove finished routes
   if (removed.length > 0) {
-    await putKeyValue(env, 'track', trackingList.filter(track => !removed.includes(track)))
+    await putKeyValue(env, 'track', trackingList.filter(track => !removed.includes(track.cid)))
     await deleteBatchRouteData(env, removed)
     if (!trackingList || trackingList.length < 1) return
   }

@@ -1,4 +1,4 @@
-import { uploadRouteData } from "../model/API/firestroreAPI"
+import { deleteBatchRouteData, uploadRouteData } from "../model/API/firestroreAPI"
 import { verifyCID } from "../model/API/vatsimAPI"
 import { getTrackingList, putKeyValue } from "../model/watchList"
 import { sendATCInRouteMessage, sendCIDExists, sendCIDInvalid, sendInvalidFMSFile, sendTrackAdded, unexpectedFMSFileFormat } from "../view/discordMessages"
@@ -99,7 +99,30 @@ export async function addTrackUser(env, interaction) {
 }
 
 export async function removeTrackUser(env, interaction) {
+    //Get username and user id
+    const username = interaction.member?.user.username || interaction.user.username
+    const uid = interaction.member?.user.id || interaction.user.id
+    //Get the CID
+    const cid = interaction.data.options[0].value.toUpperCase()
+    
+    //Define the discord endpoint
+    const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
 
+    //Get the tracking list
+    let trackingList = await getTrackingList(env)
+    if(!trackingList.find(track => track.cid === cid && track.uid === uid)){
+        await sendNoUserFound(env, webhookEndpoint, cid)
+        return console.log(`No tracking for cid ${cid} on user ${uid}`)
+    }
+    const updatedTrackingList = trackingList.filter(user => user.cid !== cid && user.uid !== uid)
+    
+    try{
+        await putKeyValue(env, "track", updatedTrackingList)
+        await deleteBatchRouteData(env, [cid])
+    }
+    catch (error) {
+        return console.error(`Error deleting tracking for cid ${cid} and user ${uid}`)
+    }
 }
 
 export async function trackUserPosition(routeData, position) {
