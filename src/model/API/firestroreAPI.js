@@ -168,18 +168,18 @@ export async function updateBatchRouteData(env, updatedRoute) {
                     dep: {
                         mapValue: {
                             fields: {
-                                ident: { stringValue: dep.ident },
-                                lat: { stringValue: dep.lat },
-                                lon: { stringValu: dep.lon },
+                                ident: { stringValue: updatedRoute[cid].dep.ident },
+                                lat: { stringValue: updatedRoute[cid].dep.lat },
+                                lon: { stringValu: updatedRoute[cid].dep.lon },
                             }
                         }
                     },
                     arr: {
                         mapValue: {
                             fields: {
-                                ident: { stringValue: arr.ident },
-                                lat: { stringValue: arr.lat },
-                                lon: { stringValu: arr.lon },
+                                ident: { stringValue: updatedRoute[cid].arr.ident },
+                                lat: { stringValue: updatedRoute[cid].arr.lat },
+                                lon: { stringValu: updatedRoute[cid].arr.lon },
                             }
                         }
                     }
