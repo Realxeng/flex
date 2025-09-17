@@ -62,7 +62,7 @@ export async function addTrackUser(env, interaction) {
     try {
         console.log("Verifying user CID")
         if (!verifyCID(cid)) {
-            return sendCIDInvalid(env, interaction, cid)
+            return sendCIDInvalid(env, webhookEndpoint, cid)
         }
     } catch (err) {
         return console.error(`Error verifying CID for cid: ${cid}`)
@@ -71,6 +71,10 @@ export async function addTrackUser(env, interaction) {
     //Add user CID to tracking list
     try {
         let trackingList = await getTrackingList(env)
+        if(trackingList.find(user => user.cid === cid && user.uid === uid)){
+            console.log("User is in tracking list")
+            await sendCIDExists(env, interaction, cid)
+        }
         trackingList.push({ cid, uid })
         console.log("Adding user to active tracking")
         await putKeyValue(env, "track", trackingList)

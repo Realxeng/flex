@@ -262,6 +262,15 @@ export async function sendATCInRouteMessage(env, user, inside) {
     }
 }
 
+export async function sendCIDExists(env, webhookEndpoint, cid) {
+    await DiscordRequest(env, webhookEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `You are already tracking ${cid}`,
+        }),
+    });
+}
+
 function generateATCTypeButtons(covSort, pressed) {
     let count = 1, i = 0
     let msg = [{
