@@ -174,6 +174,15 @@ export async function sendCIDExists(env, webhookEndpoint, cid) {
     });
 }
 
+export async function sendTrackRemoved(env, webhookEndpoint, cid) {
+    await DiscordRequest(env, webhookEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `CID ${cid} removed from your tracking`,
+        }),
+    });
+}
+
 function generateATCTypeButtons(covSort, pressed) {
     let count = 1, i = 0
     let msg = [{
