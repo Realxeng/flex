@@ -95,7 +95,7 @@ export async function addTrackUser(env, interaction) {
 
     //Send success message
     console.log('Tracking')
-    await sendTrackAdded(env, webhookEndpoint, uid, route)
+    await sendTrackAdded(env, webhookEndpoint, uid, dep, arr)
 }
 
 export async function removeTrackUser(env, interaction) {
@@ -130,6 +130,7 @@ export async function trackUserPosition(routeData, position) {
     let routes = routeData.routes
     for (wpt of routes) {
         if (!isAhead(routeData.arr, position, wpt)) {
+            console.log(`Removing ${wpt.ident}`)
             routes = routes.filter(route => route.ident !== wpt.ident)
         }
         else break
