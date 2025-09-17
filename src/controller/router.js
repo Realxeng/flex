@@ -78,6 +78,7 @@ router.post('/', async (request, env, ctx) => {
         ctx.waitUntil(checkOnlineATC(env, interaction))
         return deferredResponse
       }
+      /* DEPRECATED
       //notify command
       case MONITOR_VATSIM.name.toLowerCase():{
         const deferredResponse = new JsonResponse({
@@ -86,12 +87,15 @@ router.post('/', async (request, env, ctx) => {
         ctx.waitUntil(addNotification(interaction.data.options[0].value, interaction, env))
         return deferredResponse
       }
+      */
       //remove command
       case REMOVE_NOTIF.name.toLowerCase():{
         const deferredResponse = new JsonResponse({
           type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
         });
+        /*
         ctx.waitUntil(removeNotification(interaction.data.options[0].value, interaction, env))
+        */
         return deferredResponse
       }
       //track command
