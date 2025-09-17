@@ -1,7 +1,7 @@
 import { deleteBatchRouteData, uploadRouteData } from "../model/API/firestroreAPI"
 import { verifyCID } from "../model/API/vatsimAPI"
 import { getTrackingList, putKeyValue } from "../model/watchList"
-import { sendATCInRouteMessage, sendCIDExists, sendCIDInvalid, sendInvalidFMSFile, sendTrackAdded, unexpectedFMSFileFormat } from "../view/discordMessages"
+import { sendATCInRouteMessage, sendCIDExists, sendCIDInvalid, sendInvalidFMSFile, sendNoUserFound, sendTrackAdded, sendTrackRemoved, unexpectedFMSFileFormat } from "../view/discordMessages"
 
 export async function addTrackUser(env, interaction) {
     //Get username and user id
