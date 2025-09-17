@@ -119,6 +119,7 @@ export async function removeTrackUser(env, interaction) {
     try{
         await putKeyValue(env, "track", updatedTrackingList)
         await deleteBatchRouteData(env, [cid])
+        await sendTrackRemoved(env, webhookEndpoint, cid)
     }
     catch (error) {
         return console.error(`Error deleting tracking for cid ${cid} and user ${uid}`)
@@ -127,8 +128,8 @@ export async function removeTrackUser(env, interaction) {
 
 export async function trackUserPosition(routeData, position) {
     //Remove past waypoints
-    let routes = routeData.routes
-    for (wpt of routes) {
+    let routes = Object.values(routeData.routes)
+    for (const wpt of routes) {
         if (!isAhead(routeData.arr, position, wpt)) {
             console.log(`Removing ${wpt.ident}`)
             routes = routes.filter(route => route.ident !== wpt.ident)
