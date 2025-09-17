@@ -10,7 +10,7 @@ import { addNotification, removeNotification } from './notify.js';
 import { verifyDiscordRequest } from '../tool/discordFunctions.js';
 import { checkOnlineATC } from './atc.js';
 import { findSceneryFile } from './scenery.js';
-import { checkWatchList } from './scheduled.js';
+import { checkTrackList, checkWatchList } from './scheduled.js';
 import { addTrackUser } from './track.js';
 
 export class JsonResponse extends Response {
@@ -171,6 +171,6 @@ export default {
   },
   //CRON Trigger entry point
   async scheduled(controller, env){
-    await checkWatchList(env)
+    await checkTrackList(env)
   }
 };

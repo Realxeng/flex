@@ -91,6 +91,10 @@ export async function addTrackUser(env, interaction) {
     await sendTrackAdded(env, webhookEndpoint, uid, route)
 }
 
+export async function removeTrackUser(env, interaction) {
+    
+}
+
 export async function trackUserPosition(routeData, position) {
     //Remove past waypoints
     let routes = routeData.routes
