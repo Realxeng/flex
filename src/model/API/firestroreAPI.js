@@ -35,7 +35,7 @@ export async function fetchFirestore(env, path, method = "GET") {
 
     if (!res.ok) {
         console.error(`Error fetching document: ${res.status}`)
-        console.log(await res.text())
+        return console.log(await res.text())
     }
 
     const dataRaw = await res.json()
@@ -63,7 +63,7 @@ export async function fetchFirestoreBatch(env, documents) {
 
     if (!res.ok) {
         console.error(`Error fetching document: ${res.status}`)
-        console.log(await res.text())
+        return console.log(await res.text())
     }
 
     const dataRaw = await res.json()
