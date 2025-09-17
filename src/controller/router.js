@@ -10,7 +10,7 @@ import { addNotification, removeNotification } from './notify.js';
 import { verifyDiscordRequest } from '../tool/discordFunctions.js';
 import { checkOnlineATC } from './atc.js';
 import { findSceneryFile } from './scenery.js';
-import { checkTrackList, checkWatchList } from './scheduled.js';
+import { checkTrackList } from './scheduled.js';
 import { addTrackUser } from './track.js';
 
 export class JsonResponse extends Response {
