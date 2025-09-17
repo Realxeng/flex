@@ -130,7 +130,7 @@ export async function uploadCheckedATC(env, trackingList, checkedList) {
     for (const user in trackingList) {
         let write = {
             update: {
-                name: `projects/flex-c305e/databases/(default)/documents/checked/${cid}`,
+                name: `projects/flex-c305e/databases/(default)/documents/checked/${user.cid}`,
                 fields: {
                     atc: {
                         arrayValue: {
