@@ -92,18 +92,20 @@ export async function checkTrackList(env) {
   //Get the list of checked atc
   const checked = await fetchChecked(env, trackingList)
   if (checked && Object.keys(checked).length > 0) {
-    const checkedATC = Object.values(checked)[0];
-    //Remove checked atc from atcGrouped
+    const checkedATCObj = Object.values(checked)[0];
+    const checkedATC = checkedATCObj.atc || [];
+    const checkedSet = new Set(checkedATC);
+
     atcGrouped = Object.fromEntries(
       Object.entries(atcGrouped).map(([key, arr]) => [
         key,
-        arr.filter(atc => !checkedATC.includes(atc.callsign))
+        arr.filter(atc => !checkedSet.has(atc.callsign))
       ])
-    )
+    );
   }
 
   //Finish the job if every atc is checked
-  if(Object.values(atcGrouped).every(arr => arr.length === 0)) return console.log("Checked all")
+  if (Object.values(atcGrouped).every(arr => arr.length === 0)) return console.log("Checked all")
 
   //Get the list of CTR and APP callsigns
   const callsignList = [
