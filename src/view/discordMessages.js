@@ -266,7 +266,7 @@ export async function sendCIDExists(env, webhookEndpoint, cid) {
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify({
-            content: `You are already tracking ${cid}`,
+            content: `You are already tracking CID ${cid}`,
         }),
     });
 }
