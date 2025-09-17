@@ -178,7 +178,7 @@ export async function sendNoUserFound(env, webhookEndpoint, cid) {
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify({
-            content: `No tracking found with CID ${cid}`,
+            content: `You are currently not tracking CID ${cid}`,
         }),
     });
 }
