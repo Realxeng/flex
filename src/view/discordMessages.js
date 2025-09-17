@@ -132,7 +132,7 @@ export async function unexpectedFMSFileFormat(env, webhookEndpoint) {
 }
 
 export async function sendATCInRouteMessage(env, user, inside) {
-    const webhookEndpoint = `https://discord.com/api/v10/channels/${channelId}/messages`
+    const webhookEndpoint = `https://discord.com/api/v10/channels/${user.channel}/messages`
 
     const chunkSize = 25
     for (let i = 0; i < inside.length; i += chunkSize) {

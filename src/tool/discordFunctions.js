@@ -4,7 +4,7 @@ export async function DiscordRequest(env, endpoint, options) {
   let headers = {
     ...(options.headers || {}),
     Authorization: `Bot ${env.BOT_TOKEN}`,
-    'User-Agent': 'DiscordBot (https://flex.realxengpandelaki-2c3.workers.dev, 2.0.0r1)',
+    'User-Agent': 'DiscordBot (https://flex.realxengpandelaki-2c3.workers.dev, 3.0.0r1)',
   };
 
   if(!headers['Content-Type'] && !(options.body instanceof FormData)){
@@ -16,6 +16,8 @@ export async function DiscordRequest(env, endpoint, options) {
       ...options,
       headers,
     });
+    console.log(endpoint)
+    console.log(JSON.stringify(options, null, 2));
     if (!res.ok) {
       const error = await res.json();
       console.error('Discord API error:', error);

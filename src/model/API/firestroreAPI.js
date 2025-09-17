@@ -16,7 +16,7 @@ export async function uploadFirestore(env, writes) {
         }
     )
 
-    console.log(await response.text())
+    //console.log(await response.text())
 }
 
 export async function fetchFirestore(env, path, method = "GET") {
@@ -39,7 +39,7 @@ export async function fetchFirestore(env, path, method = "GET") {
     }
 
     const dataRaw = await res.json()
-    console.log(dataRaw)
+    //console.log(dataRaw)
 
     const data = unwrapFirestoreFields(dataRaw.fields)
 
@@ -67,7 +67,7 @@ export async function fetchFirestoreBatch(env, documents) {
     }
 
     const dataRaw = await res.json()
-    console.log(dataRaw)
+    //console.log(dataRaw)
 
     const data = unwrapFirestoreBatch(dataRaw)
 
@@ -169,8 +169,8 @@ export async function updateBatchRouteData(env, updatedRoute) {
                         mapValue: {
                             fields: {
                                 ident: { stringValue: updatedRoute[cid].dep.ident },
-                                lat: { stringValue: updatedRoute[cid].dep.lat },
-                                lon: { stringValu: updatedRoute[cid].dep.lon },
+                                lat: { doubleValue: updatedRoute[cid].dep.lat },
+                                lon: { doubleValue: updatedRoute[cid].dep.lon },
                             }
                         }
                     },
@@ -178,8 +178,8 @@ export async function updateBatchRouteData(env, updatedRoute) {
                         mapValue: {
                             fields: {
                                 ident: { stringValue: updatedRoute[cid].arr.ident },
-                                lat: { stringValue: updatedRoute[cid].arr.lat },
-                                lon: { stringValu: updatedRoute[cid].arr.lon },
+                                lat: { doubleValue: updatedRoute[cid].arr.lat },
+                                lon: { doubleValue: updatedRoute[cid].arr.lon },
                             }
                         }
                     }
