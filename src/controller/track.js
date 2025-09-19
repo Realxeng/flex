@@ -185,7 +185,8 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
     //Check for each user
     for (const user of trackingList) {
         let atcBoundaryMapUser = atcBoundaryMap
-        if (checked[user.cid]) {
+        //Check for checked atcs
+        if (checked && checked[user.cid]) {
             atcBoundaryMapUser = Object.fromEntries(
                 Object.entries(atcBoundaryMap).filter(([key, value]) =>
                     checked[user.cid].includes(key)
@@ -206,13 +207,15 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
             }))
             .filter(atc => [dep, arr].includes(atc.ident))
 
-        //Check for enroute
+        //Check for atc
         for (const wpt of userRoute) {
+            //Check for departure and arrival atc
             if (wpt.ident === dep || wpt.ident === arr) {
                 for (const atc of airfieldATC.filter(a => a.ident === wpt.ident)) {
                     addOnlineATC(inside, seen, { wpt, atc })
                 }
             }
+            //Check for enroute atc
             for (const { atc, boundary } of Object.values(atcBoundaryMapUser)) {
                 // Bounding box check
                 if (!isPointInBBox(wpt, boundary.bbox)) continue
