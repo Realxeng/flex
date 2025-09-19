@@ -65,22 +65,29 @@ export async function getCurrentPosition(CID){
     }
 }
 
-export async function getATCFrequency(CID){
+export async function getATCFrequency(CID, callsign){
     try {
         const res = await fetch(`https://slurper.vatsim.net/users/info?cid=${CID}`, {method: 'GET'})
         const slurperData = await res.text()
         if(slurperData){
-            const data = slurperData.split(',')
-            if(data[2] == "atc"){
-                if(data[3]){
-                    return {freq: data[3]}
+            const lines = slurperData.split(/\r?\n/)
+            for (const line of lines) {
+                const data = line.split(',')
+                if(data[2] === "atc"){
+                    if (data[1] === callsign) {
+                        if(data[3]){
+                            return {freq: data[3]}
+                        }
+                        else{
+                            return {message: `${data[1]} does not have valid frequency`}
+                        }
+                    } else {
+                        continue
+                    }
                 }
                 else{
-                    return {message: `${data[1]} does not have valid frequency`}
+                    return {message: `CID ${CID} is not connected as an atc`}
                 }
-            }
-            else{
-                return {message: `CID ${CID} is not connected as an atc`}
             }
         }
         else{

@@ -140,7 +140,7 @@ export async function sendATCInRouteMessage(env, user, inside) {
 
         const fields = await Promise.all(
             chunk.map(async (each) => {
-                const slurper = await getATCFrequency(each.atc.id);
+                const slurper = await getATCFrequency(each.atc.id, each.atc.callsign);
                 if(slurper.message){
                     console.log(slurper.message)
                     slurper.freq = "n/a"
