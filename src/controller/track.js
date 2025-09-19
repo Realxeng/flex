@@ -117,12 +117,16 @@ export async function removeTrackUser(env, interaction) {
 
     //Get the tracking list
     let trackingList = await getTrackingList(env)
+
     if (!trackingList.find(track => track.cid === cid && track.uid === uid)) {
         await sendNoUserFound(env, webhookEndpoint, cid)
         return console.log(`No tracking for cid ${cid} on user ${uid}`)
     }
+
+    //Filter out the removed cid
     const updatedTrackingList = trackingList.filter(user => user.cid !== cid && user.uid !== uid)
 
+    //Upload the new data
     try {
         await putKeyValue(env, "track", updatedTrackingList)
         await deleteBatchRouteData(env, [cid])

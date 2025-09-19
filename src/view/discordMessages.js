@@ -95,7 +95,7 @@ export async function sendTrackAdded(env, webhookEndpoint, uid, dep, arr) {
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify({
-            content: `🔎Tracking <@${uid}> from 🛫${dep.ident} to 🛬${arr.ident}`,
+            content: `📡Tracking <@${uid}> from 🛫${dep.ident} to 🛬${arr.ident}`,
         }),
     });
 }
