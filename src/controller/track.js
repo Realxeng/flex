@@ -10,11 +10,11 @@ export async function addTrackUser(env, interaction) {
     const uid = interaction.member?.user.id || interaction.user.id
     //Determine the response channel
     let channel = null
-    if(interaction.channel.type === 3){
+    if (interaction.channel.type === 3) {
         const dm = await getUserDMChannelId(env, uid)
         channel = dm.id;
     }
-    else{
+    else {
         channel = interaction.channel.id
     }
     //Get the CID
@@ -158,7 +158,7 @@ export async function trackUserPosition(routeData, position) {
     return { routes: updatedRoute, dep: routeData.dep, arr: routeData.arr, changed }
 }
 
-export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundaries, fssFIR) {
+export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundaries, fssFIR, checked) {
     //Map boundary data to atc callsign
     const atcBoundaryMap = {}
     for (const key of ["CTR", "APP", "DEP", "FSS"]) {
@@ -184,6 +184,11 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
 
     //Check for each user
     for (const user of trackingList) {
+        const atcBoundaryMapUser = Object.fromEntries(
+            Object.entries(atcBoundaryMap).filter(([key, value]) =>
+                checked[user.cid].includes(key)
+            )
+        )
         console.log(`Checking ATC for CID ${user.cid}`)
         const inside = []
         const seen = new Set()
@@ -198,13 +203,14 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
             }))
             .filter(atc => [dep, arr].includes(atc.ident))
 
-        // //Check for departure airport
-        // for (const atc of airfieldATC.filter(a => a.ident === dep)) {
-        //     addOnlineATC(inside, seen, { wpt: { ident: dep, type: "ADEP" }, atc })
-        // }
         //Check for enroute
         for (const wpt of userRoute) {
-            for (const { atc, boundary } of Object.values(atcBoundaryMap)) {
+            if (wpt.ident === dep || wpt.ident === arr) {
+                for (const atc of airfieldATC.filter(a => a.ident === wpt.ident)) {
+                    addOnlineATC(inside, seen, { wpt, atc })
+                }
+            }
+            for (const { atc, boundary } of Object.values(atcBoundaryMapUser)) {
                 // Bounding box check
                 if (!isPointInBBox(wpt, boundary.bbox)) continue
                 // Polygon check
@@ -214,10 +220,6 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
                 }
             }
         }
-        // //Check for arrival airport
-        // for (const atc of airfieldATC.filter(a => a.ident === arr)) {
-        //     addOnlineATC(inside, seen, { wpt: { ident: arr, type: "ADES" }, atc })
-        // }
 
         //Send message if theres ATC in route
         if (inside.length > 0) {
