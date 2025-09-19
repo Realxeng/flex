@@ -147,7 +147,7 @@ export async function sendATCInRouteMessage(env, user, inside) {
                 }
                 return {
                     name: `📡 ${each.atc.callsign}`,
-                    value: `📍${each.wpt.ident}\n🎧 ${slurper.freq}\n🕒 ${each.atc.time}\n`,
+                    value: `📍${each.wpt.ident}\n📟 ${slurper.freq}\n🕒 ${each.atc.time}\n`,
                 };
             })
         );
