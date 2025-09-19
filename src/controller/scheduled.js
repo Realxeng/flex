@@ -37,6 +37,7 @@ export async function checkTrackList(env) {
 
     //Remove tracking when there are no remaining waypoints
     if (updatedRoute[cid].routes.length < 1) {
+      console.log("Flight completed")
       removed.push(cid)
     }
   }
@@ -54,7 +55,7 @@ export async function checkTrackList(env) {
   }
 
   //Finish job when the list is empty
-  if (updatedRoute.length < 1) return console.log("Route finished")
+  if (updatedRoute.length < 1) return console.log("No route to check")
 
   //Get all online atc
   let atcGrouped = await getOnlineATC()
