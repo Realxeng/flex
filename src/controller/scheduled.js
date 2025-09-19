@@ -68,6 +68,7 @@ export async function checkTrackList(env) {
   let atcGrouped = atcGroupedRaw
   console.log("Getting checked ATC")
   const checked = await fetchChecked(env, trackingList)
+  console.log(JSON.stringify(checked, null, 2));
   if (checked && Object.keys(checked).length > 0) {
     //Turn each user’s checked list into a Set
     const checkedSets = Object.values(checked).map(u => new Set(u.atc || []))

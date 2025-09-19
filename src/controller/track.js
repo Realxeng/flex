@@ -175,8 +175,12 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
             //Map boundary from other types
             else {
                 const callsignKey = atc.callsign.slice(0, atc.callsign.length - 4)
+                const altCallsignKey = callsignKey.split('_')[0]
                 if (boundaries[callsignKey]) {
                     atcBoundaryMap[atc.callsign] = { atc, boundary: boundaries[callsignKey] }
+                }
+                else if (boundaries[altCallsignKey]) {
+                    atcBoundaryMap[atc.callsign] = { atc, boundary: boundaries[altCallsignKey] }
                 }
             }
         }
@@ -187,6 +191,7 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
         let atcBoundaryMapUser = atcBoundaryMap
         //Check for checked atcs
         if (checked && checked[user.cid] && checked[user.cid].atc) {
+            console.log(`Filtering atc for ${user.cid}`)
             const userCheckedATC = checked?.[user.cid]?.atc ?? [];
             atcBoundaryMapUser = Object.fromEntries(
                 Object.entries(atcBoundaryMap).filter(([key]) =>
@@ -195,6 +200,7 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
             )
         }
         console.log(`Checking ATC for CID ${user.cid}`)
+        console.log(atcBoundaryMapUser)
         const inside = []
         const seen = new Set()
         const userRoute = updatedRoute[user.cid]?.routes || []
@@ -218,10 +224,12 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
             }
             //Check for enroute atc
             for (const { atc, boundary } of Object.values(atcBoundaryMapUser)) {
+                console.log(`Checking ${wpt.ident} inside ${atc.callsign}`)
                 // Bounding box check
                 if (!isPointInBBox(wpt, boundary.bbox)) continue
                 // Polygon check
                 if (isPointInPolygon(wpt, boundary.boundary)) {
+                    console.log(`${wpt.ident} inside ${atc.callsign}`)
                     addOnlineATC(inside, seen, { wpt, atc })
                     break
                 }

@@ -67,7 +67,7 @@ export async function fetchFirestoreBatch(env, documents, type = "FIR", retried 
     }
 
     const dataRaw = await res.json()
-    //console.log(dataRaw)
+    console.log(dataRaw)
 
     const missing = dataRaw
         .map(item => item.missing?.name?.split("/")?.pop()?.split("_")?.[0] ?? null)
