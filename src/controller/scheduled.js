@@ -54,13 +54,13 @@ export async function checkTrackList(env) {
   await updateBatchRouteData(env, updatedRoute)
 
   //Finish job when the list is empty
-  if (updatedRoute.length < 1) return
+  if (updatedRoute.length < 1) return console.log("Route finished")
 
   //Get all online atc
   let atcGrouped = await getOnlineATC()
   //Finish job if there are no online ATC
   if (!atcGrouped) {
-    return
+    return console.log("No online ATC")
   }
 
   //Get the list of checked atc
