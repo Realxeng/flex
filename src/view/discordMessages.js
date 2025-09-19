@@ -138,10 +138,19 @@ export async function sendATCInRouteMessage(env, user, inside) {
     for (let i = 0; i < inside.length; i += chunkSize) {
         const chunk = inside.slice(i, i + chunkSize)
 
-        const fields = chunk.map(each => ({
-            name: `📡 ${each.atc.callsign}`,
-            value: `📍${each.wpt.ident}\n👤 ${each.atc.id}\n🕒 ${each.atc.time}`,
-        }))
+        const fields = await Promise.all(
+            chunk.map(async (each) => {
+                const slurper = await getATCFrequency(each.atc.id);
+                if(slurper.message){
+                    console.log(slurper.message)
+                    slurper.freq = "n/a"
+                }
+                return {
+                    name: `📡 ${each.atc.callsign}`,
+                    value: `📍${each.wpt.ident}\n📻 ${slurper.freq}\n🕒 ${each.atc.time}`,
+                };
+            })
+        );
 
         const msg = {
             content: i === 0
@@ -149,7 +158,7 @@ export async function sendATCInRouteMessage(env, user, inside) {
                 : null,
             embeds: [
                 {
-                    title: `${i > 0 ? `${i+1} pages??` : "LMAOOO🫵"}`,
+                    title: `${i > 0 ? `${i + 1} pages??` : "LMAOOO🫵"}`,
                     color: 0x1D9BF0,
                     fields,
                 }

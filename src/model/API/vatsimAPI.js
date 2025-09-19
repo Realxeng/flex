@@ -65,6 +65,33 @@ export async function getCurrentPosition(CID){
     }
 }
 
+export async function getATCFrequency(CID){
+    try {
+        const res = await fetch(`https://slurper.vatsim.net/users/info?cid=${CID}`, {method: 'GET'})
+        const slurperData = await res.text()
+        if(slurperData){
+            const data = slurperData.split(',')
+            if(data[2] == "atc"){
+                if(data[3]){
+                    return {freq: data[3]}
+                }
+                else{
+                    return {message: `${data[1]} does not have valid frequency`}
+                }
+            }
+            else{
+                return {message: `CID ${CID} is not connected as an atc`}
+            }
+        }
+        else{
+            return {message: `CID ${CID} is currently not connected`}
+        }
+    } catch (error) {
+        console.log("Error checking frequency", error)
+        return {message: error}
+    }
+}
+
 export async function verifyCID(CID){
     let res = {}
     try{
