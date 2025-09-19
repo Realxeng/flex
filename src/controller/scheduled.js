@@ -95,7 +95,7 @@ export async function checkTrackList(env) {
     //Finish the job if every atc is checked
     if (Object.values(atcGrouped).every(arr => arr.length === 0)) {
       if (offlineATC) {
-        await uploadCheckedATC(env, trackingList, onlineList)
+        await uploadCheckedATC(env, trackingList, onlineATC)
       }
       return console.log("Checked all")
     }
@@ -135,5 +135,8 @@ export async function checkTrackList(env) {
   await checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundary, fssFIR, checked)
 
   //Store checked online ATCs
-  //await uploadCheckedATC(env, trackingList, onlineATC)
+  const onlineATC = new Set(
+    Object.values(atcGroupedRaw).flatMap(arr => arr.map(atc => atc.callsign))
+  )
+  await uploadCheckedATC(env, trackingList, onlineATC)
 }
