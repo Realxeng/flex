@@ -26,7 +26,7 @@ A Discord Bot used to get information for flight simulation purposes that runs i
 * `/list-atc`  
     Check the currently online VATSIM ATC
 
-* `/notify <VATSIM CID>`  
+*  **Deprecated** `/notify <VATSIM CID>`  
     Check ATC every 5 minutes and notify you if there is an online ATC in your route
 
 * `/remove <VATSIM CID>`  
