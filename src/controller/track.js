@@ -55,7 +55,7 @@ export async function addTrackUser(env, interaction) {
         const NUMENRline = fmsLines.findIndex(line => line.startsWith("NUMENR"))
         const routeRaw = fmsLines.slice(NUMENRline + 1)
         route = routeRaw.map(line => {
-            const [type, ident, airway, altitude, lat, lon] = line.trim().split(/\s+/);
+            const [type, ident, airway, altitude, lat, lon] = line.trim().split(/\s/);
             return { type: parseInt(type, 10), ident, airway, altitude: parseFloat(altitude), lat: parseFloat(lat), lon: parseFloat(lon) };
         })
     } catch (err) {
