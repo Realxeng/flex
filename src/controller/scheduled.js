@@ -41,6 +41,10 @@ export async function checkTrackList(env) {
     }
   }
 
+  //Push the updated route to firestore
+  console.log("Updating route")
+  await updateBatchRouteData(env, updatedRoute)
+
   //Remove finished routes
   if (removed.length > 0) {
     console.log("Removing track")
@@ -48,10 +52,6 @@ export async function checkTrackList(env) {
     await deleteBatchRouteData(env, removed)
     if (!trackingList || trackingList.length < 1) return
   }
-
-  //Push the updated route to firestore
-  console.log("Updating route")
-  await updateBatchRouteData(env, updatedRoute)
 
   //Finish job when the list is empty
   if (updatedRoute.length < 1) return console.log("Route finished")
