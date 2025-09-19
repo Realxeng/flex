@@ -195,10 +195,10 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
             }))
             .filter(atc => [dep, arr].includes(atc.ident))
 
-        //Check for departure airport
-        for (const atc of airfieldATC.filter(a => a.ident === dep)) {
-            addOnlineATC(inside, seen, { wpt: { ident: dep, type: "ADEP" }, atc })
-        }
+        // //Check for departure airport
+        // for (const atc of airfieldATC.filter(a => a.ident === dep)) {
+        //     addOnlineATC(inside, seen, { wpt: { ident: dep, type: "ADEP" }, atc })
+        // }
         //Check for enroute
         for (const wpt of userRoute) {
             for (const { atc, boundary } of Object.values(atcBoundaryMap)) {
@@ -211,10 +211,10 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
                 }
             }
         }
-        //Check for arrival airport
-        for (const atc of airfieldATC.filter(a => a.ident === arr)) {
-            addOnlineATC(inside, seen, { wpt: { ident: arr, type: "ADES" }, atc })
-        }
+        // //Check for arrival airport
+        // for (const atc of airfieldATC.filter(a => a.ident === arr)) {
+        //     addOnlineATC(inside, seen, { wpt: { ident: arr, type: "ADES" }, atc })
+        // }
 
         //Send message if theres ATC in route
         if (inside.length > 0) {
