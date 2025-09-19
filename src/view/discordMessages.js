@@ -1,4 +1,4 @@
-import { coverageOrder } from "../model/API/vatsimAPI"
+import { coverageOrder, getATCFrequency } from "../model/API/vatsimAPI"
 import { DiscordRequest } from "../tool/discordFunctions"
 
 export async function sendNoOnlineATCMessage(env, webhookEndpoint) {
