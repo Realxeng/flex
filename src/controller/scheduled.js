@@ -135,6 +135,7 @@ export async function checkTrackList(env) {
   await checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundary, fssFIR, checked)
 
   //Store checked online ATCs
+  console.log("Storing checked atc")
   const onlineATC = new Set(
     Object.values(atcGroupedRaw).flatMap(arr => arr.map(atc => atc.callsign))
   )

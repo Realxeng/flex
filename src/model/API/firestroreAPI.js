@@ -73,7 +73,7 @@ export async function fetchFirestoreBatch(env, documents, type = "FIR", retried 
         .map(item => item.missing?.name?.split("/")?.pop()?.split("_")?.[0] ?? null)
         .filter(Boolean)
 
-    if (!retried && missing.length > 0){
+    if (!retried && missing.length > 0) {
         let dataFromMissing = []
         if (type === "FIR") {
             dataFromMissing = await fetchFIRData(env, missing, true)
@@ -138,25 +138,16 @@ export async function uploadRouteData(env, routes, cid, dep, arr) {
     await uploadFirestore(env, writes)
 }
 
-export async function uploadCheckedATC(env, trackingList, checkedList) {
-    let writes = []
+export async function uploadCheckedATC(env, trackingList, onlineATC) {
+    //Build the atc values
+    const values = [...onlineATC].map(item => ({ stringValue: item }))
 
-    for (const user of trackingList) {
-        let write = {
-            update: {
-                name: `projects/flex-c305e/databases/(default)/documents/checked/${user.cid}`,
-                fields: {
-                    atc: {
-                        arrayValue: {
-                            values: checkedList.map(item => ({ stringValue: item }))
-                        }
-                    },
-                }
-            }
+    const writes = trackingList.map(user => ({
+        update: {
+            name: `projects/flex-c305e/databases/(default)/documents/checked/${user.cid}`,
+            fields: { atc: { arrayValue: { values } } }
         }
-
-        writes.push(write)
-    }
+    }))
 
     await uploadFirestore(env, writes)
 }
@@ -235,7 +226,7 @@ export async function deleteBatchRouteData(env, removed) {
 
 export async function deleteBatchCheckedData(env, removed) {
     let writes = []
-    
+
     writes = removed.map(cid => ({ delete: `projects/flex-c305e/databases/(default)/documents/checked/${cid}` }))
 
     await uploadFirestore(env, writes)
