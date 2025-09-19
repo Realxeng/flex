@@ -66,8 +66,6 @@ export async function addTrackUser(env, interaction) {
     const dep = route.find(wpt => wpt.airway === "ADEP")
     const arr = route.find(wpt => wpt.airway === "ADES")
 
-    route = route.filter(wpt => wpt.airway !== "ADES")
-
     //Verify user CID
     try {
         console.log("Verifying user CID")

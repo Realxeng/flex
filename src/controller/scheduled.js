@@ -13,7 +13,7 @@ export async function checkTrackList(env) {
   let updatedRoute = {}
   //Initialize array of cid with finished routes
   let removed = []
-  //Iterate through the cid list
+  //Track the route of each CID
   for (const user of trackingList) {
     const cid = user.cid
     //Get the live position of the user
@@ -36,7 +36,7 @@ export async function checkTrackList(env) {
     console.log(`Finished updating CID ${cid} route`)
 
     //Remove tracking when there are no remaining waypoints
-    if (updatedRoute[cid].routes.length < 1) {
+    if (updatedRoute[cid].routes.length < 2) {
       console.log("Flight completed")
       removed.push(cid)
     }
