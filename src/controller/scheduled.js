@@ -65,6 +65,7 @@ export async function checkTrackList(env) {
   }
 
   //Get the list of checked atc
+  console.log("Getting checked ATC")
   const checked = await fetchChecked(env, trackingList)
   if (checked && Object.keys(checked).length > 0) {
     const checkedATCObj = Object.values(checked)[0];
@@ -112,6 +113,7 @@ export async function checkTrackList(env) {
   const boundary = await fetchFIRData(env, callsignList)
 
   //Check the route with online ATC
+  console.log("Checking ATC in route")
   await checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundary, fssFIR)
 
   //Get lists of checked atc

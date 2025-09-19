@@ -184,6 +184,7 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
 
     //Check for each user
     for (const user of trackingList) {
+        console.log(`Checking ATC for CID ${user.cid}`)
         const inside = []
         const seen = new Set()
         const userRoute = updatedRoute[user.cid]?.routes || []
