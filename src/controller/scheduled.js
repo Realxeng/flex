@@ -26,9 +26,14 @@ export async function checkTrackList(env) {
 
     //Check the position with waypoints
     const routeData = await fetchRouteData(env, cid)
-    console.log("Tracking user")
+    if(!routeData){
+      console.log(`No route data for CID ${cid}`)
+      removed.push(cid)
+      continue
+    }
+    console.log(`Tracking CID ${cid}`)
     updatedRoute[cid] = await trackUserPosition(routeData, position)
-    console.log("Finished tracking route")
+    console.log(`Finished updating CID ${cid} route`)
 
     //Remove tracking when there are no remaining waypoints
     if (updatedRoute[cid].routes.length < 1) {
@@ -58,7 +63,6 @@ export async function checkTrackList(env) {
     return
   }
 
-  console.log("1")
   //Get the list of checked atc
   const checked = await fetchChecked(env, trackingList)
   if (checked && Object.keys(checked).length > 0) {
@@ -112,5 +116,6 @@ export async function checkTrackList(env) {
   //Get lists of checked atc
   const checkedList = Object.values(atcGrouped).flatMap(arr => arr.map(atc => atc.callsign))
 
-  await uploadCheckedATC(env, trackingList, checkedList)
+  //Store checked online ATCs
+  //await uploadCheckedATC(env, trackingList, checkedList)
 }
