@@ -170,6 +170,7 @@ export async function sendATCInRouteMessage(env, user, inside) {
             body: JSON.stringify(msg),
         }
 
+        console.log(`Sending atc list for ${user.cid}`)
         await DiscordRequest(env, webhookEndpoint, content)
     }
 }

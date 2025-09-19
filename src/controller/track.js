@@ -269,7 +269,7 @@ function isPointInBBox(point, bbox) {
     )
 }
 
-function isPointOnSegment(P, A, B, epsilon = 0.00005) {
+function isPointOnSegment(P, A, B, epsilon = 0.0005) {
     const cross = (P.lon - A.lon) * (B.lat - A.lat) - (P.lat - A.lat) * (B.lon - A.lon);
     if (Math.abs(cross) > epsilon) return false;
     const dot = (P.lon - A.lon) * (B.lon - A.lon) + (P.lat - A.lat) * (B.lat - A.lat);
