@@ -185,7 +185,7 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
     //Check for each user
     for (const user of trackingList) {
         let atcBoundaryMapUser = atcBoundaryMap
-        if (checked) {
+        if (checked[user.cid]) {
             atcBoundaryMapUser = Object.fromEntries(
                 Object.entries(atcBoundaryMap).filter(([key, value]) =>
                     checked[user.cid].includes(key)
