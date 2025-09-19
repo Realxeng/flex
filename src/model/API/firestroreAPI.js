@@ -46,7 +46,7 @@ export async function fetchFirestore(env, path, method = "GET") {
     return data
 }
 
-export async function fetchFirestoreBatch(env, documents) {
+export async function fetchFirestoreBatch(env, documents, type = "FIR", retried = false) {
     const rawToken = await getAccessToken(env)
     const accessToken = rawToken.access_token
 
@@ -68,6 +68,20 @@ export async function fetchFirestoreBatch(env, documents) {
 
     const dataRaw = await res.json()
     //console.log(dataRaw)
+
+    const missing = dataRaw
+        .map(item => item.missing?.name?.split("/")?.pop()?.split("_")?.[0] ?? null)
+        .filter(Boolean)
+
+    if (!retried && missing.length > 0){
+        let dataFromMissing = []
+        if (type === "FIR") {
+            dataFromMissing = await fetchFIRData(env, missing, true)
+        } else if (type === "UIR") {
+            dataFromMissing = await fetchUIRData(env, missing, true)
+        }
+        dataRaw.push(...dataFromMissing)
+    }
 
     const data = unwrapFirestoreBatch(dataRaw)
 
@@ -240,15 +254,15 @@ export async function fetchChecked(env, trackingList) {
     return data
 }
 
-export async function fetchFIRData(env, callsignList) {
+export async function fetchFIRData(env, callsignList, retried = false) {
     const documents = callsignList.map(cs => `projects/flex-c305e/databases/(default)/documents/fir/${cs}`)
-    const data = await fetchFirestoreBatch(env, documents)
+    const data = await fetchFirestoreBatch(env, documents, retried)
     return data
 }
 
-export async function fetchUIRData(env, fssList) {
+export async function fetchUIRData(env, fssList, retried = false) {
     const documents = fssList.map(fss => `projects/flex-c305e/databases/(default)/documents/uir/${fss}`)
-    const data = await fetchFirestoreBatch(env, documents)
+    const data = await fetchFirestoreBatch(env, documents, retried)
     return data
 }
 
