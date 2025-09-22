@@ -107,7 +107,7 @@ export async function checkTrackList(env) {
     ...new Set(
       Object.values(atcGrouped).flatMap(group =>
         group.filter(atc =>
-          atc.callsign.endsWith("CTR") || atc.callsign.endsWith("APP")
+          atc.callsign.endsWith("CTR")
         ).map(
           atc => atc.callsign.slice(0, -4)
         )
@@ -140,5 +140,5 @@ export async function checkTrackList(env) {
   const onlineATC = new Set(
     Object.values(atcGroupedRaw).flatMap(arr => arr.map(atc => atc.callsign))
   )
-  await uploadCheckedATC(env, trackingList, onlineATC)
+  //await uploadCheckedATC(env, trackingList, onlineATC)
 }
