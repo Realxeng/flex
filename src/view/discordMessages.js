@@ -222,8 +222,7 @@ export async function sendTrackFinished(env, user, arr) {
     });
 }
 
-export async function sendDestinationMETAR(env, user, metar, routeData) {
-    const webhookEndpoint = `https://discord.com/api/v10/channels/${user.channel}/messages`
+export async function sendMETAR(env, webhookEndpoint, metar, icao) {
     const colors = {
         VFR: 0x00FF00,
         MVFR: 0xFFFF00,
@@ -231,10 +230,10 @@ export async function sendDestinationMETAR(env, user, metar, routeData) {
         LIFR: 0xFF00FF,
     };
     const body = {
-        content: `<@${user.uid}> Here is the metar for ${routeData.arr.ident}`,
+        content: `<@${user.uid}> Here is the metar for ${icao}`,
         embeds: [
             {
-                title: `🌤️METAR ${routeData.arr.ident}`,
+                title: `🌤️METAR ${icao}`,
                 description: `🕒Time: ${formatZuluTime(metar.reportTime)}`,
                 color: colors[metar.fltCat] ?? 0x808080,
                 fields: [
@@ -242,34 +241,32 @@ export async function sendDestinationMETAR(env, user, metar, routeData) {
                         name: `${metar.rawOb}`,
                     },
                     {
-                        name: '🍃Wind',
-                        value: `${metar.wdir}° ${metar.wspd} ${metar.wspd <= 1 ? 'kt' : 'kts'}`,
+                        name: '🍃 Wind',
+                        value: (metar.wdir === 0 && metar.wspd === 0) ? 'Wind calm' : `${metar.wdir}${metar.wdir === "VRB" ? 'Variable' : '°'} at ${metar.wspd} ${metar.wspd <= 1 ? 'kt' : 'kts'}`,
                         inline: true,
                     },
                     {
-                        name: 'Visibility',
+                        name: '🔭 Visibility',
                         value: `${metar.visib} SM`,
                         inline: true,
                     },
                     {
-                        name: '🌡️Temperature',
+                        name: '🌡️ Temperature',
                         value: `${metar.temp}°C`,
                         inline: true,
                     },
                     {
-                        name: '💦Dew Point',
+                        name: '💦 Dew Point',
                         value: `${metar.dewp}°C`,
-                        inline: true,
-                    },
-                    {
-                        name: '🕐Altimeter',
-                        value: `${metar.altim} hpa`,
                         inline: true,
                     },
                 ]
             }
         ]
     }
+
+    generateAirportMetarFields(body, metar)
+
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify(body),
@@ -328,4 +325,167 @@ function formatZuluTime(isoTime) {
     const minutes = String(date.getUTCMinutes()).padStart(2, "0");
 
     return `${day} ${month} ${year} ${hours}${minutes}Z`;
+}
+
+function generateAirportMetarFields(body, metar) {
+    const metarText = metar.rawOb.split(/\s+/)
+    const variableRange = metarText.find(value => /^\d{3}V\d{3}$/.test(value))
+    if (metar.wgst) {
+        body.fields.splice(index + 1, 0,
+            {
+                name: '💨 Wind Gust',
+                value: `Up to ${metar.wgst} ${metar.wgst <= 1 ? 'kt' : 'kts'}`,
+                inline: true,
+            },
+        )
+    }
+    if (variableRange) {
+        const [from, to] = variableRange.split('V').map(Number)
+        const index = body.fields.findIndex(field => field.name === '🍃Wind')
+        body.fields.splice(index + 1, 0,
+            {
+                name: '↔️ Wind Varies',
+                value: `from ${from}° to ${to}°`,
+                inline: true,
+            },
+        )
+    }
+    if (metar.altim) {
+        body.fields.push(
+            {
+                name: '🕐 Altimeter',
+                value: `${metar.altim} hpa`,
+                inline: true,
+            },
+        )
+    }
+    if (metar.snow) {
+        body.fields.push(
+            {
+                name: '❄️ Snow Depth',
+                value: `${metar.snow} in`,
+                inline: true,
+            },
+        )
+    }
+    if (metar.clouds) {
+        const value = metar.clouds.map(cloud => `${cloud.cover} @ ${cloud.base}ft`).join('\n')
+        if (metar.cover) {
+            const cloudIcon = {
+                FEW: "🌤️",
+                SCT: "⛅",
+                BKN: "🌥️",
+                OVC: "☁️",
+            };
+            if (["SKC", "NCD", "CLR"].includes(metar.cover)) {
+                body.fields.push(
+                    {
+                        name: `☀️ Cloud Cover`,
+                        value: 'Sky clear',
+                        inline: true,
+                    },
+                )
+            }
+            else if (cloudIcon[metar.cover]) {
+                body.fields.push(
+                    {
+                        name: `${cloudIcon[metar.cover]} Cloud Cover`,
+                        value,
+                        inline: false,
+                    },
+                )
+            }
+        } else {
+            body.fields.push(
+                {
+                    name: `🌤️ Cloud Cover`,
+                    value,
+                    inline: false,
+                },
+            )
+        }
+    }
+    if (metar.wxString) {
+        body.fields.push(
+            {
+                name: 'Present Weather',
+                value: decodeWxString(metar.wxString),
+                inline: false,
+            },
+        )
+    }
+}
+
+function decodeWxString(wxString) {
+    const groups = wxString.trim().split(/\s+/);
+    const decodedGroups = groups.map(decodeWxGroup);
+    return decodedGroups.join(", ");
+}
+
+function decodeWxGroup(group) {
+    //Define the codes
+    const wxCodes = {
+        //Intensity or Proximity
+        "-": "Light",
+        "+": "Heavy",
+        "VC": "In the vicinity",
+        //Descriptors
+        "MI": "Shallow",
+        "PR": "Partial",
+        "BC": "Patches of",
+        "DR": "Low drifting",
+        "BL": "Blowing",
+        "SH": "Showers",
+        "TS": "Thunderstorm",
+        "FZ": "Freezing",
+        //Precipitation
+        "DZ": "Drizzle",
+        "RA": "Rain",
+        "SN": "Snow",
+        "SG": "Snow grains",
+        "IC": "Ice crystals",
+        "PL": "Ice pellets",
+        "GR": "Hail",
+        "GS": "Snow pellets",
+        "UP": "Unknown precipitation",
+        //Obscurations
+        "BR": "Mist",
+        "FG": "Fog",
+        "FU": "Smoke",
+        "VA": "Volcanic ash",
+        "DU": "Widespread dust",
+        "SA": "Sand",
+        "HZ": "Haze",
+        "PY": "Spray",
+        //Other phenomena
+        "PO": "Dust/Sand whirls",
+        "SQ": "Squall",
+        "FC": "Funnel cloud / Tornado / Waterspout",
+        "SS": "Sandstorm",
+        "DS": "Dust storm"
+    };
+
+    let description = [];
+
+    //Handle proximity or intensity
+    if (group.startsWith("VC")) {
+        description.push(wxCodes["VC"]);
+        group = group.slice(2);
+    } else if (group[0] === "-" || group[0] === "+") {
+        description.push(wxCodes[group[0]]);
+        group = group.slice(1);
+    }
+
+    //Handle descriptor and phenomena
+    while (group.length >= 2) {
+        const code = group.slice(0, 2);
+        if (wxCodes[code]) {
+            description.push(wxCodes[code]);
+        } else {
+            description.push(`Unknown(${code})`);
+        }
+        group = group.slice(2);
+    }
+
+    return description.join(" ");
 }
