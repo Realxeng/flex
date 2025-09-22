@@ -16,7 +16,7 @@ export const CHECK_SCENERY_COMMAND = {
   type: 1,
   integration_types: [0, 1],
   contexts: [0, 1, 2],
-  options:[
+  options: [
     {
       type: 3,
       name: 'icao',
@@ -36,13 +36,13 @@ export const CHECK_ONLINE_ATC = {
 }
 
 //Remove user from getting notified
-export const REMOVE_NOTIF = {
+export const REMOVE_TRACK = {
   name: 'remove',
   description: 'Stop notification for the CID',
   type: 1,
   integration_types: [0, 1],
   contexts: [0, 1, 2],
-  options:[
+  options: [
     {
       type: 3,
       name: 'cid',
@@ -53,13 +53,13 @@ export const REMOVE_NOTIF = {
 }
 
 //Actively track the user position and send dynamic ATC notification
-export const TRACK_USER = {
+export const ADD_TRACK = {
   name: 'track',
   description: 'Send dynamic online ATC notification based on your route and position',
   type: 1,
   integration_types: [0, 1],
   contexts: [0, 1, 2],
-  options:[
+  options: [
     {
       type: 3,
       name: 'cid',
@@ -73,4 +73,20 @@ export const TRACK_USER = {
       required: true,
     }
   ]
+}
+
+export const GET_METAR = {
+  name: "metar",
+  description: "Find METAR report of the airport",
+  type: 1,
+  integration_types: [0, 1],
+  contexts: [0, 1, 2],
+  options: [
+    {
+      type: 3,
+      name: 'icao',
+      description: 'Enter the identifier (ICAO) of the airport',
+      required: true,
+    },
+  ],
 }

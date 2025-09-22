@@ -4,7 +4,7 @@
 
 import { AutoRouter } from 'itty-router';
 import { InteractionResponseType, InteractionType } from 'discord-interactions';
-import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, REMOVE_NOTIF, TRACK_USER } from '../tool/commands.js';
+import { TEST_COMMAND, CHECK_SCENERY_COMMAND, CHECK_ONLINE_ATC, REMOVE_TRACK, ADD_TRACK, GET_METAR } from '../tool/commands.js';
 import { sceneryHandler } from '../model/scenery.js';
 import { verifyDiscordRequest } from '../tool/discordFunctions.js';
 import { checkOnlineATC } from './atc.js';
@@ -78,7 +78,7 @@ router.post('/', async (request, env, ctx) => {
         return deferredResponse
       }
       //remove command
-      case REMOVE_NOTIF.name.toLowerCase():{
+      case REMOVE_TRACK.name.toLowerCase():{
         const deferredResponse = new JsonResponse({
           type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
         });
@@ -86,11 +86,19 @@ router.post('/', async (request, env, ctx) => {
         return deferredResponse
       }
       //track command
-      case TRACK_USER.name.toLowerCase():{
+      case ADD_TRACK.name.toLowerCase():{
         const deferredResponse = new JsonResponse({
           type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
         });
         ctx.waitUntil(addTrackUser(env, interaction))
+        return deferredResponse
+      }
+      //metar command
+      case GET_METAR.name.toLowerCase():{
+        const deferredResponse = new JsonResponse({
+          type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+        });
+        ctx.waitUntil(getMETAR(env, interaction))
         return deferredResponse
       }
       //Handle unknown command
