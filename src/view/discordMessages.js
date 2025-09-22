@@ -141,7 +141,7 @@ export async function sendATCInRouteMessage(env, user, inside) {
         const fields = await Promise.all(
             chunk.map(async (each) => {
                 const slurper = await getATCFrequency(each.atc.id, each.atc.callsign);
-                if(slurper.message){
+                if (slurper.message) {
                     console.log(slurper.message)
                     slurper.freq = "n/a"
                 }
@@ -222,6 +222,60 @@ export async function sendTrackFinished(env, user, arr) {
     });
 }
 
+export async function sendDestinationMETAR(env, user, metar, routeData) {
+    const webhookEndpoint = `https://discord.com/api/v10/channels/${user.channel}/messages`
+    const colors = {
+        VFR: 0x00FF00,
+        MVFR: 0xFFFF00,
+        IFR: 0xFF0000,
+        LIFR: 0xFF00FF,
+    };
+    const body = {
+        content: `<@${user.uid}> Here is the metar for ${routeData.arr.ident}`,
+        embeds: [
+            {
+                title: `🌤️METAR ${routeData.arr.ident}`,
+                description: `🕒Time: ${formatZuluTime(metar.reportTime)}`,
+                color: colors[metar.fltCat] ?? 0x808080,
+                fields: [
+                    {
+                        name: `${metar.rawOb}`,
+                    },
+                    {
+                        name: '🍃Wind',
+                        value: `${metar.wdir}° ${metar.wspd} ${metar.wspd <= 1 ? 'kt' : 'kts'}`,
+                        inline: true,
+                    },
+                    {
+                        name: 'Visibility',
+                        value: `${metar.visib} SM`,
+                        inline: true,
+                    },
+                    {
+                        name: '🌡️Temperature',
+                        value: `${metar.temp}°C`,
+                        inline: true,
+                    },
+                    {
+                        name: '💦Dew Point',
+                        value: `${metar.dewp}°C`,
+                        inline: true,
+                    },
+                    {
+                        name: '🕐Altimeter',
+                        value: `${metar.altim} hpa`,
+                        inline: true,
+                    },
+                ]
+            }
+        ]
+    }
+    await DiscordRequest(env, webhookEndpoint, {
+        method: 'POST',
+        body: JSON.stringify(body),
+    });
+}
+
 function generateATCTypeButtons(covSort, pressed) {
     let count = 1, i = 0
     let msg = [{
@@ -261,4 +315,17 @@ function generateATCTypeButtons(covSort, pressed) {
         count++
     }
     return msg
+}
+
+function formatZuluTime(isoTime) {
+    const date = new Date(isoTime);
+
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const month = date.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
+    const year = date.getUTCFullYear();
+
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+
+    return `${day} ${month} ${year} ${hours}${minutes}Z`;
 }

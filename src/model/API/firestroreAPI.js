@@ -190,6 +190,7 @@ export async function updateBatchRouteData(env, updatedRoute) {
                         }
                     },
                     offline: { integerValue: updatedRoute[cid].offline },
+                    METARsent: { booleanValue: Boolean(updatedRoute[cid].METARsent ?? false) },
                 }
             }
         }

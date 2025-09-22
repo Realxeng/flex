@@ -1,7 +1,8 @@
+import { getAirportMETAR } from "../model/API/awcAPI"
 import { deleteBatchRouteData, fetchChecked, fetchFIRData, fetchRouteData, fetchUIRData, updateBatchRouteData, uploadCheckedATC } from "../model/API/firestroreAPI"
 import { getAirportName, getCurrentPosition, getOnlineATC } from "../model/API/vatsimAPI"
 import { getTrackingList, putKeyValue } from "../model/watchList"
-import { sendTrackFinished, sendTrackRemovedOffline } from "../view/discordMessages"
+import { sendDestinationMETAR, sendTrackFinished, sendTrackRemovedOffline } from "../view/discordMessages"
 import { checkOnlineATCInRoute, isWithinDistance, trackUserPosition } from "./track"
 
 export async function checkTrackList(env) {
@@ -50,6 +51,15 @@ export async function checkTrackList(env) {
     console.log(`Tracking CID ${cid}`)
     updatedRoute[cid] = await trackUserPosition(routeData, position)
     console.log(`Finished updating CID ${cid} route`)
+
+    if (updatedRoute[cid].routes.length === 2) {
+      const metar = await getAirportMETAR(routeData.arr.ident)
+      if(metar.metar && !updatedRoute[cid].METARsent){
+        await sendDestinationMETAR(env, user, metar.metar, routeData)
+        updatedRoute[cid].METARsent = true
+        updatedRoute[cid].changed = true
+      }
+    }
 
     //Remove tracking when there are no remaining waypoints
     if (updatedRoute[cid].routes.length <= 1) {

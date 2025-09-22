@@ -244,6 +244,23 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
     }
 }
 
+export function isWithinDistance(pos, wpt, radius = 5000) {
+    const R = 6371e3;
+
+    const lat1 = pos.lat * Math.PI / 180;
+    const lat2 = wpt.lat * Math.PI / 180;
+    const dLat = (wpt.lat - pos.lat) * Math.PI / 180;
+    const dLon = (wpt.lon - pos.lon) * Math.PI / 180;
+
+    const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1) * Math.cos(lat2) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const distance =  R * c
+    return { within: distance <= radius, distance }
+}
+
 function angularDifference(h1, h2) {
     let diff = Math.abs(h1 - h2) % 360
     return diff > 180 ? 360 - diff : diff
@@ -312,21 +329,4 @@ function addOnlineATC(inside, seen, entry) {
         inside.push(entry)
         seen.add(key)
     }
-}
-
-export function isWithinDistance(pos, wpt, radius = 5000) {
-    const R = 6371e3;
-
-    const lat1 = pos.lat * Math.PI / 180;
-    const lat2 = wpt.lat * Math.PI / 180;
-    const dLat = (wpt.lat - pos.lat) * Math.PI / 180;
-    const dLon = (wpt.lon - pos.lon) * Math.PI / 180;
-
-    const a = Math.sin(dLat / 2) ** 2 +
-        Math.cos(lat1) * Math.cos(lat2) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    const distance =  R * c
-    return { within: distance <= radius, distance }
 }
