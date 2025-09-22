@@ -11,6 +11,7 @@ import { checkOnlineATC } from './atc.js';
 import { findSceneryFile } from './scenery.js';
 import { checkTrackList } from './scheduled.js';
 import { addTrackUser, removeTrackUser } from './track.js';
+import { getMETAR } from './metar.js';
 
 export class JsonResponse extends Response {
   constructor(body, init) {

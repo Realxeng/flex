@@ -24,7 +24,7 @@ export async function addTrackUser(env, interaction) {
     const fmsFile = interaction.data.resolved.attachments[fmsFileRef]
 
     //Define the discord endpoint
-    const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
+    const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`
 
     //Check file extension
     if (!fmsFile.filename.endsWith(".fms")) {
