@@ -222,31 +222,32 @@ export async function sendTrackFinished(env, user, arr) {
     });
 }
 
-export async function sendMETAR(env, webhookEndpoint, metar, icao) {
+export async function sendMETAR(env, webhookEndpoint, metar, icao, uid) {
     const colors = {
         VFR: 0x00FF00,
         MVFR: 0xFFFF00,
         IFR: 0xFF0000,
         LIFR: 0xFF00FF,
-    };
-    const body = {
-        content: `<@${user.uid}> Here is the metar for ${icao}`,
+    }
+    let body = {
+        content: `<@${uid}> Here is the metar for ${icao}`,
         embeds: [
             {
-                title: `🌤️METAR ${icao}`,
-                description: `🕒Time: ${formatZuluTime(metar.reportTime)}`,
+                title: `🌥️ METAR ${icao}`,
+                description: `🕒 Time: ${formatZuluTime(metar.reportTime)}\n${metar.fltCat ? `✈️ Category: **${metar.fltCat}**` : ''}`,
                 color: colors[metar.fltCat] ?? 0x808080,
                 fields: [
                     {
                         name: `${metar.rawOb}`,
+                        value: ''
                     },
                     {
                         name: '🍃 Wind',
-                        value: (metar.wdir === 0 && metar.wspd === 0) ? 'Wind calm' : `${metar.wdir}${metar.wdir === "VRB" ? 'Variable' : '°'} at ${metar.wspd} ${metar.wspd <= 1 ? 'kt' : 'kts'}`,
+                        value: (metar.wdir === 0 && metar.wspd === 0) ? 'Wind calm' : `${metar.wdir === "VRB" ? 'Variable' : `${metar.wdir}°`} at ${metar.wspd} ${metar.wspd <= 1 ? 'kt' : 'kts'}`,
                         inline: true,
                     },
                     {
-                        name: '🔭 Visibility',
+                        name: '🛣️ Visibility',
                         value: `${metar.visib} SM`,
                         inline: true,
                     },
@@ -261,8 +262,8 @@ export async function sendMETAR(env, webhookEndpoint, metar, icao) {
                         inline: true,
                     },
                 ]
-            }
-        ]
+            },
+        ],
     }
 
     generateAirportMetarFields(body, metar)
@@ -330,8 +331,10 @@ function formatZuluTime(isoTime) {
 function generateAirportMetarFields(body, metar) {
     const metarText = metar.rawOb.split(/\s+/)
     const variableRange = metarText.find(value => /^\d{3}V\d{3}$/.test(value))
+    const windIndex = body.embeds[0].fields.findIndex(field => field.name === '🍃 Wind')
+    //Handle wind gusts
     if (metar.wgst) {
-        body.fields.splice(index + 1, 0,
+        body.embeds[0].fields.splice(windIndex + 1, 0,
             {
                 name: '💨 Wind Gust',
                 value: `Up to ${metar.wgst} ${metar.wgst <= 1 ? 'kt' : 'kts'}`,
@@ -339,10 +342,10 @@ function generateAirportMetarFields(body, metar) {
             },
         )
     }
+    //Handle variable wind directions
     if (variableRange) {
         const [from, to] = variableRange.split('V').map(Number)
-        const index = body.fields.findIndex(field => field.name === '🍃Wind')
-        body.fields.splice(index + 1, 0,
+        body.embeds[0].fields.splice(windIndex + 1, 0,
             {
                 name: '↔️ Wind Varies',
                 value: `from ${from}° to ${to}°`,
@@ -350,8 +353,9 @@ function generateAirportMetarFields(body, metar) {
             },
         )
     }
+    //Handle altimeters
     if (metar.altim) {
-        body.fields.push(
+        body.embeds[0].fields.push(
             {
                 name: '🕐 Altimeter',
                 value: `${metar.altim} hpa`,
@@ -359,8 +363,9 @@ function generateAirportMetarFields(body, metar) {
             },
         )
     }
+    //Handle snow
     if (metar.snow) {
-        body.fields.push(
+        body.embeds[0].fields.push(
             {
                 name: '❄️ Snow Depth',
                 value: `${metar.snow} in`,
@@ -368,6 +373,18 @@ function generateAirportMetarFields(body, metar) {
             },
         )
     }
+    //Handle non symmetrical fields
+    const fieldModulo = (3 - ((body.embeds[0].fields.length - 1) % 3)) % 3
+    for (let i = 0; i < fieldModulo; i++){
+        body.embeds[0].fields.push(
+            {
+                name: '',
+                value: '',
+                inline: true,
+            },
+        )
+    }
+    //Handle cloud covers
     if (metar.clouds) {
         const value = metar.clouds.map(cloud => `${cloud.cover} @ ${cloud.base}ft`).join('\n')
         if (metar.cover) {
@@ -378,7 +395,7 @@ function generateAirportMetarFields(body, metar) {
                 OVC: "☁️",
             };
             if (["SKC", "NCD", "CLR"].includes(metar.cover)) {
-                body.fields.push(
+                body.embeds[0].fields.push(
                     {
                         name: `☀️ Cloud Cover`,
                         value: 'Sky clear',
@@ -387,7 +404,7 @@ function generateAirportMetarFields(body, metar) {
                 )
             }
             else if (cloudIcon[metar.cover]) {
-                body.fields.push(
+                body.embeds[0].fields.push(
                     {
                         name: `${cloudIcon[metar.cover]} Cloud Cover`,
                         value,
@@ -396,7 +413,7 @@ function generateAirportMetarFields(body, metar) {
                 )
             }
         } else {
-            body.fields.push(
+            body.embeds[0].fields.push(
                 {
                     name: `🌤️ Cloud Cover`,
                     value,
@@ -405,8 +422,9 @@ function generateAirportMetarFields(body, metar) {
             )
         }
     }
+    //Handle weather codes
     if (metar.wxString) {
-        body.fields.push(
+        body.embeds[0].fields.push(
             {
                 name: 'Present Weather',
                 value: decodeWxString(metar.wxString),

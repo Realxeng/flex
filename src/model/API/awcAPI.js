@@ -2,7 +2,7 @@ const apiURL = 'https://aviationweather.gov/api/data'
 
 export async function getAirportMETAR(icao) {
     try {
-        const res = fetch(`${apiURL}/metar?ids=${icao.toUpperCase()}&format=json`)
+        const res = await fetch(`${apiURL}/metar?ids=${icao.toUpperCase()}&format=json`)
         const metar = await res.json()
         if (metar) {
             return { metar: metar[0] }

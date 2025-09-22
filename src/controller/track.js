@@ -107,10 +107,9 @@ export async function addTrackUser(env, interaction) {
 
 export async function removeTrackUser(env, interaction) {
     //Get username and user id
-    const username = interaction.member?.user.username || interaction.user.username
     const uid = interaction.member?.user.id || interaction.user.id
     //Get the CID
-    const cid = interaction.data.options[0].value.toUpperCase()
+    const cid = interaction.data.options[0].value
 
     //Define the discord endpoint
     const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`;
@@ -124,7 +123,8 @@ export async function removeTrackUser(env, interaction) {
     }
 
     //Filter out the removed cid
-    const updatedTrackingList = trackingList.filter(user => user.cid !== cid && user.uid !== uid)
+    const updatedTrackingList = trackingList.filter(user => (user.cid !== cid) && (user.uid !== uid))
+    console.log(updatedTrackingList)
 
     //Upload the new data
     try {

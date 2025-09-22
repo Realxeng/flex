@@ -1,5 +1,5 @@
 import { getAirportMETAR } from "../model/API/awcAPI"
-import { deleteBatchRouteData, fetchChecked, fetchFIRData, fetchRouteData, fetchUIRData, updateBatchRouteData, uploadCheckedATC } from "../model/API/firestroreAPI"
+import { deleteBatchCheckedData, deleteBatchRouteData, fetchChecked, fetchFIRData, fetchRouteData, fetchUIRData, updateBatchRouteData, uploadCheckedATC } from "../model/API/firestroreAPI"
 import { getAirportName, getCurrentPosition, getOnlineATC } from "../model/API/vatsimAPI"
 import { getTrackingList, putKeyValue } from "../model/watchList"
 import { sendMETAR, sendTrackFinished, sendTrackRemovedOffline } from "../view/discordMessages"
@@ -56,7 +56,7 @@ export async function checkTrackList(env) {
       const metar = await getAirportMETAR(routeData.arr.ident)
       if(metar.metar && !updatedRoute[cid].METARsent){
         const webhookEndpoint = `https://discord.com/api/v10/channels/${user.channel}/messages`
-        await sendMETAR(env, webhookEndpoint, metar.metar, routeData.arr.ident)
+        await sendMETAR(env, webhookEndpoint, metar.metar, routeData.arr.ident, user.uid)
         updatedRoute[cid].METARsent = true
         updatedRoute[cid].changed = true
       }
@@ -88,6 +88,7 @@ export async function checkTrackList(env) {
     console.log("Removing track")
     await putKeyValue(env, 'track', trackingList.filter(track => !removed.includes(track.cid)))
     await deleteBatchRouteData(env, removed)
+    await deleteBatchCheckedData(env, removed)
     if (!trackingList || trackingList.length < 1) return
   }
 
