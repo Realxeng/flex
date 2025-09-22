@@ -86,7 +86,7 @@ export async function addTrackUser(env, interaction) {
             return
         }
         trackingList.push({ cid, uid, channel })
-        console.log("Adding user to active tracking")
+        console.log("Adding user to active tracking list")
         await putKeyValue(env, "track", trackingList)
     } catch (err) {
         return console.error(`Error saving reminder for user: ${username}`, err);
@@ -199,8 +199,8 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
                 )
             )
         }
-        console.log(`Checking ATC for CID ${user.cid}`)
-        console.log(atcBoundaryMapUser)
+        //console.log(`Checking ATC for CID ${user.cid}`)
+        //console.log(atcBoundaryMapUser)
         const inside = []
         const seen = new Set()
         const userRoute = updatedRoute[user.cid]?.routes || []
@@ -224,12 +224,13 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
             }
             //Check for enroute atc
             for (const { atc, boundary } of Object.values(atcBoundaryMapUser)) {
+                if (seen.has(atc.callsign)) continue
                 console.log(`Checking ${wpt.ident} inside ${atc.callsign}`)
                 // Bounding box check
                 if (!isPointInBBox(wpt, boundary.bbox)) continue
                 // Polygon check
                 if (isPointInPolygon(wpt, boundary.boundary)) {
-                    console.log(`${wpt.ident} inside ${atc.callsign}`)
+                    console.log(`${wpt.ident} is inside ${atc.callsign}`)
                     addOnlineATC(inside, seen, { wpt, atc })
                     break
                 }
@@ -306,7 +307,7 @@ function isPointInPolygon(point, polygon) {
 }
 
 function addOnlineATC(inside, seen, entry) {
-    const key = `${entry.atc.callsign}` // you could also add wpt.ident if needed
+    const key = `${entry.atc.callsign}`
     if (!seen.has(key)) {
         inside.push(entry)
         seen.add(key)

@@ -84,7 +84,7 @@ export async function fetchFirestoreBatch(env, documents, type = null, retried =
         }
     }
 
-    console.log(data)
+    //console.log(data)
 
     return data
 }
