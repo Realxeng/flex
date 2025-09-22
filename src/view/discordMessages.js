@@ -217,7 +217,7 @@ export async function sendTrackFinished(env, user, arr) {
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify({
-            content: `Welcome to ${arr} <@${user.uid}> your tracking is finished`,
+            content: `Welcome to ${arr} <@${user.uid}>! Your tracking will now be removed`,
         }),
     });
 }
