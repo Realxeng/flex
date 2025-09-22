@@ -1,7 +1,8 @@
 import { deleteBatchRouteData, fetchChecked, fetchFIRData, fetchRouteData, fetchUIRData, updateBatchRouteData, uploadCheckedATC } from "../model/API/firestroreAPI"
-import { getCurrentPosition, getOnlineATC } from "../model/API/vatsimAPI"
+import { getAirportName, getCurrentPosition, getOnlineATC } from "../model/API/vatsimAPI"
 import { getTrackingList, putKeyValue } from "../model/watchList"
-import { checkOnlineATCInRoute, trackUserPosition } from "./track"
+import { sendTrackFinished, sendTrackRemovedOffline } from "../view/discordMessages"
+import { checkOnlineATCInRoute, isWithinDistance, trackUserPosition } from "./track"
 
 export async function checkTrackList(env) {
   //Get tracking list
@@ -18,27 +19,52 @@ export async function checkTrackList(env) {
     const cid = user.cid
     //Get the live position of the user
     const position = await getCurrentPosition(cid)
+
+    //Get the route data
+    const routeData = await fetchRouteData(env, cid)
+
     //Handle empty or errorneous position
     if (position.message) {
       console.log(position.message)
+      //Remove tracking if user is offline for more than an hour
+      if (routeData.offline && routeData.offline >= 20){
+        console.log(`Removed CID ${cid} for being offline more than 1 hour`)
+        removed.push(cid)
+        await sendTrackRemovedOffline(env, user, cid)
+      }
+      //Track user consecutive offline time
+      updatedRoute[cid] = routeData
+      updatedRoute[cid].offline = (routeData.offline ?? 0) + 1
+      updatedRoute[cid].changed = true
+      console.log(`CID ${cid} is offline for ${updatedRoute[cid].offline * 3} minutes`)
       continue
     }
 
-    //Check the position with waypoints
-    const routeData = await fetchRouteData(env, cid)
+    //Check the route data
     if (!routeData) {
       console.log(`No route data for CID ${cid}`)
       removed.push(cid)
       continue
     }
+    //Track user position with route waypoints
     console.log(`Tracking CID ${cid}`)
     updatedRoute[cid] = await trackUserPosition(routeData, position)
     console.log(`Finished updating CID ${cid} route`)
 
     //Remove tracking when there are no remaining waypoints
-    if (updatedRoute[cid].routes.length < 2) {
-      console.log("Flight completed")
-      removed.push(cid)
+    if (updatedRoute[cid].routes.length <= 1) {
+      const within = isWithinDistance(position, routeData.arr)
+      if (within.within || updatedRoute[cid].routes.length < 1) {
+        console.log("Flight completed")
+        removed.push(cid)
+        const airportName = await getAirportName(routeData.arr.ident)
+        if(airportName.name){
+          await sendTrackFinished(env, user, airportName.name)
+        }
+        else{
+          await sendTrackFinished(env, user, routeData.arr.ident)
+        }
+      }
     }
   }
 
@@ -68,7 +94,7 @@ export async function checkTrackList(env) {
   let atcGrouped = atcGroupedRaw
   console.log("Getting checked ATC")
   const checked = await fetchChecked(env, trackingList)
-  console.log(JSON.stringify(checked, null, 2));
+  //console.log(JSON.stringify(checked, null, 2));
   if (checked && Object.keys(checked).length > 0) {
     //Turn each user’s checked list into a Set
     const checkedSets = Object.values(checked).map(u => new Set(u.atc || []))

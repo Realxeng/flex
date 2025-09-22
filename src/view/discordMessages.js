@@ -202,6 +202,26 @@ export async function sendTrackRemoved(env, webhookEndpoint, cid) {
     });
 }
 
+export async function sendTrackRemovedOffline(env, user, cid) {
+    const webhookEndpoint = `https://discord.com/api/v10/channels/${user.channel}/messages`
+    await DiscordRequest(env, webhookEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `Tracking finished for CID ${cid} after being offline for 1 hour`,
+        }),
+    });
+}
+
+export async function sendTrackFinished(env, user, arr) {
+    const webhookEndpoint = `https://discord.com/api/v10/channels/${user.channel}/messages`
+    await DiscordRequest(env, webhookEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `Welcome to ${arr} <@${user.uid}> your tracking is finished`,
+        }),
+    });
+}
+
 function generateATCTypeButtons(covSort, pressed) {
     let count = 1, i = 0
     let msg = [{

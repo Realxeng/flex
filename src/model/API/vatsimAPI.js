@@ -99,6 +99,26 @@ export async function getATCFrequency(CID, callsign){
     }
 }
 
+export async function getAirportName(icao){
+    try{
+        const res = await fetch(`https://my.vatsim.net/api/v2/aip/airports/${icao.toUpperCase()}`)
+        const airportData = await res.json()
+        if (airportData.message){
+            console.log(airportData.message)
+            return {message: airportData.message}
+        }
+        else if (airportData.name){
+            return {name: airportData.name}
+        }
+        else{
+            return {name: null, message: 'Cannot find airport name'}
+        }
+    } catch (error) {
+        console.log(`Error fetching airport name`)
+        return {message: error.message}
+    }
+}
+
 export async function verifyCID(CID){
     let res = {}
     try{

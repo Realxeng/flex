@@ -155,7 +155,7 @@ export async function trackUserPosition(routeData, position) {
         updatedRoute = routes.slice(i)
         break
     }
-    return { routes: updatedRoute, dep: routeData.dep, arr: routeData.arr, changed }
+    return { routes: updatedRoute, dep: routeData.dep, arr: routeData.arr, offline: 0, changed }
 }
 
 export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundaries, fssFIR, checked) {
@@ -312,4 +312,21 @@ function addOnlineATC(inside, seen, entry) {
         inside.push(entry)
         seen.add(key)
     }
+}
+
+export function isWithinDistance(pos, wpt, radius = 5000) {
+    const R = 6371e3;
+
+    const lat1 = pos.lat * Math.PI / 180;
+    const lat2 = wpt.lat * Math.PI / 180;
+    const dLat = (wpt.lat - pos.lat) * Math.PI / 180;
+    const dLon = (wpt.lon - pos.lon) * Math.PI / 180;
+
+    const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1) * Math.cos(lat2) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const distance =  R * c
+    return { within: distance <= radius, distance }
 }

@@ -188,7 +188,8 @@ export async function updateBatchRouteData(env, updatedRoute) {
                                 lon: { doubleValue: updatedRoute[cid].arr.lon },
                             }
                         }
-                    }
+                    },
+                    offline: { integerValue: updatedRoute[cid].offline },
                 }
             }
         }
@@ -222,7 +223,8 @@ export async function deleteBatchRouteData(env, removed) {
 
     writes = removed.map(cid => ({ delete: `projects/flex-c305e/databases/(default)/documents/routes/${cid}` }))
 
-    await uploadFirestore(env, writes)
+    const response = await uploadFirestore(env, writes)
+    console.log(JSON.stringify(response))
 }
 
 export async function deleteBatchCheckedData(env, removed) {
@@ -230,7 +232,8 @@ export async function deleteBatchCheckedData(env, removed) {
 
     writes = removed.map(cid => ({ delete: `projects/flex-c305e/databases/(default)/documents/checked/${cid}` }))
 
-    await uploadFirestore(env, writes)
+    const response = await uploadFirestore(env, writes)
+    console.log(JSON.stringify(response))
 }
 
 export async function fetchRouteData(env, cid) {
