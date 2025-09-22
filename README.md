@@ -5,7 +5,9 @@ A Discord Bot used to get information for flight simulation purposes that runs i
 - X-Plane Scenery Gateway (https://gateway.x-plane.com/apiv1/)
 - VATSIM Core (https://api.vatsim.net/v2/)
 - VATSIM Slurper (https://slurper.vatsim.net/)
-- Firestore (https://firestore.googleapis.com/v1/projects/flex/databases)
+- VATSIM AIP (https://my.vatsim.net/api/v2/aip/)
+- Firestore (https://firestore.googleapis.com/v1/projects/flex/databases/)
+- Aviation Weather Center (https://aviationweather.gov/data/api/)
 
 ## Webhooks Used
 - Discord Messages Webhook
@@ -26,11 +28,11 @@ A Discord Bot used to get information for flight simulation purposes that runs i
 * `/list-atc`  
     Check the currently online VATSIM ATC
 
-*  **Deprecated** `/notify <VATSIM CID>`  
-    Check ATC every 5 minutes and notify you if there is an online ATC in your route
+* `/track <VATSIM CID> <X-Plane .FMS file>`  
+    Actively track the flight in VATSIM and send a dynamic notification when a VATSIM ATC is online
 
 * `/remove <VATSIM CID>`  
     Remove notification for the specified CID
 
-* `/track <VATSIM CID> <X-Plane .FMS file>`
-    Actively track the flight in VATSIM and send a dynamic notification when a VATSIM ATC is online
+* `/metar <Airport ICAO codes>`  
+    Get the METAR report for the specified airport
