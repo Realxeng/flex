@@ -266,7 +266,7 @@ function isAhead(arr, position, wpt) {
     const heading = bearingFromTo(position.lat, position.lon, arr.lat, arr.lon)
     const bearing = bearingFromTo(position.lat, position.lon, wpt.lat, wpt.lon)
     const diff = angularDifference(heading, bearing)
-    return diff <= 110
+    return diff <= 135
 }
 
 function isPointInBBox(point, bbox) {
