@@ -66,8 +66,9 @@ export async function fetchFirestoreBatch(env, documents, type = null, retried =
         return console.log(await res.text())
     }
 
-    let dataRaw = await res.json()
-    console.log(dataRaw)
+    const dataRaw = await res.json()
+
+    let data = unwrapFirestoreBatch(dataRaw)
 
     if (type) {
         const missing = dataRaw
@@ -75,17 +76,15 @@ export async function fetchFirestoreBatch(env, documents, type = null, retried =
             .filter(Boolean)
     
         if (!retried && missing.length > 0) {
-            let dataFromMissing = {}
             if (type === "FIR") {
-                dataFromMissing = await fetchFIRData(env, missing, true)
+                Object.assign(data, await fetchFIRData(env, missing, true))
             } else if (type === "UIR") {
-                dataFromMissing = await fetchUIRData(env, missing, true)
+                Object.assign(data, await fetchUIRData(env, missing, true))
             }
-            dataRaw.push(...Object.values(dataFromMissing))
         }
     }
 
-    const data = unwrapFirestoreBatch(dataRaw)
+    console.log(data)
 
     return data
 }
