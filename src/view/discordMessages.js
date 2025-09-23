@@ -226,8 +226,8 @@ export async function sendMETAR(env, webhookEndpoint, metar, airport, uid = null
     const colors = {
         VFR: 0x00FF00,
         MVFR: 0xFFFF00,
-        IFR: 0xFF0000,
-        LIFR: 0xFF00FF,
+        IFR: 0xFF8000,
+        LIFR: 0xFF0000,
     }
     const time = formatZuluTime(metar.reportTime)
     let airportName = ''
@@ -454,8 +454,17 @@ function generateAirportMetarFields(body, metar) {
             if (["SKC", "NCD", "CLR"].includes(metar.cover)) {
                 body.embeds[0].fields.push(
                     {
-                        name: `☀️ Cloud Cover`,
+                        name: `☀️ Sky Condition`,
                         value: 'Sky clear',
+                        inline: true,
+                    },
+                )
+            }
+            if (metar.cover === "CAVOK") {
+                body.embeds[0].fields.push(
+                    {
+                        name: `☀️ Sky Condition`,
+                        value: 'Cloud and Visibility OK',
                         inline: true,
                     },
                 )
