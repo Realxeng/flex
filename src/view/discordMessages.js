@@ -230,9 +230,18 @@ export async function sendMETAR(env, webhookEndpoint, metar, airport, uid = null
         LIFR: 0xFF00FF,
     }
     const time = formatZuluTime(metar.reportTime)
-    const airportName = airport.message ? `${metar.icaoId}` : `**${airport.name} (${metar.icaoId})**`
+    let airportName = ''
+    if (airport.message) {
+        if (metar.name) {
+            airportName = metar.name.split(',')[0]
+        } else {
+            airportName = metar.icaoId
+        }
+    } else {
+        airportName = airport.name
+    }
     let body = {
-        content: `${ uid ? `<@${uid}> ` : '' }Here is the METAR for ${airportName}`,
+        content: `${ uid ? `<@${uid}> ` : '' }Here is the METAR for **${airportName}**`,
         embeds: [
             {
                 title: `🌥️ Current Weather Report for **${metar.icaoId}**`,
