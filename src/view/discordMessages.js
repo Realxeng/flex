@@ -294,12 +294,7 @@ export async function sendVATSIMMETAR(env, webhookEndpoint, metar, airport, uid)
             embeds: [
                 {
                     title: `🌥️ Current Weather Report for ${metar.id}`,
-                    fields: [
-                        {
-                            name: metar.metar,
-                            value: '\u200b'
-                        },
-                    ]
+                    description: `**${metar.metar}**`
                 }
             ]
         }),
