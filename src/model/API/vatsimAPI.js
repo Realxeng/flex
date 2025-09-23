@@ -119,6 +119,22 @@ export async function getAirportName(icao){
     }
 }
 
+export async function getVATSIMMETAR(icao){
+    try {
+        const res = await fetch(`https://metar.vatsim.net/${icao}?format=json`)
+        const metar = await res.json()
+        if (metar) {
+            return { metar: metar[0] }
+        }
+        else {
+            return { message: `Cannot find metar for ${icao}` }
+        }
+    } catch (error) {
+        console.log(error)
+        return { message: `Failed to fetch metar for ${icao}` }
+    }
+}
+
 export async function verifyCID(CID){
     let res = {}
     try{

@@ -230,8 +230,9 @@ export async function sendMETAR(env, webhookEndpoint, metar, airport, uid) {
         LIFR: 0xFF00FF,
     }
     const time = formatZuluTime(metar.reportTime)
+    const airportName = airport.message ? `${metar.icaoId}` : `**${airport.name} (${metar.icaoId})**`
     let body = {
-        content: `<@${uid}> Here is the metar for **${airport.name} (${metar.icaoId})**`,
+        content: `<@${uid}> Here is the metar for ${airportName}`,
         embeds: [
             {
                 title: `🌥️ Current Weather Report for **${metar.icaoId}**`,
@@ -272,6 +273,36 @@ export async function sendMETAR(env, webhookEndpoint, metar, airport, uid) {
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify(body),
+    });
+}
+
+export async function sendNoMETAR(env, webhookEndpoint, icao) {
+    await DiscordRequest(env, webhookEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `No METAR found for ${icao}`,
+        }),
+    });
+}
+
+export async function sendVATSIMMETAR(env, webhookEndpoint, metar, airport, uid) {
+    const airportName = airport.message ? `${metar.id}` : `**${airport.name} (${metar.id})**`
+    await DiscordRequest(env, webhookEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `<@${uid}> No AWC METAR found for ${metar.id}. Here is VATSIM metar for ${airportName}`,
+            embeds: [
+                {
+                    title: `🌥️ Current Weather Report for ${metar.id}`,
+                    fields: [
+                        {
+                            name: metar.metar,
+                            value: '\u200b'
+                        },
+                    ]
+                }
+            ]
+        }),
     });
 }
 
