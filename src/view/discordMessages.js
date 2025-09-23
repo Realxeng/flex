@@ -95,7 +95,7 @@ export async function sendTrackAdded(env, webhookEndpoint, uid, dep, arr) {
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify({
-            content: `📡Tracking <@${uid}> from 🛫**${dep}** to 🛬**${arr}**`,
+            content: `📡Tracking <@${uid}> from 🛫 **${dep}** to 🛬 **${arr}**`,
         }),
     });
 }
@@ -207,7 +207,7 @@ export async function sendTrackRemovedOffline(env, user, cid) {
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify({
-            content: `Tracking finished for CID ${cid} after being offline for 1 hour`,
+            content: `Tracking for CID ${cid} removed after being offline for 1 hour`,
         }),
     });
 }
