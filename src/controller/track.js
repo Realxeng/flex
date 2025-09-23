@@ -163,7 +163,7 @@ export async function trackUserPosition(routeData, position) {
 }
 
 export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundaries, fssFIR, checked) {
-    console.log(atcGrouped)
+    //console.log(atcGrouped)
     //Map boundary data to atc callsign
     const atcBoundaryMap = {}
     for (const key of ["CTR", "APP", "DEP", "FSS"]) {
@@ -196,20 +196,20 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
     for (const user of trackingList) {
         let atcBoundaryMapUser = atcBoundaryMap
         //Check for checked atcs
-        console.log(atcBoundaryMap)
+        //console.log(atcBoundaryMap)
         //console.log(checked)
         //console.log(user)
         if (checked && checked[user.cid] && checked[user.cid].atc) {
             console.log(`Filtering atc for ${user.cid}`)
             const userCheckedATC = checked?.[user.cid]?.atc ?? [];
             atcBoundaryMapUser = Object.fromEntries(
-                Object.entries(atcBoundaryMap).filter(([key]) =>
-                    !userCheckedATC.includes(key)
+                Object.entries(atcBoundaryMap).filter(([callsign]) =>
+                    !userCheckedATC.includes(callsign)
                 )
             )
         }
         console.log(`Checking ATC for CID ${user.cid}`)
-        console.log(atcBoundaryMapUser)
+        //console.log(atcBoundaryMapUser)
         const inside = []
         const seen = new Set()
         const userRoute = updatedRoute[user.cid]?.routes || []
@@ -266,7 +266,7 @@ export function isWithinDistance(pos, wpt, radius = 5000) {
         Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    const distance =  R * c
+    const distance = R * c
     return { within: distance <= radius, distance }
 }
 
