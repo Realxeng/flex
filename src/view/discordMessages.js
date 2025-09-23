@@ -290,7 +290,7 @@ export async function sendVATSIMMETAR(env, webhookEndpoint, metar, airport, uid)
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify({
-            content: `<@${uid}> No AWC METAR found for ${metar.id}. Here is VATSIM metar for ${airportName}`,
+            content: `No METAR found for ${metar.id}. Here is METAR for ${airportName} on VATSIM`,
             embeds: [
                 {
                     title: `🌥️ Current Weather Report for ${metar.id}`,
