@@ -52,8 +52,10 @@ export async function checkTrackList(env) {
     updatedRoute[cid] = await trackUserPosition(routeData, position)
     console.log(`Finished updating CID ${cid} route`)
 
-    if (updatedRoute[cid].routes.length === 2) {
-      if (!updatedRoute[cid].METARsent && updatedRoute[cid].METARsent === false) {
+    if (updatedRoute[cid].routes.length <= 2) {
+      if (!updatedRoute[cid].METARsent) {
+        console.log(updatedRoute[cid].METARsent)
+        console.log(`Sending METAR for ${routeData.arr.ident}`)
         await getMETAR(env, null, user, routeData.arr.ident)
         updatedRoute[cid].METARsent = true
         updatedRoute[cid].changed = true
@@ -66,9 +68,9 @@ export async function checkTrackList(env) {
       if (within.within || updatedRoute[cid].routes.length < 1) {
         console.log("Flight completed")
         removed.push(cid)
-        const airportName = await getAirportName(routeData.arr.ident)
-        if (airportName.name) {
-          await sendTrackFinished(env, user, airportName.name)
+        const airport = await getAirportName(routeData.arr.ident)
+        if (airport.data) {
+          await sendTrackFinished(env, user, airport.data.name)
         }
         else {
           await sendTrackFinished(env, user, routeData.arr.ident)
