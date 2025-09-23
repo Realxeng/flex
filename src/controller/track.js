@@ -1,6 +1,6 @@
 import { getUserDMChannelId } from "../model/API/discordAPI"
 import { deleteBatchCheckedData, deleteBatchRouteData, uploadRouteData } from "../model/API/firestroreAPI"
-import { verifyCID } from "../model/API/vatsimAPI"
+import { getAirportName, verifyCID } from "../model/API/vatsimAPI"
 import { getTrackingList, putKeyValue } from "../model/watchList"
 import { sendATCInRouteMessage, sendCIDExists, sendCIDInvalid, sendInvalidFMSFile, sendNoUserFound, sendTrackAdded, sendTrackRemoved, unexpectedFMSFileFormat } from "../view/discordMessages"
 
@@ -102,7 +102,11 @@ export async function addTrackUser(env, interaction) {
 
     //Send success message
     console.log(`Tracking ${cid}`)
-    await sendTrackAdded(env, webhookEndpoint, uid, dep, arr)
+    const depApt = await getAirportName(dep.ident)
+    const arrApt = await getAirportName(arr.ident)
+    const depName = depApt.message ? dep.ident : depApt.data.name
+    const arrName = arrApt.message ? arr.ident : arrApt.data.name
+    await sendTrackAdded(env, webhookEndpoint, uid, depName, arrName)
 }
 
 export async function removeTrackUser(env, interaction) {
@@ -123,7 +127,7 @@ export async function removeTrackUser(env, interaction) {
     }
 
     //Filter out the removed cid
-    const updatedTrackingList = trackingList.filter(user => (user.cid !== cid) && (user.uid !== uid))
+    const updatedTrackingList = trackingList.filter(user => user.cid !== cid || user.uid !== uid)
     console.log(updatedTrackingList)
 
     //Upload the new data
@@ -159,16 +163,18 @@ export async function trackUserPosition(routeData, position) {
 }
 
 export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundaries, fssFIR, checked) {
+    console.log(atcGrouped)
     //Map boundary data to atc callsign
     const atcBoundaryMap = {}
     for (const key of ["CTR", "APP", "DEP", "FSS"]) {
         for (const atc of atcGrouped[key] || []) {
             //Map multiple FIR boundaries from fss
             if (key === "FSS") {
-                const fssCallsign = fss.callsign.slice(0, -4)
+                const fssCallsign = atc.callsign.slice(0, -4)
                 for (const fir of fssFIR[fssCallsign] || []) {
                     if (boundaries[fir]) {
-                        atcBoundaryMap[`${fss.callsign}:${fir}`] = { atc: fss, boundary: boundaries[fir] }
+                        console.log("Building map for", key, atc.callsign, "callsignKey:", callsignKey, "alt:", altCallsignKey)
+                        atcBoundaryMap[`${atc.callsign}:${fir}`] = { atc: fss, boundary: boundaries[fir] }
                     }
                 }
             }
@@ -190,17 +196,20 @@ export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atc
     for (const user of trackingList) {
         let atcBoundaryMapUser = atcBoundaryMap
         //Check for checked atcs
+        console.log(atcBoundaryMap)
+        //console.log(checked)
+        //console.log(user)
         if (checked && checked[user.cid] && checked[user.cid].atc) {
             console.log(`Filtering atc for ${user.cid}`)
             const userCheckedATC = checked?.[user.cid]?.atc ?? [];
             atcBoundaryMapUser = Object.fromEntries(
                 Object.entries(atcBoundaryMap).filter(([key]) =>
-                    userCheckedATC.includes(key)
+                    !userCheckedATC.includes(key)
                 )
             )
         }
-        //console.log(`Checking ATC for CID ${user.cid}`)
-        //console.log(atcBoundaryMapUser)
+        console.log(`Checking ATC for CID ${user.cid}`)
+        console.log(atcBoundaryMapUser)
         const inside = []
         const seen = new Set()
         const userRoute = updatedRoute[user.cid]?.routes || []
@@ -295,7 +304,7 @@ function isPointInBBox(point, bbox) {
     )
 }
 
-function isPointOnSegment(P, A, B, epsilon = 0.0005) {
+function isPointOnSegment(P, A, B, epsilon = 0.00005) {
     const cross = (P.lon - A.lon) * (B.lat - A.lat) - (P.lat - A.lat) * (B.lon - A.lon);
     if (Math.abs(cross) > epsilon) return false;
     const dot = (P.lon - A.lon) * (B.lon - A.lon) + (P.lat - A.lat) * (B.lat - A.lat);

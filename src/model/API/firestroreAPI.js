@@ -16,7 +16,7 @@ export async function uploadFirestore(env, writes) {
         }
     )
 
-    //console.log(await response.text())
+    console.log(await response.text())
 }
 
 export async function fetchFirestore(env, path, method = "GET") {
@@ -225,7 +225,6 @@ export async function deleteBatchRouteData(env, removed) {
     writes = removed.map(cid => ({ delete: `projects/flex-c305e/databases/(default)/documents/routes/${cid}` }))
 
     const response = await uploadFirestore(env, writes)
-    console.log(JSON.stringify(response))
 }
 
 export async function deleteBatchCheckedData(env, removed) {
@@ -234,7 +233,6 @@ export async function deleteBatchCheckedData(env, removed) {
     writes = removed.map(cid => ({ delete: `projects/flex-c305e/databases/(default)/documents/checked/${cid}` }))
 
     const response = await uploadFirestore(env, writes)
-    console.log(JSON.stringify(response))
 }
 
 export async function fetchRouteData(env, cid) {

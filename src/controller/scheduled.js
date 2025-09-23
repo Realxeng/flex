@@ -1,8 +1,7 @@
-import { getAirportMETAR } from "../model/API/awcAPI"
 import { deleteBatchCheckedData, deleteBatchRouteData, fetchChecked, fetchFIRData, fetchRouteData, fetchUIRData, updateBatchRouteData, uploadCheckedATC } from "../model/API/firestroreAPI"
 import { getAirportName, getCurrentPosition, getOnlineATC } from "../model/API/vatsimAPI"
 import { getTrackingList, putKeyValue } from "../model/watchList"
-import { sendMETAR, sendTrackFinished, sendTrackRemovedOffline } from "../view/discordMessages"
+import { sendTrackFinished, sendTrackRemovedOffline } from "../view/discordMessages"
 import { getMETAR } from "./metar"
 import { checkOnlineATCInRoute, isWithinDistance, trackUserPosition } from "./track"
 
@@ -29,7 +28,7 @@ export async function checkTrackList(env) {
     if (position.message) {
       console.log(position.message)
       //Remove tracking if user is offline for more than an hour
-      if (routeData.offline && routeData.offline >= 20){
+      if (routeData.offline && routeData.offline >= 20) {
         console.log(`Removed CID ${cid} for being offline more than 1 hour`)
         removed.push(cid)
         await sendTrackRemovedOffline(env, user, cid)
@@ -54,8 +53,8 @@ export async function checkTrackList(env) {
     console.log(`Finished updating CID ${cid} route`)
 
     if (updatedRoute[cid].routes.length === 2) {
-      if(metar.metar && !updatedRoute[cid].METARsent){
-        await getMETAR(env, null, user)
+      if (!updatedRoute[cid].METARsent && updatedRoute[cid].METARsent === false) {
+        await getMETAR(env, null, user, routeData.arr.ident)
         updatedRoute[cid].METARsent = true
         updatedRoute[cid].changed = true
       }
@@ -68,10 +67,10 @@ export async function checkTrackList(env) {
         console.log("Flight completed")
         removed.push(cid)
         const airportName = await getAirportName(routeData.arr.ident)
-        if(airportName.name){
+        if (airportName.name) {
           await sendTrackFinished(env, user, airportName.name)
         }
-        else{
+        else {
           await sendTrackFinished(env, user, routeData.arr.ident)
         }
       }
@@ -88,6 +87,7 @@ export async function checkTrackList(env) {
     await putKeyValue(env, 'track', trackingList.filter(track => !removed.includes(track.cid)))
     await deleteBatchRouteData(env, removed)
     await deleteBatchCheckedData(env, removed)
+    trackingList = trackingList.filter(track => !removed.includes(track.cid))
     if (!trackingList || trackingList.length < 1) return
   }
 
@@ -105,21 +105,21 @@ export async function checkTrackList(env) {
   let atcGrouped = atcGroupedRaw
   console.log("Getting checked ATC")
   const checked = await fetchChecked(env, trackingList)
-  //console.log(JSON.stringify(checked, null, 2));
+  //Filter ATC for checked ATC
   if (checked && Object.keys(checked).length > 0) {
-    //Turn each user’s checked list into a Set
-    const checkedSets = Object.values(checked).map(u => new Set(u.atc || []))
-    //Do intersection across all sets
-    const checkedSet = checkedSets.reduce((acc, set) => {
-      return new Set([...acc].filter(x => set.has(x)))
-    })
+    //Check if theres a new user
+    const allChecked = trackingList.every(user => checked[user.cid])
 
-    atcGrouped = Object.fromEntries(
-      Object.entries(atcGrouped).map(([key, arr]) => [
-        key,
-        arr.filter(atc => !checkedSet.has(atc.callsign))
-      ])
-    );
+    //No new user
+    if (allChecked) {
+      const checkedSet = new Set(Object.values(checked)[0].atc || [])
+      atcGrouped = Object.fromEntries(
+        Object.entries(atcGrouped).map(([key, arr]) => [
+          key,
+          arr.filter(atc => !checkedSet.has(atc.callsign))
+        ])
+      )
+    }
 
     //Check for offline atc
     const onlineATC = new Set(
