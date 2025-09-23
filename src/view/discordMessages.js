@@ -1,4 +1,4 @@
-import { coverageOrder, getATCFrequency } from "../model/API/vatsimAPI"
+import { coverageOrder, getAirportName, getATCFrequency } from "../model/API/vatsimAPI"
 import { DiscordRequest } from "../tool/discordFunctions"
 
 export async function sendNoOnlineATCMessage(env, webhookEndpoint) {
@@ -222,7 +222,7 @@ export async function sendTrackFinished(env, user, arr) {
     });
 }
 
-export async function sendMETAR(env, webhookEndpoint, metar, icao, uid) {
+export async function sendMETAR(env, webhookEndpoint, metar, airport, uid) {
     const colors = {
         VFR: 0x00FF00,
         MVFR: 0xFFFF00,
@@ -230,11 +230,11 @@ export async function sendMETAR(env, webhookEndpoint, metar, icao, uid) {
         LIFR: 0xFF00FF,
     }
     let body = {
-        content: `<@${uid}> Here is the metar for ${icao}`,
+        content: `<@${uid}> Here is the metar for **${airport.name}**`,
         embeds: [
             {
-                title: `🌥️ METAR ${icao}`,
-                description: `🕒 Time: ${formatZuluTime(metar.reportTime)}\n${metar.fltCat ? `✈️ Category: **${metar.fltCat}**` : ''}`,
+                title: `🌥️ Current Weather Report for **${metar.icaoId}**`,
+                description: `🕒 Report Time: \t**${formatZuluTime(metar.reportTime)}**\n${metar.fltCat ? `✈️ Category: \t**${metar.fltCat}**` : ''}`,
                 color: colors[metar.fltCat] ?? 0x808080,
                 fields: [
                     {
@@ -243,7 +243,7 @@ export async function sendMETAR(env, webhookEndpoint, metar, icao, uid) {
                     },
                     {
                         name: '🍃 Wind',
-                        value: (metar.wdir === 0 && metar.wspd === 0) ? 'Wind calm' : `${metar.wdir === "VRB" ? 'Variable' : `${metar.wdir}°`} at ${metar.wspd} ${metar.wspd <= 1 ? 'kt' : 'kts'}`,
+                        value: (metar.wdir === 0 && metar.wspd === 0) ? 'Wind calm' : `${metar.wdir === "VRB" ? 'Variable' : `From ${metar.wdir}°`} at ${metar.wspd} ${metar.wspd <= 1 ? 'kt' : 'kts'}`,
                         inline: true,
                     },
                     {
@@ -347,8 +347,8 @@ function generateAirportMetarFields(body, metar) {
         const [from, to] = variableRange.split('V').map(Number)
         body.embeds[0].fields.splice(windIndex + 1, 0,
             {
-                name: '↔️ Wind Varies',
-                value: `from ${from}° to ${to}°`,
+                name: '↔️ Wind Direction',
+                value: `Varies from ${from}° to ${to}°`,
                 inline: true,
             },
         )
@@ -375,7 +375,7 @@ function generateAirportMetarFields(body, metar) {
     }
     //Handle non symmetrical fields
     const fieldModulo = (3 - ((body.embeds[0].fields.length - 1) % 3)) % 3
-    for (let i = 0; i < fieldModulo; i++){
+    for (let i = 0; i < fieldModulo; i++) {
         body.embeds[0].fields.push(
             {
                 name: '',
@@ -386,13 +386,25 @@ function generateAirportMetarFields(body, metar) {
     }
     //Handle cloud covers
     if (metar.clouds) {
-        const value = metar.clouds.map(cloud => `${cloud.cover} @ ${cloud.base}ft`).join('\n')
+        const coverCode = {
+            FEW: "Few clouds",
+            SCT: "Scattered clouds",
+            BKN: "Broken clouds",
+            OVC: "Overcast",
+        }
+        const coverPct = {
+            FEW: "10-30% covered",
+            SCT: "40-50% covered",
+            BKN: "60-90% covered",
+            OVC: "100% covered",
+        }
+        const value = metar.clouds.map(cloud => `${coverCode[cloud.cover]} @ ${cloud.base}ft`).join('\n')
         if (metar.cover) {
             const cloudIcon = {
                 FEW: "🌤️",
                 SCT: "⛅",
                 BKN: "🌥️",
-                OVC: "☁️",
+                OVC: "🌫️",
             };
             if (["SKC", "NCD", "CLR"].includes(metar.cover)) {
                 body.embeds[0].fields.push(
@@ -408,7 +420,14 @@ function generateAirportMetarFields(body, metar) {
                     {
                         name: `${cloudIcon[metar.cover]} Cloud Cover`,
                         value,
-                        inline: false,
+                        inline: true,
+                    },
+                )
+                body.embeds[0].fields.push(
+                    {
+                        name: `😶‍🌫️ Sky Condition`,
+                        value: coverPct[metar.cover],
+                        inline: true,
                     },
                 )
             }
@@ -446,7 +465,7 @@ function decodeWxGroup(group) {
         //Intensity or Proximity
         "-": "Light",
         "+": "Heavy",
-        "VC": "In the vicinity",
+        "VC": "Vicinity",
         //Descriptors
         "MI": "Shallow",
         "PR": "Partial",
