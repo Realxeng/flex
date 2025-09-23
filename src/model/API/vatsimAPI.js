@@ -108,10 +108,10 @@ export async function getAirportName(icao){
             return {message: airport.message}
         }
         else if (airport.data.name){
-            return {name: airport.data.name}
+            return {data: airport.data}
         }
         else{
-            return {name: null, message: 'Cannot find airport name'}
+            return {data: null, message: 'Cannot find airport name'}
         }
     } catch (error) {
         console.log(`Error fetching airport name`)

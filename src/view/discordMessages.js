@@ -238,7 +238,7 @@ export async function sendMETAR(env, webhookEndpoint, metar, airport, uid = null
             airportName = metar.icaoId
         }
     } else {
-        airportName = airport.name
+        airportName = `${airport.data.city}/${airport.data.name}`
     }
     let body = {
         content: `${ uid ? `<@${uid}> ` : '' }Here is the METAR for **${airportName}**`,

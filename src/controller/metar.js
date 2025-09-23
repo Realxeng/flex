@@ -2,9 +2,9 @@ import { getAirportMETAR } from "../model/API/awcAPI"
 import { getAirportName, getVATSIMMETAR } from "../model/API/vatsimAPI"
 import { sendInvalidICAO, sendMETAR, sendNoMETAR, sendVATSIMMETAR } from "../view/discordMessages"
 
-export async function getMETAR(env, interaction){
+export async function getMETAR(env, interaction = null, user = null){
     const icao = interaction.data.options[0].value.toUpperCase()
-    const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`
+    const webhookEndpoint = interaction ? `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}` : `https://discord.com/api/v10/channels/${user.channel}/messages`
     if (icao.length > 4){
         await sendInvalidICAO(env, webhookEndpoint, icao.length)
         return
@@ -24,5 +24,6 @@ export async function getMETAR(env, interaction){
         }
     }
     const airport = await getAirportName(icao)
-    await sendMETAR(env, webhookEndpoint, result.metar, airport)
+    const uid = user ? user.id : null
+    await sendMETAR(env, webhookEndpoint, result.metar, airport, uid)
 }

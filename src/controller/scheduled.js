@@ -3,6 +3,7 @@ import { deleteBatchCheckedData, deleteBatchRouteData, fetchChecked, fetchFIRDat
 import { getAirportName, getCurrentPosition, getOnlineATC } from "../model/API/vatsimAPI"
 import { getTrackingList, putKeyValue } from "../model/watchList"
 import { sendMETAR, sendTrackFinished, sendTrackRemovedOffline } from "../view/discordMessages"
+import { getMETAR } from "./metar"
 import { checkOnlineATCInRoute, isWithinDistance, trackUserPosition } from "./track"
 
 export async function checkTrackList(env) {
@@ -53,10 +54,8 @@ export async function checkTrackList(env) {
     console.log(`Finished updating CID ${cid} route`)
 
     if (updatedRoute[cid].routes.length === 2) {
-      const metar = await getAirportMETAR(routeData.arr.ident)
       if(metar.metar && !updatedRoute[cid].METARsent){
-        const webhookEndpoint = `https://discord.com/api/v10/channels/${user.channel}/messages`
-        await sendMETAR(env, webhookEndpoint, metar.metar, routeData.arr.ident, user.uid)
+        await getMETAR(env, null, user)
         updatedRoute[cid].METARsent = true
         updatedRoute[cid].changed = true
       }
