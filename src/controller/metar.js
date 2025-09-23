@@ -24,6 +24,6 @@ export async function getMETAR(env, interaction = null, user = null, icao = null
         }
     }
     const airport = await getAirportName(icao)
-    const uid = user ? user.id : null
+    const uid = user ? user.uid : null
     await sendMETAR(env, webhookEndpoint, result.metar, airport, uid)
 }

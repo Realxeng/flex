@@ -145,6 +145,7 @@ export async function removeTrackUser(env, interaction) {
 export async function trackUserPosition(routeData, position) {
     //Remove past waypoints
     let changed = false
+    const METARsent = routeData.METARsent ? routeData.METARsent : false
     let routes = Object.values(routeData.routes)
     let updatedRoute = routes
     for (let i = 0; i < routes.length; i++) {
@@ -159,7 +160,7 @@ export async function trackUserPosition(routeData, position) {
         updatedRoute = routes.slice(i)
         break
     }
-    return { routes: updatedRoute, dep: routeData.dep, arr: routeData.arr, offline: 0, changed }
+    return { routes: updatedRoute, dep: routeData.dep, arr: routeData.arr, offline: 0, changed, METARsent }
 }
 
 export async function checkOnlineATCInRoute(env, trackingList, updatedRoute, atcGrouped, boundaries, fssFIR, checked) {
