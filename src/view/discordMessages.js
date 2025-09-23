@@ -229,12 +229,13 @@ export async function sendMETAR(env, webhookEndpoint, metar, airport, uid) {
         IFR: 0xFF0000,
         LIFR: 0xFF00FF,
     }
+    const time = formatZuluTime(metar.reportTime)
     let body = {
-        content: `<@${uid}> Here is the metar for **${airport.name}**`,
+        content: `<@${uid}> Here is the metar for **${airport.name} (${metar.icaoId})**`,
         embeds: [
             {
                 title: `🌥️ Current Weather Report for **${metar.icaoId}**`,
-                description: `🕒 Report Time: \t**${formatZuluTime(metar.reportTime)}**\n${metar.fltCat ? `✈️ Category: \t**${metar.fltCat}**` : ''}`,
+                description: `📅 Report Date: \t**${time.date}**\n🕒 Report Time: \t**${time.time}**\n${metar.fltCat ? `✈️ Category: \t**${metar.fltCat}**` : ''}`,
                 color: colors[metar.fltCat] ?? 0x808080,
                 fields: [
                     {
@@ -325,7 +326,7 @@ function formatZuluTime(isoTime) {
     const hours = String(date.getUTCHours()).padStart(2, "0");
     const minutes = String(date.getUTCMinutes()).padStart(2, "0");
 
-    return `${day} ${month} ${year} ${hours}${minutes}Z`;
+    return {date: `${day} ${month} ${year}`, time: `${hours}:${minutes}z`};
 }
 
 function generateAirportMetarFields(body, metar) {
@@ -393,10 +394,10 @@ function generateAirportMetarFields(body, metar) {
             OVC: "Overcast",
         }
         const coverPct = {
-            FEW: "10-30% covered",
-            SCT: "40-50% covered",
-            BKN: "60-90% covered",
-            OVC: "100% covered",
+            FEW: "10-30%",
+            SCT: "40-50%",
+            BKN: "60-90%",
+            OVC: "100%",
         }
         const value = metar.clouds.map(cloud => `${coverCode[cloud.cover]} @ ${cloud.base}ft`).join('\n')
         if (metar.cover) {
@@ -426,7 +427,7 @@ function generateAirportMetarFields(body, metar) {
                 body.embeds[0].fields.push(
                     {
                         name: `😶‍🌫️ Sky Condition`,
-                        value: coverPct[metar.cover],
+                        value: `Covered ${coverPct[metar.cover]} with cloud`,
                         inline: true,
                     },
                 )
