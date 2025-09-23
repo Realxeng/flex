@@ -247,8 +247,8 @@ export async function sendMETAR(env, webhookEndpoint, metar, airport, uid) {
                         inline: true,
                     },
                     {
-                        name: '🛣️ Visibility',
-                        value: `${metar.visib} SM`,
+                        name: '👀 Visibility',
+                        value: `${metar.visib} Statute Mile`,
                         inline: true,
                     },
                     {
