@@ -232,7 +232,7 @@ export async function sendMETAR(env, webhookEndpoint, metar, airport, uid = null
     const time = formatZuluTime(metar.reportTime)
     const airportName = airport.message ? `${metar.icaoId}` : `**${airport.name} (${metar.icaoId})**`
     let body = {
-        content: `${ uid ? `<@${uid}> ` : '' }Here is the metar for ${airportName}`,
+        content: `${ uid ? `<@${uid}> ` : '' }Here is the METAR for ${airportName}`,
         embeds: [
             {
                 title: `🌥️ Current Weather Report for **${metar.icaoId}**`,
