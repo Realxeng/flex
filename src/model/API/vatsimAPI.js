@@ -123,8 +123,12 @@ export async function getVATSIMMETAR(icao){
     try {
         const res = await fetch(`https://metar.vatsim.net/${icao}?format=json`)
         const metar = await res.json()
-        if (metar.length > 0) {
+        if (metar.length === 1) {
             return { metar: metar[0] }
+        }
+        else if (metar.length > 1) {
+            console.log(metar)
+            return { metar, message: `Found multiple airfield ICAO code starting with ${icao}`}
         }
         else {
             console.log(metar)
