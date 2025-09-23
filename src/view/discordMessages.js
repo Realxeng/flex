@@ -301,6 +301,15 @@ export async function sendVATSIMMETAR(env, webhookEndpoint, metar, airport) {
     });
 }
 
+export async function sendInvalidICAO(env, webhookEndpoint, length) {
+    await DiscordRequest(env, webhookEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `ICAO code consists of not more than 4 alphanumeric characters. Definitely not ${length} characters 🙄🙄`,
+        }),
+    });
+}
+
 function generateATCTypeButtons(covSort, pressed) {
     let count = 1, i = 0
     let msg = [{

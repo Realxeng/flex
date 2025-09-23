@@ -1,10 +1,14 @@
 import { getAirportMETAR } from "../model/API/awcAPI"
 import { getAirportName, getVATSIMMETAR } from "../model/API/vatsimAPI"
-import { sendMETAR, sendNoMETAR, sendVATSIMMETAR } from "../view/discordMessages"
+import { sendInvalidICAO, sendMETAR, sendNoMETAR, sendVATSIMMETAR } from "../view/discordMessages"
 
 export async function getMETAR(env, interaction){
     const icao = interaction.data.options[0].value.toUpperCase()
     const webhookEndpoint = `https://discord.com/api/webhooks/${env.DISCORD_APPLICATION_ID}/${interaction.token}`
+    if (icao.length > 4){
+        await sendInvalidICAO(env, webhookEndpoint, icao.length)
+        return
+    }
     const result = await getAirportMETAR(icao)
     if (result.message){
         console.log(result.message)
