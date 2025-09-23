@@ -222,7 +222,7 @@ export async function sendTrackFinished(env, user, arr) {
     });
 }
 
-export async function sendMETAR(env, webhookEndpoint, metar, airport, uid) {
+export async function sendMETAR(env, webhookEndpoint, metar, airport, uid = null) {
     const colors = {
         VFR: 0x00FF00,
         MVFR: 0xFFFF00,
@@ -232,7 +232,7 @@ export async function sendMETAR(env, webhookEndpoint, metar, airport, uid) {
     const time = formatZuluTime(metar.reportTime)
     const airportName = airport.message ? `${metar.icaoId}` : `**${airport.name} (${metar.icaoId})**`
     let body = {
-        content: `<@${uid}> Here is the metar for ${airportName}`,
+        content: `${ uid ? `<@${uid}> ` : '' }Here is the metar for ${airportName}`,
         embeds: [
             {
                 title: `🌥️ Current Weather Report for **${metar.icaoId}**`,
@@ -285,7 +285,7 @@ export async function sendNoMETAR(env, webhookEndpoint, icao) {
     });
 }
 
-export async function sendVATSIMMETAR(env, webhookEndpoint, metar, airport, uid) {
+export async function sendVATSIMMETAR(env, webhookEndpoint, metar, airport) {
     const airportName = airport.message ? `${metar.id}` : `**${airport.name} (${metar.id})**`
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
