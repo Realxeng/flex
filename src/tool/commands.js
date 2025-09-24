@@ -28,7 +28,7 @@ export const CHECK_SCENERY_COMMAND = {
 
 //List online VATSIM ATC command
 export const CHECK_ONLINE_ATC = {
-  name: 'list-atc',
+  name: 'atc',
   description: 'Check all online atc in VATSIM',
   type: 1,
   integration_types: [0, 1],
