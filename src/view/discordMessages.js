@@ -154,11 +154,11 @@ export async function sendATCInRouteMessage(env, user, inside) {
 
         const msg = {
             content: i === 0
-                ? `<@${user.uid}><:8fo1d9:1234443545339887627>`
+                ? `<@${user.uid}>`
                 : null,
             embeds: [
                 {
-                    title: `${i > 0 ? `${i + 1} pages??` : "LMAOOO🫵"}`,
+                    title: `${i > 0 ? `${i + 1} pages??` : "🚨TITITIT🚨"}`,
                     color: 0x1D9BF0,
                     fields,
                 }
