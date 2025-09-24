@@ -16,7 +16,7 @@ export async function uploadFirestore(env, writes) {
         }
     )
 
-    console.log(await response.text())
+    //console.log(await response.text())
 }
 
 export async function fetchFirestore(env, path, method = "GET") {
