@@ -474,7 +474,7 @@ function generateAirportMetarFields(body, metar) {
                     {
                         name: `${cloudIcon[metar.cover]} Cloud Cover`,
                         value,
-                        inline: false,
+                        inline: true,
                     },
                 )
                 body.embeds[0].fields.push(
@@ -490,7 +490,7 @@ function generateAirportMetarFields(body, metar) {
                 {
                     name: `🌤️ Cloud Cover`,
                     value,
-                    inline: false,
+                    inline: true,
                 },
             )
         }
