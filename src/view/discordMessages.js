@@ -474,7 +474,7 @@ function generateAirportMetarFields(body, metar) {
                     {
                         name: `${cloudIcon[metar.cover]} Cloud Cover`,
                         value,
-                        inline: false,
+                        inline: true,
                     },
                 )
                 body.embeds[0].fields.push(
@@ -495,6 +495,7 @@ function generateAirportMetarFields(body, metar) {
             )
         }
     }
+    /*
     //Handle non symmetrical fields
     const fieldModulo2 = (3 - ((body.embeds[0].fields.length - 1) % 3)) % 3
     for (let i = 0; i < fieldModulo2; i++) {
@@ -506,6 +507,7 @@ function generateAirportMetarFields(body, metar) {
             },
         )
     }
+    */
     //Handle weather codes
     if (metar.wxString) {
         body.embeds[0].fields.push(
