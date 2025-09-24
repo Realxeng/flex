@@ -537,7 +537,7 @@ function decodeWxGroup(group) {
         "BC": "Patches of",
         "DR": "Low drifting",
         "BL": "Blowing",
-        "SH": "Showers",
+        "SH": "Showering",
         "TS": "Thunderstorm",
         "FZ": "Freezing",
         //Precipitation
