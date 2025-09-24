@@ -241,7 +241,7 @@ export async function sendMETAR(env, webhookEndpoint, metar, airport, uid = null
         airportName = `${airport.data.city}/${airport.data.name}`
     }
     let body = {
-        content: `${ uid ? `<@${uid}> ` : '' }Here is the METAR for **${airportName}**`,
+        content: `${ uid ? `<@${uid}> ` : '' }Latest METAR for **${airportName}**`,
         embeds: [
             {
                 title: `🌥️ Current Weather Report for **${metar.icaoId}**`,
