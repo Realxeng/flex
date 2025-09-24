@@ -474,7 +474,7 @@ function generateAirportMetarFields(body, metar) {
                     {
                         name: `${cloudIcon[metar.cover]} Cloud Cover`,
                         value,
-                        inline: true,
+                        inline: false,
                     },
                 )
                 body.embeds[0].fields.push(
@@ -490,7 +490,7 @@ function generateAirportMetarFields(body, metar) {
                 {
                     name: `🌤️ Cloud Cover`,
                     value,
-                    inline: true,
+                    inline: false,
                 },
             )
         }
@@ -537,7 +537,7 @@ function decodeWxGroup(group) {
         "BC": "Patches of",
         "DR": "Low drifting",
         "BL": "Blowing",
-        "SH": "Showering",
+        "SH": "Showers   of",
         "TS": "Thunderstorm",
         "FZ": "Freezing",
         //Precipitation
