@@ -70,7 +70,7 @@ export async function checkTrackList(env) {
         removed.push(cid)
         const airport = await getAirportName(routeData.arr.ident)
         if (airport.data) {
-          await sendTrackFinished(env, user, airport.data.name)
+          await sendTrackFinished(env, user, routeData.arr.ident, airport.data.name)
         }
         else {
           await sendTrackFinished(env, user, routeData.arr.ident)

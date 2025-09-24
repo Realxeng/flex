@@ -212,12 +212,12 @@ export async function sendTrackRemovedOffline(env, user, cid) {
     });
 }
 
-export async function sendTrackFinished(env, user, arr) {
+export async function sendTrackFinished(env, user, icao, arrName = null) {
     const webhookEndpoint = `https://discord.com/api/v10/channels/${user.channel}/messages`
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify({
-            content: `Welcome to ${arr} <@${user.uid}>! Your tracking will now be removed`,
+            content: `Welcome to **${arrName ? `${arrName} (${icao})` : icao}** <@${user.uid}>! Your tracking will now be removed`,
         }),
     });
 }
@@ -474,7 +474,7 @@ function generateAirportMetarFields(body, metar) {
                     {
                         name: `${cloudIcon[metar.cover]} Cloud Cover`,
                         value,
-                        inline: true,
+                        inline: false,
                     },
                 )
                 body.embeds[0].fields.push(
