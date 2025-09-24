@@ -1,6 +1,6 @@
 # FLEX Discord Bot
-A Discord Bot aimed to help the flight sim community by providing various information for flight simulation.
-This project mainly focus on VATSIM pilot community and thats is also where most of the information provided is retrieved from.
+A Discord Bot aimed to help the flight sim community by providing various information for flight simulation.  
+This project mainly focuses on VATSIM pilot community. Hence, thats is also where most of the information provided is retrieved from.
 
 For budgeting purposes, FLEX Bot is built to run in Cloudflare Worker platform running the free license.
 
