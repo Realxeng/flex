@@ -91,11 +91,11 @@ export async function sendCIDInvalid(env, webhookEndpoint, cid) {
     });
 }
 
-export async function sendTrackAdded(env, webhookEndpoint, uid, dep, arr) {
+export async function sendTrackAdded(env, webhookEndpoint, uid, dep, arr, depName = null, arrName = null) {
     await DiscordRequest(env, webhookEndpoint, {
         method: 'POST',
         body: JSON.stringify({
-            content: `📡Tracking <@${uid}> from 🛫 **${dep}** to 🛬 **${arr}**`,
+            content: `📡Tracking <@${uid}> from 🛫 **${depName ? `${depName} (${dep.ident})` : `${dep.ident}`}** to 🛬 **${arrName ? `${arrName} (${arr.ident})` : `${arr.ident}`}**`,
         }),
     });
 }

@@ -104,9 +104,9 @@ export async function addTrackUser(env, interaction) {
     console.log(`Tracking ${cid}`)
     const depApt = await getAirportName(dep.ident)
     const arrApt = await getAirportName(arr.ident)
-    const depName = depApt.message ? dep.ident : depApt.data.name
-    const arrName = arrApt.message ? arr.ident : arrApt.data.name
-    await sendTrackAdded(env, webhookEndpoint, uid, depName, arrName)
+    const depName = depApt.message ? null : depApt.data.name
+    const arrName = arrApt.message ? null : arrApt.data.name
+    await sendTrackAdded(env, webhookEndpoint, uid, dep, arr, depName, arrName)
 }
 
 export async function removeTrackUser(env, interaction) {
