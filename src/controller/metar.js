@@ -15,6 +15,7 @@ export async function getMETAR(env, interaction = null, user = null, icao = null
         const vatsimMetar = await getVATSIMMETAR(icao)
         if (vatsimMetar.message){
             console.log(vatsimMetar.message)
+            if (user) return
             await sendNoMETAR(env, webhookEndpoint, icao)
             return
         } else {
