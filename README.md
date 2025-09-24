@@ -1,5 +1,8 @@
 # FLEX Discord Bot
-A Discord Bot used to get information for flight simulation purposes that runs in Cloudflare Worker
+A Discord Bot aimed to help the flight sim community by providing various information for flight simulation.
+This project mainly focus on VATSIM pilot community and thats is also where most of the information provided is retrieved from.
+
+For budgeting purposes, FLEX Bot is built to run in Cloudflare Worker platform running the free license.
 
 ## API Used
 - X-Plane Scenery Gateway (https://gateway.x-plane.com/apiv1/)
