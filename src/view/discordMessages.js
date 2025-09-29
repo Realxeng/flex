@@ -443,6 +443,12 @@ function generateAirportMetarFields(body, metar) {
             BKN: "60-90%",
             OVC: "100%",
         }
+        const skyCondition = {
+            SKC: "Sky Clear",
+            NCD: "No clouds detected",
+            CLR: "Clear",
+            CAVOK: "Cloud and Visibility OK",
+        }
         const value = metar.clouds.map(cloud => `${coverCode[cloud.cover]} @ ${cloud.base}ft`).join('\n')
         if (metar.cover) {
             const cloudIcon = {
@@ -451,20 +457,11 @@ function generateAirportMetarFields(body, metar) {
                 BKN: "🌥️",
                 OVC: "🌫️",
             };
-            if (["SKC", "NCD", "CLR"].includes(metar.cover)) {
+            if (["SKC", "NCD", "CLR", "CAVOK"].includes(metar.cover)) {
                 body.embeds[0].fields.push(
                     {
                         name: `☀️ Sky Condition`,
-                        value: 'Sky clear',
-                        inline: true,
-                    },
-                )
-            }
-            if (metar.cover === "CAVOK") {
-                body.embeds[0].fields.push(
-                    {
-                        name: `☀️ Sky Condition`,
-                        value: 'Cloud and Visibility OK',
+                        value: skyCondition[metar.cover],
                         inline: true,
                     },
                 )
