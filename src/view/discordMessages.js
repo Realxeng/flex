@@ -240,18 +240,14 @@ export async function sendMETAR(env, webhookEndpoint, metar, airport, uid = null
     } else {
         airportName = `${airport.data.city}/${airport.data.name}`
     }
-    let visibility = { value: '', unit: ''}
+    let visibility = { value: metar.visib, unit: 'Statute Mile'}
     if (metar.visib) {
-        if(!metar.rawOb.match(/^(\d{1,2}|\d{1}\/\d{1})(\d{1}\/\d{1})?SM$/) && !metar.rawOb.match(/\/{4}/)){
-            const match = metar.rawOb.match(/(?<=\s\d{5}(G\d{1,2})?(KT|MPS)(\s\d{3}V\d{3})?\s)\d{4}/)
+        if(!metar.rawOb.match(/^(\d{1,2}\s)?(\d{1,2}|\d{1,2}\/\d{1,2})SM$/) && !metar.rawOb.match(/\/{4}/)){
+            const match = metar.rawOb.match(/(?<=\s(\d{3}|VRB)\d{2}(G\d{1,2})?(KT|MPS)(\s\d{3}V\d{3})?\s)\d{4}/)
             if (match) {
                 visibility.value = parseInt(match[0]) / 1000
                 visibility.unit = "Kilometers"
             }
-        }
-        else {
-            visibility.value = metar.visib
-            visibility.unit = 'Statute Mile'
         }
     }
 
@@ -274,7 +270,7 @@ export async function sendMETAR(env, webhookEndpoint, metar, airport, uid = null
                     },
                     {
                         name: '👀 Visibility',
-                        value: visibility.value === 9999 ? `More than 10 Kilometers` : `${visibility.value} ${visibility.unit}`,
+                        value: visibility.value === 9.999 ? `More than 10 Kilometers` : `${visibility.value} ${visibility.unit}`,
                         inline: true,
                     },
                     {
