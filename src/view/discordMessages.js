@@ -240,19 +240,23 @@ export async function sendMETAR(env, webhookEndpoint, metar, airport, uid = null
     } else {
         airportName = `${airport.data.city}/${airport.data.name}`
     }
-    let visibility = { value: metar.visib, unit: 'Statute Mile'}
+    let visibility = { value: metar.visib, unit: 'Statute Mile' }
     if (metar.visib) {
-        if(!metar.rawOb.match(/^(\d{1,2}\s)?(\d{1,2}|\d{1,2}\/\d{1,2})SM$/) && !metar.rawOb.match(/\/{4}/)){
+        if (!metar.rawOb.match(/^(\d{1,2}\s)?(\d{1,2}|\d{1,2}\/\d{1,2})SM$/) && !metar.rawOb.match(/\/{4}/)) {
             const match = metar.rawOb.match(/(?<=\s(\d{3}|VRB)\d{2}(G\d{1,2})?(KT|MPS)(\s\d{3}V\d{3})?\s)\d{4}/)
             if (match) {
                 visibility.value = parseInt(match[0]) / 1000
                 visibility.unit = "Kilometers"
+            } else if (typeof metar.visib === 'string' && visibility.value.includes('+')) {
+                visibility.value = `More than ${visibility.value.split('+')[0]}`
             }
+        } else if (typeof metar.visib === 'string' && visibility.value.includes('+')) {
+            visibility.value = `More than ${visibility.value.split('+')[0]}`
         }
     }
 
     let body = {
-        content: `${ uid ? `<@${uid}> ` : '' }Latest METAR for **${airportName}**`,
+        content: `${uid ? `<@${uid}> ` : ''}Latest METAR for **${airportName}**`,
         embeds: [
             {
                 title: `🌥️ Current Weather Report for **${metar.icaoId}**`,
@@ -381,7 +385,7 @@ function formatZuluTime(isoTime) {
     const hours = String(date.getUTCHours()).padStart(2, "0");
     const minutes = String(date.getUTCMinutes()).padStart(2, "0");
 
-    return {date: `${day} ${month} ${year}`, time: `${hours}:${minutes}z`};
+    return { date: `${day} ${month} ${year}`, time: `${hours}:${minutes}z` };
 }
 
 function generateAirportMetarFields(body, metar) {
@@ -413,7 +417,7 @@ function generateAirportMetarFields(body, metar) {
     if (metar.altim) {
         body.embeds[0].fields.push(
             {
-                name: '🕐 Altimeter',
+                name: '🕐 Air Pressure',
                 value: `${metar.altim} hpa`,
                 inline: true,
             },
