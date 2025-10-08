@@ -22,9 +22,9 @@ title: FLEX Bot
 email: realxengpandelaki@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
   A Discord Bot for flight sim community
-domain: "flex.realxeng.bot"
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "http://flex.realxeng.bot/" # the base hostname & protocol for your site, e.g. http://example.com
+domain: "realxeng.github.io"
+baseurl: "/FLEX" # the subpath of your site, e.g. /blog
+url: "http://realxeng.github.io/" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  realxeng
 theme: jekyll-theme-cayman
 show_downloads: true
