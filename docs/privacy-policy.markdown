@@ -11,7 +11,7 @@ _Last updated: [8 October 2025]_
 This Privacy Policy explains how **FLEX** bot collects, uses, and protects information when you use it on Discord.  
 By using the Bot, you agree to this [Privacy Policy](./privacy-policy) and our [Terms of Service](./terms-of-service).
 
-The Bot is operated by **Realxeng**.
+FLEX Bot is operated by **Realxeng**.
 
 ---
 
@@ -27,19 +27,20 @@ FLEX **does not** collect passwords, personal addresses, or other sensitive info
 
 ## 3. How We Use the Information
 Collected data is used solely to:
-- Provide the Bot’s features and respond to user commands  
-- Maintain user preferences and server configurations  
-- Retrieve and display data from the **VATSIM network** (e.g., for pilot or controller information)  
+- Provide the Bot’s features and respond to user commands   
+- Retrieve and display data from **VATSIM network** (eg., for flight and pilot information)  
+- Create and send tailored messages to user
 - Ensure compliance with Discord’s Terms of Service and prevent abuse
 
-We **do not** sell, rent, or share your information with third parties, except when necessary to access public VATSIM data.
+We **do not** sell, rent, or share your information with third parties. Information is only shared when necessary to access public VATSIM data.
 
 ---
 
 ## 4. Data Storage and Retention
-- Data may be stored temporarily or as long as needed to provide FLEX’s services.  
-- User data (such as Discord IDs or VATSIM CIDs) can be manually deleted using the provided slash commands.  
-- When the Bot is removed from a server, associated server configuration data may be deleted automatically.  
+- Data may be stored temporarily or as long as needed (eg., until the end of user's flight) to provide FLEX’s services.  
+- User data (such as Discord IDs and VATSIM CIDs) can be manually deleted using the provided slash commands.  
+- No specific configuration is currently implemented and therefore it is not stored nor collected.  
+- The service only store data permanently about Flight Information Regions extracted from [vatspy-data-project](https://github.com/vatsimnetwork/vatspy-data-project)
 
 All data is stored securely and accessible only to the Bot and its developer.
 
@@ -48,7 +49,7 @@ All data is stored securely and accessible only to the Bot and its developer.
 ## 5. Data Sharing
 FLEX only shares data with:
 - **Discord**, as required for bot functionality  
-- **VATSIM’s public data servers**, for information retrieval related to the Bot’s aviation features
+- **VATSIM public API**, for information retrieval related to FLEX features
 
 We do **not** share data with advertisers, analytics services, or any unauthorized third party.
 
@@ -74,7 +75,7 @@ By using the Bot, you acknowledge that absolute security cannot be guaranteed.
 ## 8. Changes to This Policy
 We may update this Privacy Policy from time to time.  
 When we do, the "Last updated" date above will be revised.  
-Continued use of FLEX after updates constitutes acceptance of the new Privacy Policy.
+Continued use of FLEX after updates constitutes **acceptance** of the new Privacy Policy.
 
 ---
 
