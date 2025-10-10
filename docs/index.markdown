@@ -4,6 +4,7 @@ title: FLEX Bot
 description: A Discord bot for flight sim community server
 tos_url: "./terms-of-service"
 pp_url: "./privacy-policy"
+show_downloads: true
 ---
 
 # FLEX
